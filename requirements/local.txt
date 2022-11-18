@@ -11,7 +11,7 @@ mypy==0.982  # https://github.com/python/mypy
 pytest==7.2.0  # https://github.com/pytest-dev/pytest
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
 django-stubs==1.13.0
-djangorestframework-stubs==1.7.0
+djangorestframework-stubs==1.8.0
 
 # Documentation
 # ------------------------------------------------------------------------------
