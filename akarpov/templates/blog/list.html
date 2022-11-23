@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}posts on akarpov{% endblock %}
+
+{% block content %}
+  {% if request.user.is_authenticated %}
+      <button class="btn mb-3 btn-sm btn-outline-light" type="button"><a href="{% url 'blog:post_create' %}" style="text-decoration: none; color:lightgray"><i class="bi bi-pen"></i>write new post</a></button>
+  {% endif %}
+  <div class="row mb-2">
+  {% for post in post_list %}
+      <div class="col-md-6">
+        <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <strong style="color: {{ post.h_tag.color }}" class="d-inline-block mb-2">{{ post.h_tag.name }}</strong>
+            <h3 class="mb-0">{{ post.title }}</h3>
+            <p class="card-text"><small class="text-muted">{{ post.edited | naturaltime }}</small></p>
+            <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
+            <a href="{% url 'blog:post' post.slug %}" class="stretched-link"></a>
+            <p class="card-text mt-4">{{ post.get_rating }}
+              <i class="bi bi-eye ms-3"></i>{{ post.post_views }}
+              <i class="bi bi-chat ms-3"></i> {{ post.comment_count }}</p>
+          </div>
+          {% if post.image_cropped %}
+            <img class="col-auto d-none d-lg-block img-fluid" style="object-fit: cover" src="{{ post.image_cropped.url }}" alt="">
+          {% endif %}
+        </div>
+      </div>
+{% endfor %}
+</div>
+{% endblock %}z

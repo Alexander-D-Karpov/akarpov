@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User: {{ object.username }}{% endblock %}
+
+{% block content %}
+<aside class="profile-card">
+  <header>
+    <!-- here’s the avatar -->
+    <a target="_blank" href="#">
+      {% if object.image_cropped %}<img src="{{ object.image_cropped.url }}" class="hoverZoomLink">{% endif %}
+    </a>
+
+    <!-- the username -->
+    <h1>{{ object.username }}</h1>
+
+    <!-- and role or location -->
+    <h2>{% if object.name %}{{ object.name }}{% endif %}</h2>
+
+  </header>
+
+  <!-- bit of a bio; who are you? -->
+  <div class="profile-bio">
+
+    <p>
+      {{ object.about }}
+    </p>
+
+  </div>
+ <ul class="profile-social-links">
+  {% if object == request.user %}
+    <li>
+      <a href="{% url 'users:update' %}">
+        <i class="bi bi-sliders"></i>
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'users:update' %}">
+        <i class="bi bi-envelope"></i>
+      </a>
+    </li>
+
+  {% endif %}
+  </ul>
+<!-- End Action buttons -->
+</aside>
+{% endblock content %}

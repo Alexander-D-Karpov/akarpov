@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+  <div class="mb-5 mt-3">
+    <h1 class="title fs-1">{{ post.title }}
+    {% if request.user == post.creator %}
+      <a class="justify-content-center" href="{% url 'blog:post_edit' post.slug %}">
+      <i style="color:black" class="bi bi-pen fs-6"></i></a>
+    {% endif %}
+    </h1>
+    <div class="row g-2 ms-1">
+      <div class="col-md-auto">
+        By: <a href="{% url 'users:detail' post.creator.username %}">
+        {% if post.creator.image_cropped %}<img class="rounded" width="20" src="{{ post.creator.image_cropped.url }}" alt=""> {% endif %}
+        {{ post.creator.username }}</a>
+      </div>
+      <div class="col-md-auto fw-light">
+        Created {{ post.created | naturalday }},
+        updated {{ post.edited | naturaltime }}
+      </div>
+    </div>
+
+    <div class="row g-2 ms-1 mt-1">
+      <div class="col-auto">Tags: </div>
+      {% for tag in post.h_tags %}
+        <div class="col-auto">
+          <a href="{% url 'blog:post_list' %}?tag={{ tag.name }}" style="color:{{ tag.color }}; text-decoration: none">{{ tag.name }}</a>
+        </div>
+      {% endfor %}
+    </div>
+    {% if post.image %}
+    <img class="mt-2 img-responsive img-fluid" alt="" style="width: 100%; height: 25rem; object-fit: cover" src="{{ post.image.url }}">
+    {% endif %}
+  <hr>
+  </div>
+  <p>{{ post.body|safe }}</p>
+  <div class="mt-4">
+    <hr>
+    <div class="row g-2">
+      <div class="col-md-auto" id="rating">
+        {% if request.user.is_authenticated %}
+          {% autoescape off %} {{ rating_bar }} {% endautoescape %}
+        {% else %}
+          {% if post.rating < 0 %}
+          <div class="success col-auto align-self-center mt-1"> {{ post.rating }}</div>
+          {% elif post.rating == 0 %}
+          <div class="success col-auto align-self-center gray fw-light mt-1"> {{ post.rating }}</div>
+          {% else %}
+          <div class="success col-auto align-self-center mt-1"> +{{ post.rating }}</div>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="col-md-auto mt-2 d-flex justify-content-center text-center col-sm-2">
+        <i class="bi bi-eye align-self-center"></i> <div class="align-self-center ms-1">{{ post.post_views | intword }}</div>
+      </div>
+      <div class="col-md-auto mt-2 d-flex justify-content-center text-center col-sm-2">
+        <i class="bi bi-chat align-self-center"></i> <div class="align-self-center ms-1"> {{ post.comment_count }}</div>
+      </div>
+      <div class="col-6 col-sm-2 col-xl-6"></div>
+      <div class="col-md-auto mt-3 col-sm-2 d-flex justify-content-center text-center">
+        Created: {{ post.created|date:"d.m.Y" }} {{ post.created|time:"H:i" }}
+      </div>
+      <div class="col-md-auto mt-3 d-flex justify-content-center text-center">
+        Updated: {{ post.edited|date:"d.m.Y" }} {{ post.edited|time:"H:i" }}
+      </div>
+    </div>
+  </div>
+  <div class="row mt-2 mb-3">
+    <form action="{% url 'blog:comment' post.slug %}" method="post" class="col" id="comments">
+      {% csrf_token %}
+      <div>
+        <label for="textarea" class="form-label">write your comments</label>
+        <textarea name="body" class="form-control" id="textarea" rows="3"></textarea>
+      </div>
+      <button class="btn btn-sm btn-secondary mt-2" type="submit">Send</button>
+    </form>
+  </div>
+  <div class="row mb-5">
+    <div class="col-md-12 col-lg-10 col-xl-8">
+    {% for comment in post.get_comments %}
+      <div class="col mb-5">
+        <div class="d-flex flex-start">
+          {% if comment.author.image_cropped %}
+          <img class="rounded-circle shadow-1-strong me-3"
+            src="{{ comment.author.image_cropped.url }}" alt="avatar" width="65"
+            height="65" />
+          {% endif %}
+          <div class="flex-grow-1 flex-shrink-1">
+            <div>
+              <div class="d-flex justify-content-between align-items-center">
+                <p class="mb-1">
+                  {{ comment.author.username }} <span class="small">- {{ comment.created | naturaltime }}</span>
+                </p>
+                <button class="btn btn-outline-primary"><i class="bi bi-reply"></i><span class="small"> reply</span></button>
+              </div>
+              <p class="small mb-0">
+                {{ comment.body }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    function addComment(){
+      console.log("aaaaa")
+    }
+  </script>
+{% endblock %}
