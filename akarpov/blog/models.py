@@ -98,7 +98,7 @@ class Comment(models.Model):
         return f"{self.author.username}'s comment on {self.post.title}"
 
     class Meta:
-        ordering = ["-rating"]
+        ordering = ["-rating", "-created"]
 
 
 class CommentRating(models.Model):

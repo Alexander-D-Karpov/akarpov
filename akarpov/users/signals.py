@@ -15,7 +15,14 @@ def on_change(sender, instance: User, **kwargs):
             {"image_cropped"}
         ):
             if instance.image:
-                crop_model_image.delay(instance.pk, "users", "User")
+                crop_model_image.apply_async(
+                    kwargs={
+                        "pk": instance.pk,
+                        "app_label": "users",
+                        "model_name": "User",
+                    },
+                    countdown=10,
+                )
             else:
                 instance.image_cropped = None
                 instance.save()
@@ -25,4 +32,12 @@ def on_change(sender, instance: User, **kwargs):
 def post_on_create(sender, instance: User, created, **kwargs):
     if created:
         if instance.image:
-            crop_model_image.delay(instance.pk, "users", "User")
+            if instance.image:
+                crop_model_image.apply_async(
+                    kwargs={
+                        "pk": instance.pk,
+                        "app_label": "users",
+                        "model_name": "User",
+                    },
+                    countdown=10,
+                )

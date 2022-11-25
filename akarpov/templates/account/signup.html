@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load socialaccount %}
 
 {% block head_title %}{% translate "Signup" %}{% endblock %}
 
@@ -16,6 +17,9 @@
   {% if redirect_field_value %}
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
   {% endif %}
+  <div class="row mb-2">
+  <a href="{% provider_login_url 'github' %}"><i class="bi bi-github btn"></i></a>
+  </div>
   <button class="btn btn-primary" type="submit">{% translate "Sign Up" %} &raquo;</button>
 </form>
 

@@ -66,6 +66,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
 ]
+
 THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
@@ -82,13 +83,34 @@ THIRD_PARTY_APPS = [
     "colorfield",
 ]
 
+HEALTH_CHECKS = [
+    "health_check",  # required
+    "health_check.db",  # stock Django health checkers
+    "health_check.cache",
+    "health_check.storage",
+    "health_check.contrib.celery",
+    "health_check.contrib.celery_ping",
+    "health_check.contrib.migrations",
+    "health_check.contrib.psutil",  # disk and memory utilization
+    "health_check.contrib.redis",
+]
+
+ALL_AUTH_PROVIDERS = [
+    "allauth.socialaccount.providers.github",
+    # "allauth.socialaccount.providers.google",
+    # "allauth.socialaccount.providers.telegram",
+    # "allauth.socialaccount.providers.yandex",
+]
+
 LOCAL_APPS = [
     "akarpov.users",
     "akarpov.blog",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = (
+    DJANGO_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS + LOCAL_APPS
+)
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
@@ -284,6 +306,7 @@ CELERY_TASK_TIME_LIMIT = 5 * 60
 CELERY_TASK_SOFT_TIME_LIMIT = 60
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#beat-scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
@@ -291,6 +314,9 @@ ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 ACCOUNT_AUTHENTICATION_METHOD = "username"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = False
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
@@ -301,6 +327,23 @@ ACCOUNT_FORMS = {"signup": "akarpov.users.forms.UserSignupForm"}
 SOCIALACCOUNT_ADAPTER = "akarpov.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "akarpov.users.forms.UserSocialSignupForm"}
+SOCIALACCOUNT_PROVIDERS = {
+    "github": {
+        "SCOPE": [
+            "user",
+            "read:org",
+        ],
+    },
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+    },
+}
 
 # django-rest-framework
 # -------------------------------------------------------------------------------

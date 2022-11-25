@@ -74,7 +74,7 @@
       {% csrf_token %}
       <div>
         <label for="textarea" class="form-label">write your comments</label>
-        <textarea name="body" class="form-control" id="textarea" rows="3"></textarea>
+        <textarea name="body" maxlength="100" class="form-control" id="textarea" rows="3"></textarea>
       </div>
       <button class="btn btn-sm btn-secondary mt-2" type="submit">Send</button>
     </form>
@@ -95,7 +95,7 @@
                 <p class="mb-1">
                   {{ comment.author.username }} <span class="small">- {{ comment.created | naturaltime }}</span>
                 </p>
-                <button class="btn btn-outline-primary"><i class="bi bi-reply"></i><span class="small"> reply</span></button>
+                <!--<button class="btn btn-outline-primary"><i class="bi bi-reply"></i><span class="small"> reply</span></button> -->
               </div>
               <p class="small mb-0">
                 {{ comment.body }}

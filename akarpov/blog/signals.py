@@ -19,7 +19,14 @@ def post_on_save(sender, instance: Post, **kwargs):
             {"image_cropped"}
         ):
             if instance.image:
-                crop_model_image.delay(instance.pk, "blog", "Post")
+                crop_model_image.apply_async(
+                    kwargs={
+                        "pk": instance.pk,
+                        "app_label": "blog",
+                        "model_name": "Post",
+                    },
+                    countdown=10,
+                )
             else:
                 instance.image_cropped = None
                 instance.save()
@@ -74,4 +81,11 @@ def post_rating_delete(sender, instance: PostRating, **kwargs):
 def post_on_create(sender, instance: Post, created, **kwargs):
     if created:
         if instance.image:
-            crop_model_image.delay(instance.pk, "blog", "Post")
+            crop_model_image.apply_async(
+                kwargs={
+                    "pk": instance.pk,
+                    "app_label": "blog",
+                    "model_name": "Post",
+                },
+                countdown=10,
+            )
