@@ -25,7 +25,7 @@ def post_on_save(sender, instance: Post, **kwargs):
                         "app_label": "blog",
                         "model_name": "Post",
                     },
-                    countdown=10,
+                    countdown=2,
                 )
             else:
                 instance.image_cropped = None
@@ -87,5 +87,5 @@ def post_on_create(sender, instance: Post, created, **kwargs):
                     "app_label": "blog",
                     "model_name": "Post",
                 },
-                countdown=10,
+                countdown=2,
             )

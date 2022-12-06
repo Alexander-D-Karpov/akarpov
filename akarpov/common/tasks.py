@@ -11,7 +11,7 @@ def crop_model_image(pk: int, app_label: str, model_name: str):
     instance = model.objects.get(pk=pk)
     instance.image_cropped.save(
         instance.image.path.split(".")[0].split("/")[-1] + ".png",
-        File(crop_image(instance.image.path, cut_to=(250, 250))),
+        File(crop_image(instance.image.path, length=250)),
         save=False,
     )
     instance.save(update_fields=["image_cropped"])

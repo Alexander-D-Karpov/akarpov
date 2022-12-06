@@ -21,7 +21,7 @@ def on_change(sender, instance: User, **kwargs):
                         "app_label": "users",
                         "model_name": "User",
                     },
-                    countdown=10,
+                    countdown=2,
                 )
             else:
                 instance.image_cropped = None
@@ -39,5 +39,5 @@ def post_on_create(sender, instance: User, created, **kwargs):
                         "app_label": "users",
                         "model_name": "User",
                     },
-                    countdown=10,
+                    countdown=2,
                 )

@@ -11,7 +11,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-    path("", include("akarpov.blog.urls", namespace="blog")),
+    path("home", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),
@@ -22,6 +22,7 @@ urlpatterns = [
     path("users/", include("akarpov.users.urls", namespace="users")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
+    path("", include("akarpov.blog.urls", namespace="blog")),
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
@@ -35,7 +36,7 @@ urlpatterns += [
     path(
         "api/docs/",
         SpectacularSwaggerView.as_view(url_name="api-schema"),
-        name="home",
+        name="swagger",
     ),
     path(
         "api/redoc/",

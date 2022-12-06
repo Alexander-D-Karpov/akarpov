@@ -8,7 +8,7 @@
   <header>
     <!-- here’s the avatar -->
     <a target="_blank" href="#">
-      {% if object.image_cropped %}<img src="{{ object.image_cropped.url }}" class="hoverZoomLink">{% endif %}
+      {% if object.image_cropped %}<img style="object-fit: cover; width: 125px; height: 125px" src="{{ object.image_cropped.url }}" class="hoverZoomLink">{% endif %}
     </a>
 
     <!-- the username -->
