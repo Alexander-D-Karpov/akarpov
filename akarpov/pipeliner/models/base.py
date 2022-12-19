@@ -43,6 +43,15 @@ class ProviderBlock(BaseBlock):
         abstract = True
 
 
-class Storage(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class BaseStorage(PolymorphicModel):
+    id: uuid.uuid4 = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
+
+
+class Storage(BaseStorage):
+    data = models.JSONField(default=dict)
+
+
+class RunnerStorage(BaseStorage):
     data = models.JSONField(default=dict)
