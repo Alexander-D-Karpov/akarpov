@@ -2,7 +2,10 @@
 
 My collection of apps and tools
 
+Writen in Python 3.11 and Django 4.1
+
 ### local run via docker
+
 ```shell
 $ docker-compose -f local.yml up
 ```
