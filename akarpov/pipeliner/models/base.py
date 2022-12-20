@@ -54,4 +54,5 @@ class Storage(BaseStorage):
 
 
 class RunnerStorage(BaseStorage):
+    # TODO: move to cacheops
     data = models.JSONField(default=dict)

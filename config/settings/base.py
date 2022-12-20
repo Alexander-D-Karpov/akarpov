@@ -42,10 +42,32 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {"default": env.db("DATABASE_URL"), "memory": env.db("REDIS_URL")}
+DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CACHES
+# ------------------------------------------------------------------------------
+CACHE_TTL = 60 * 1500
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env.db("REDIS_URL"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "example",
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
+CACHEOPS = {
+    "auth.user": {"ops": "get", "timeout": 60 * 15},
+    "auth.*": {"ops": ("fetch", "get")},
+    "auth.permission": {"ops": "all"},
+    "*.*": {},
+}
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -64,6 +86,8 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",  # Handy template tags
+    # required for jazzmin to work
+    "jazzmin",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -83,6 +107,8 @@ THIRD_PARTY_APPS = [
     "ckeditor_uploader",
     "colorfield",
     "polymorphic",
+    "cacheops",
+    "extra_settings",
 ]
 
 HEALTH_CHECKS = [
@@ -444,4 +470,19 @@ CKEDITOR_CONFIGS = {
             "NotOlderThen": 20,
         },
     },
+}
+
+
+# JAZZMIN
+# ------------------------------------------------------------------------------
+JAZZMIN_SETTINGS = {
+    "site_title": "sanspie's site admin",
+    "site_header": "site admin",
+    "site_brand": "sanspie's site",
+    "site_logo": "/images/favicons/favicon.ico",
+    "login_logo": "/images/favicons/favicon.ico",
+    "site_icon": None,
+    "welcome_sign": "welcum back",
+    "copyright": "admin on akarpov.ru",
+    "user_avatar": "image_cropped",
 }
