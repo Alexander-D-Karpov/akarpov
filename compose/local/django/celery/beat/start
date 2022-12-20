@@ -3,6 +3,8 @@
 set -o errexit
 set -o nounset
 
-
+python manage.py makemigrations
+python manage.py migrate auth
+python manage.py migrate
 rm -f './celerybeat.pid'
 celery -A config.celery_app beat -l INFO

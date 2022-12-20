@@ -19,20 +19,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && rm -rf /var/lib/apt/lists/*
 
 
-RUN pip install poetry==1.2.2
-
-# Configuring poetry
-RUN poetry config virtualenvs.create false
-COPY pyproject.toml poetry.lock /
-
-# Installing requirements
-RUN poetry install
-# Removing gcc
-RUN apt-get purge -y \
-  gcc \
-  && rm -rf /var/lib/apt/lists/*
-
-
 # Python 'run' stage
 FROM python as python-run-stage
 
@@ -55,6 +41,16 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
+
+
+RUN pip install poetry
+
+# Configuring poetry
+RUN poetry config virtualenvs.create false
+COPY pyproject.toml poetry.lock /
+
+# Installing requirements
+RUN poetry install
 
 
 COPY ./compose/local/docs/start /start-docs
