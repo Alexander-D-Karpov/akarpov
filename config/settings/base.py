@@ -39,6 +39,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 
+LANGUAGES = [
+    ("en-us", "English"),
+    ("ru", "Russian"),
+]
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -88,6 +93,7 @@ DJANGO_APPS = [
     "django.contrib.humanize",  # Handy template tags
     # required for jazzmin to work
     "jazzmin",
+    "djangocms_admin_style",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -109,6 +115,11 @@ THIRD_PARTY_APPS = [
     "polymorphic",
     "cacheops",
     "extra_settings",
+    # django-cms
+    "cms",
+    "menus",
+    "treebeard",
+    "sekizai",
 ]
 
 HEALTH_CHECKS = [
@@ -138,7 +149,7 @@ LOCAL_APPS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = (
-    DJANGO_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS + LOCAL_APPS
+    DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS
 )
 
 # MIGRATIONS
@@ -242,6 +253,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "akarpov.users.context_processors.allauth_settings",
+                "sekizai.context_processors.sekizai",
             ],
         },
     }
