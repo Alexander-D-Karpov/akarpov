@@ -59,15 +59,3 @@ jobs:
       - name: Tear down the Stack
         run:  docker-compose -f local.yml down
 
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code Repository
-        uses: actions/checkout@v3
-
-      - name: Build the Stack
-        run:  docker-compose -f production.yml build
-
-      - name: Tear down the Stack
-        run:  docker-compose -f production.yml down

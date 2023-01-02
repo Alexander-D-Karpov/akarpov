@@ -1,12 +1,12 @@
 # General
+# CHANGE ON REAL SERVER
 # ------------------------------------------------------------------------------
 USE_DOCKER=yes
-IPYTHONDIR=/app/.ipython
 DJANGO_READ_DOT_ENV_FILE=no
 # Redis
 # ------------------------------------------------------------------------------
-REDIS_URL=redis://redis:6379/1
-CELERY_BROKER_URL=redis://redis:6379/0
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/0
 
 # Celery
 # ------------------------------------------------------------------------------
