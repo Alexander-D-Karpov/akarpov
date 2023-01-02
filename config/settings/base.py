@@ -74,9 +74,9 @@ CACHEOPS = {
     "*.*": {},
 }
 CACHEOPS_REDIS = {
-    'host': env.db("REDIS_HOST", default="redis"),
-    'port': 6379,        # default redis port
-    'db': 1,
+    "host": env.db("REDIS_HOST", default="redis"),
+    "port": 6379,  # default redis port
+    "db": 1,
 }
 
 # URLS
