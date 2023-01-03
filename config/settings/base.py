@@ -56,14 +56,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ------------------------------------------------------------------------------
 CACHE_TTL = 60 * 1500
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env.db("REDIS_URL"),
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
-        "KEY_PREFIX": "example",
-    }
-}
+CACHES = {"default": env.cache("REDIS_CACHE")}
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
@@ -73,11 +66,7 @@ CACHEOPS = {
     "auth.permission": {"ops": "all"},
     "*.*": {},
 }
-CACHEOPS_REDIS = {
-    "host": env.db("REDIS_HOST", default="redis"),
-    "port": 6379,  # default redis port
-    "db": 1,
-}
+CACHEOPS_REDIS = env.str("REDIS_URL")
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -201,6 +190,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.cache.UpdateCacheMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django_structlog.middlewares.RequestMiddleware",
@@ -212,6 +202,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "cms.middleware.language.LanguageCookieMiddleware",
+    "cms.middleware.user.CurrentUserMiddleware",
+    "cms.middleware.page.CurrentPageMiddleware",
+    "cms.middleware.toolbar.ToolbarMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
 ]
 
 # STATIC

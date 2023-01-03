@@ -196,6 +196,7 @@ click-plugins = ">=1.1.1"
 click-repl = ">=0.2.0"
 kombu = ">=5.2.3,<6.0"
 pytz = ">=2021.3"
+redis = {version = ">=3.4.1,<4.0.0 || >4.0.0,<4.0.1 || >4.0.1", optional = true, markers = "extra == \"redis\""}
 vine = ">=5.0.0,<6.0"
 
 [package.extras]
@@ -2186,7 +2187,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "e053f66444cdba0601b76b4df7fc989041a1f8aeaeceaf3ef9270fb8e93d7e82"
+content-hash = "6758ffa352939b433d2b84408b087e8038e75762703b4831d7a2300c1fb69853"
 
 [metadata.files]
 alabaster = [

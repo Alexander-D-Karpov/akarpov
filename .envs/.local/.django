@@ -6,6 +6,7 @@ DJANGO_READ_DOT_ENV_FILE=no
 # Redis
 # ------------------------------------------------------------------------------
 REDIS_URL=redis://redis:6379/1
+REDIS_CACHE=rediscache://redis:6379/1
 CELERY_BROKER_URL=redis://redis:6379/0
 
 # Celery
