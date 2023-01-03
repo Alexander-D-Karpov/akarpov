@@ -2167,7 +2167,7 @@ watchdog = ["watchdog"]
 
 [[package]]
 name = "whitenoise"
-version = "6.2.0"
+version = "6.3.0"
 description = "Radically simplified static file serving for WSGI applications"
 category = "main"
 optional = false
@@ -2187,7 +2187,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "c470654f5e92018798fe20523f14d782d32d7a3118d8c2e1ffb479aa6092adcb"
+content-hash = "c567cac10a794d46b5893f8a2d0faec684ae46519871e25315771a0dd495b437"
 
 [metadata.files]
 alabaster = [
@@ -3470,8 +3470,8 @@ werkzeug = [
     {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
 ]
 whitenoise = [
-    {file = "whitenoise-6.2.0-py3-none-any.whl", hash = "sha256:8e9c600a5c18bd17655ef668ad55b5edf6c24ce9bdca5bf607649ca4b1e8e2c2"},
-    {file = "whitenoise-6.2.0.tar.gz", hash = "sha256:8fa943c6d4cd9e27673b70c21a07b0aa120873901e099cd46cab40f7cc96d567"},
+    {file = "whitenoise-6.3.0-py3-none-any.whl", hash = "sha256:cf8ecf56d86ba1c734fdb5ef6127312e39e92ad5947fef9033dc9e43ba2777d9"},
+    {file = "whitenoise-6.3.0.tar.gz", hash = "sha256:fe0af31504ab08faa1ec7fc02845432096e40cc1b27e6a7747263d7b30fb51fa"},
 ]
 wrapt = [
     {file = "wrapt-1.14.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:1b376b3f4896e7930f1f772ac4b064ac12598d1c38d04907e696cc4d794b43d3"},
