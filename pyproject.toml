@@ -13,7 +13,7 @@ python-slugify = "^7.0.0"
 pillow = "^9.3.0"
 argon2-cffi = "^21.3.0"
 whitenoise = "^6.3.0"
-redis = "^4.4.0"
+redis = "^4.4.1"
 hiredis = "^2.1.0"
 celery = {extras = ["redis"], version = "^5.2.7"}
 django-celery-beat = "^2.4.0"
