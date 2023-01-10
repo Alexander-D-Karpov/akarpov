@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from akarpov.users.models import User
 from akarpov.utils.files import user_file_upload_mixin
+from utils.string import cleanhtml
 
 
 class Post(models.Model):
@@ -39,6 +40,7 @@ class Post(models.Model):
         return self.comments.all()
 
     def h_tags(self):
+        # TODO: add caching here
         tags = (
             Tag.objects.all()
             .annotate(num_posts=Count("posts"))
@@ -49,6 +51,16 @@ class Post(models.Model):
 
     def h_tag(self):
         return self.h_tags().first()
+
+    @property
+    def text(self):
+        # TODO: add caching here
+        return cleanhtml(self.body)
+
+    @property
+    def summary(self):
+        body = self.text
+        return body[:100] + "..." if len(body) > 100 else ""
 
     def get_absolute_url(self):
         return reverse("blog:post", kwargs={"slug": self.slug})

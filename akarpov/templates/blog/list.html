@@ -1,6 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %}
-{% load static %}
+{% load humanize static %}
 
 {% block title %}posts on akarpov{% endblock %}
 
@@ -16,7 +15,7 @@
             <strong style="color: {{ post.h_tag.color }}" class="d-inline-block mb-2">{{ post.h_tag.name }}</strong>
             <h3 class="mb-0">{{ post.title }}</h3>
             <p class="card-text"><small class="text-muted">{{ post.edited | naturaltime }}</small></p>
-            <p class="card-text mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
+            <p class="card-text mb-auto">{{ post.summary }}</p>
             <a href="{% url 'blog:post' post.slug %}" class="stretched-link"></a>
             <p class="card-text mt-4">{{ post.get_rating }}
               <i class="bi bi-eye ms-3"></i>{{ post.post_views }}

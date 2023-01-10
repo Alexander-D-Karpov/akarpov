@@ -1,7 +1,17 @@
-from akarpov.users.models import User
+import pytest
+
+pytestmark = pytest.mark.django_db
 
 
-def test_user_create(user: User):
-    password = "123"
-    user.set_password(password)
-    assert user.check_password(password)
+class TestUser:
+    @pytest.fixture
+    def user_with_code(self, user_factory):
+        return user_factory(user_code="1234")
+
+    def test_send_code(self, mailoutbox, user_factory):
+        user_with_code.send_code()
+
+        assert len(mailoutbox) == 1
+        m = mailoutbox[0]
+        assert list(m.to) == [user_with_code.email]
+        assert "1234" in m.body

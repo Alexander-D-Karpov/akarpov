@@ -65,6 +65,7 @@ django-extra-settings = "^0.7.0"
 psycopg2-binary = "^2.9.5"
 django-cms = "^3.11.1"
 django-sekizai = "^4.0.0"
+amzqr = "^0.0.1"
 
 
 [build-system]

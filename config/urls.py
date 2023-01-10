@@ -21,6 +21,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
+    path("tools/", include("akarpov.tools.urls", namespace="tools")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("akarpov.blog.urls", namespace="blog")),
@@ -32,8 +33,8 @@ urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
     # DRF auth token
-    path("api_schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    path("api_rschema/", SpectacularAPIView.as_view(), name="api-redoc-schema"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="api-redoc-schema"),
     path(
         "api/docs/",
         SpectacularSwaggerView.as_view(url_name="api-schema"),

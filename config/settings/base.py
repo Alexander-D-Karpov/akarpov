@@ -135,12 +135,7 @@ ALL_AUTH_PROVIDERS = [
     # "allauth.socialaccount.providers.yandex",
 ]
 
-LOCAL_APPS = [
-    "akarpov.users",
-    "akarpov.blog",
-    "akarpov.pipeliner"
-    # Your stuff: custom apps go here
-]
+LOCAL_APPS = ["akarpov.users", "akarpov.blog", "akarpov.pipeliner", "akarpov.tools.qr"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = (
     DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS
@@ -453,9 +448,10 @@ CORS_URLS_REGEX = r"^/api/.*$"
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "akarpov API",
+    "SCHEMA_PATH_PREFIX": "/api/v[0-9]",
     "DESCRIPTION": "Documentation of API endpoints of akarpov",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_INCLUDE_SCHEMA": False,
     "SERVERS": [
         {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
         {"url": "https://akarpov.ru", "description": "Production server"},
