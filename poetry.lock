@@ -970,14 +970,14 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-extra-settings"
-version = "0.7.0"
+version = "0.8.1"
 description = "easily manage typed extra settings using the django admin."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-extra-settings-0.7.0.tar.gz", hash = "sha256:65b4f29612b3f6a9a35c6ae61a00d9cc7a9aa0c046d1d60af8d0cff2387f1448"},
-    {file = "django_extra_settings-0.7.0-py3-none-any.whl", hash = "sha256:b3e4afd071a6d88b6df91e27aa5cb751b864fcb0ea30290d2f90ef4dcd970ef1"},
+    {file = "django-extra-settings-0.8.1.tar.gz", hash = "sha256:271a54e7474e11a97bd6e995089c0e7a8e8b7748b4ea57e0be05160d8f123ca7"},
+    {file = "django_extra_settings-0.8.1-py3-none-any.whl", hash = "sha256:68e35241819100d5784d62e6101760b31b2411d5db58ea1dbb75eab7d7229ff7"},
 ]
 
 [package.dependencies]
@@ -1920,6 +1920,7 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
+    {file = "livereload-2.6.3-py2.py3-none-any.whl", hash = "sha256:ad4ac6f53b2d62bb6ce1a5e6e96f1f00976a32348afedcb4b6d68df2a1d346e4"},
     {file = "livereload-2.6.3.tar.gz", hash = "sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869"},
 ]
 
@@ -3650,4 +3651,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "aeb9c87835b2736d82f1d29535a1894b2be0b23471306a919c0594185a0fadc3"
+content-hash = "b81b73427687a1f5eaa926860d2ca2d4d8b95d10e5fe698c17c325948182ca76"
