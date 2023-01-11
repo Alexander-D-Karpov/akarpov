@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from akarpov.users.models import User
 from akarpov.utils.files import user_file_upload_mixin
-from utils.string import cleanhtml
+from akarpov.utils.string import cleanhtml
 
 
 class Post(models.Model):

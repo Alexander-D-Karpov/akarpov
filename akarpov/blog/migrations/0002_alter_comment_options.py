@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blog', '0001_initial'),
+        ("blog", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='comment',
-            options={'ordering': ['-rating', '-created']},
+            name="comment",
+            options={"ordering": ["-rating", "-created"]},
         ),
     ]

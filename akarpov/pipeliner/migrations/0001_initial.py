@@ -11,29 +11,68 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Workspace',
+            name="Workspace",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=50)),
-                ('slug', models.SlugField(max_length=8)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=50)),
+                ("slug", models.SlugField(max_length=8)),
             ],
         ),
         migrations.CreateModel(
-            name='BaseBlock',
+            name="BaseBlock",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pipeline_blocks', to=settings.AUTH_USER_MODEL)),
-                ('polymorphic_ctype', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='polymorphic_%(app_label)s.%(class)s_set+', to='contenttypes.contenttype')),
-                ('workspace', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blocks', to='pipeliner.workspace')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pipeline_blocks",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "polymorphic_ctype",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="polymorphic_%(app_label)s.%(class)s_set+",
+                        to="contenttypes.contenttype",
+                    ),
+                ),
+                (
+                    "workspace",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="blocks",
+                        to="pipeliner.workspace",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
-                'base_manager_name': 'objects',
+                "abstract": False,
+                "base_manager_name": "objects",
             },
         ),
     ]

@@ -1,10 +1,10 @@
 from rest_framework import generics
 from rest_framework.generics import get_object_or_404
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import AllowAny
+from rest_framework.viewsets import GenericViewSet
 
+from akarpov.tools.qr.api.serializers import QRSerializer
 from akarpov.tools.qr.models import QR
-from .serializers import QRSerializer
 
 
 class QRViewSet(generics.ListCreateAPIView, generics.RetrieveAPIView, GenericViewSet):

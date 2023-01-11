@@ -15,6 +15,10 @@ class QRSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = self.context["request"].user.is_authenticated if self.context["request"].user else None
+        user = (
+            self.context["request"].user.is_authenticated
+            if self.context["request"].user
+            else None
+        )
         qr = simple.run(words=validated_data["body"], user=user)
         return qr

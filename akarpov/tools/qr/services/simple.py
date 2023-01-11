@@ -4,8 +4,8 @@ from amzqr import amzqr
 from django.core.files import File
 
 from akarpov.tools.qr.models import QR
-from akarpov.utils.generators import generate_charset
 from akarpov.users.models import User
+from akarpov.utils.generators import generate_charset
 
 
 def run(words: str, path: str = "/tmp/", user: User = None) -> QR:
