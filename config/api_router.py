@@ -1,9 +1,7 @@
 from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 
-from akarpov.users.api.views import (
-    UserRegisterViewSet,
-)
+from akarpov.users.api.views import UserRegisterViewSet
 
 urlpatterns_v1 = [
     path(
