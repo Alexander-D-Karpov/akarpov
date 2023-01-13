@@ -15,8 +15,10 @@ def post_on_save(sender, instance: Post, **kwargs):
         instance.slug = slug
     else:
         previous = Post.objects.get(id=instance.id)
-        if previous.image != instance.image and kwargs["update_fields"] != frozenset(
-            {"image_cropped"}
+        if (
+            previous.image != instance.image
+            and kwargs["update_fields"] != frozenset({"image_cropped"})
+            and instance
         ):
             if instance.image:
                 crop_model_image.apply_async(
@@ -29,7 +31,6 @@ def post_on_save(sender, instance: Post, **kwargs):
                 )
             else:
                 instance.image_cropped = None
-                instance.save()
 
 
 @receiver(pre_save, sender=Tag)

@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -57,7 +57,10 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     form_class = PostForm
 
     def get_object(self):
-        return get_object_or_404(Post, slug=self.kwargs["slug"])
+        post = get_object_or_404(Post, slug=self.kwargs["slug"])
+        if post.creator != self.request.user:
+            raise PermissionDenied
+        return post
 
     template_name = "blog/form.html"
 
