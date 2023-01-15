@@ -66,6 +66,8 @@ psycopg2-binary = "^2.9.5"
 django-cms = "^3.11.1"
 django-sekizai = "^4.0.0"
 amzqr = "^0.0.1"
+django-chunked-upload = "^2.0.0"
+drf-chunked-upload = "^0.5.1"
 
 
 [build-system]

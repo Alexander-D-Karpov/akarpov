@@ -109,6 +109,7 @@ THIRD_PARTY_APPS = [
     "polymorphic",
     "cacheops",
     "extra_settings",
+    "drf_chunked_upload",
     # django-cms
     "cms",
     "menus",
@@ -135,7 +136,13 @@ ALL_AUTH_PROVIDERS = [
     # "allauth.socialaccount.providers.yandex",
 ]
 
-LOCAL_APPS = ["akarpov.users", "akarpov.blog", "akarpov.pipeliner", "akarpov.tools.qr"]
+LOCAL_APPS = [
+    "akarpov.users",
+    "akarpov.blog",
+    "akarpov.files",
+    "akarpov.pipeliner",
+    "akarpov.tools.qr",
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = (
     DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS
@@ -494,3 +501,9 @@ JAZZMIN_SETTINGS = {
     "copyright": "admin on akarpov.ru",
     "user_avatar": "image_cropped",
 }
+
+
+# DRF_CHUNKED_UPLOAD
+# ------------------------------------------------------------------------------
+
+DRF_CHUNKED_UPLOAD_PATH = "uploads/chucked/"

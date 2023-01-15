@@ -68,7 +68,3 @@ def user_file_upload_mixin(instance, filename):
         username = instance.creator.username
 
     return os.path.join(f"uploads/{username}/", filename)
-
-
-def get_filename(filename, request):
-    return filename.upper()
