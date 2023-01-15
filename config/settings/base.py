@@ -140,6 +140,7 @@ LOCAL_APPS = [
     "akarpov.users",
     "akarpov.blog",
     "akarpov.files",
+    "akarpov.shortener",
     "akarpov.pipeliner",
     "akarpov.tools.qr",
 ]
@@ -507,3 +508,9 @@ JAZZMIN_SETTINGS = {
 # ------------------------------------------------------------------------------
 DRF_CHUNKED_UPLOAD_ABSTRACT_MODEL = False
 DRF_CHUNKED_UPLOAD_PATH = "uploads/chucked/"
+
+
+# SHORTENER
+# ------------------------------------------------------------------------------
+SHORTENER_ADD_SLUG = True
+SHORTENER_SLUG_LENGTH = 3

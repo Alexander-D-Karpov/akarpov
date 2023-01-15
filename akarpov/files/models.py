@@ -7,7 +7,7 @@ from django.db.models import (
     SlugField,
     TextField,
 )
-from django_extensions.db.models import TimeStampedModel
+from model_utils.models import TimeStampedModel
 
 from akarpov.utils.files import user_file_upload_mixin
 
