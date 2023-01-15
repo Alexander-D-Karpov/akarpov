@@ -12,7 +12,6 @@ class QRViewSet(generics.ListCreateAPIView, generics.RetrieveAPIView, GenericVie
     permission_classes = [AllowAny]
 
     def get_object(self):
-        print(self.kwargs)
         return get_object_or_404(QR, pk=self.kwargs["pk"])
 
     def get_queryset(self):

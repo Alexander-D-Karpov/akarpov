@@ -36,7 +36,7 @@ class Folder(TimeStampedModel):
     name = CharField(max_length=100)
     slug = SlugField(max_length=20, blank=True)
 
-    user = ForeignKey("users.User", related_name="files", on_delete=CASCADE)
+    user = ForeignKey("users.User", related_name="files_folders", on_delete=CASCADE)
     parent = ForeignKey("self", related_name="children", on_delete=CASCADE)
 
     def __str__(self):

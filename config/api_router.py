@@ -19,6 +19,7 @@ urlpatterns_v1 = [
         "users/",
         include("akarpov.users.api.urls"),
     ),
+    path("file/", include("akarpov.files.api.urls")),
     path(
         "tools/",
         include([path("qr/", include("akarpov.tools.qr.api.urls"))]),
