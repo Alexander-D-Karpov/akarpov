@@ -290,6 +290,48 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
+name = "cairocffi"
+version = "1.4.0"
+description = "cffi-based cairo bindings for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cairocffi-1.4.0.tar.gz", hash = "sha256:509339b32ccd8d7b00c2204c32736cde78db53a32e6a162d312478d25626cd9a"},
+]
+
+[package.dependencies]
+cffi = ">=1.1.0"
+
+[package.extras]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["flake8", "isort", "numpy", "pikepdf", "pytest"]
+xcb = ["xcffib (>=0.3.2)"]
+
+[[package]]
+name = "cairosvg"
+version = "2.6.0"
+description = "A Simple SVG Converter based on Cairo"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "CairoSVG-2.6.0-py3-none-any.whl", hash = "sha256:05069d5316e9f02f33028942f96929e01782db41e6ff07d8454c8d021b5b52f3"},
+    {file = "CairoSVG-2.6.0.tar.gz", hash = "sha256:d5ec93e90101b3b6e82aa245d0546ee9b016cfda0b6344675159830d853d5d04"},
+]
+
+[package.dependencies]
+cairocffi = "*"
+cssselect2 = "*"
+defusedxml = "*"
+pillow = "*"
+tinycss2 = "*"
+
+[package.extras]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["flake8", "isort", "pytest"]
+
+[[package]]
 name = "celery"
 version = "5.2.7"
 description = "Distributed Task Queue."
@@ -747,6 +789,26 @@ pep8test = ["black", "ruff"]
 sdist = ["setuptools-rust (>=0.11.4)"]
 ssh = ["bcrypt (>=3.1.5)"]
 test = ["hypothesis (>=1.11.4,!=3.79.2)", "iso8601", "pretend", "pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-subtests", "pytest-xdist", "pytz"]
+
+[[package]]
+name = "cssselect2"
+version = "0.7.0"
+description = "CSS selectors for Python ElementTree"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cssselect2-0.7.0-py3-none-any.whl", hash = "sha256:fd23a65bfd444595913f02fc71f6b286c29261e354c41d722ca7a261a49b5969"},
+    {file = "cssselect2-0.7.0.tar.gz", hash = "sha256:1ccd984dab89fc68955043aca4e1b03e0cf29cad9880f6e28e3ba7a74b14aa5a"},
+]
+
+[package.dependencies]
+tinycss2 = "*"
+webencodings = "*"
+
+[package.extras]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["flake8", "isort", "pytest"]
 
 [[package]]
 name = "decorator"
@@ -1486,6 +1548,24 @@ files = [
 python-dateutil = ">=2.4"
 
 [[package]]
+name = "ffmpeg-python"
+version = "0.2.0"
+description = "Python bindings for FFmpeg - with complex filtering support"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ffmpeg-python-0.2.0.tar.gz", hash = "sha256:65225db34627c578ef0e11c8b1eb528bb35e024752f6f10b78c011f6f64c4127"},
+    {file = "ffmpeg_python-0.2.0-py3-none-any.whl", hash = "sha256:ac441a0404e053f8b6a1113a77c0f452f1cfc62f6344a769475ffdc0f56c23c5"},
+]
+
+[package.dependencies]
+future = "*"
+
+[package.extras]
+dev = ["Sphinx (==2.1.0)", "future (==0.17.1)", "numpy (==1.16.4)", "pytest (==4.6.1)", "pytest-mock (==1.10.4)", "tox (==3.12.1)"]
+
+[[package]]
 name = "filelock"
 version = "3.9.0"
 description = "A platform independent file lock."
@@ -1566,6 +1646,17 @@ python-versions = "*"
 files = [
     {file = "funcy-1.17-py2.py3-none-any.whl", hash = "sha256:ba7af5e58bfc69321aaf860a1547f18d35e145706b95d1b3c966abc4f0b60309"},
     {file = "funcy-1.17.tar.gz", hash = "sha256:40b9b9a88141ae6a174df1a95861f2b82f2fdc17669080788b73a3ed9370e968"},
+]
+
+[[package]]
+name = "future"
+version = "0.18.3"
+description = "Clean single-source support for Python 3 and 2"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "future-0.18.3.tar.gz", hash = "sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307"},
 ]
 
 [[package]]
@@ -2451,6 +2542,37 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "preview-generator"
+version = "0.29"
+description = "A library for generating preview (thumbnails, text or json overview) for file-based content"
+category = "main"
+optional = false
+python-versions = ">= 3.7"
+files = [
+    {file = "preview_generator-0.29.tar.gz", hash = "sha256:343978dace795b4b9da862d96f2e4a9c088e58a255c32a97ecd8729d4947377a"},
+]
+
+[package.dependencies]
+cairosvg = {version = "*", optional = true, markers = "extra == \"all\""}
+ffmpeg-python = {version = "*", optional = true, markers = "extra == \"all\""}
+filelock = "*"
+pyexifinfo = "*"
+python-magic = "*"
+Wand = "*"
+xvfbwrapper = {version = "*", optional = true, markers = "extra == \"all\""}
+
+[package.extras]
+3d = ["vtk"]
+all = ["cairosvg", "ffmpeg-python", "xvfbwrapper", "xvfbwrapper"]
+cairosvg = ["cairosvg"]
+dev = ["ImageHash", "black", "flake8", "isort", "mypy", "pre-commit", "pytest", "pytest-dotenv"]
+drawio = ["xvfbwrapper"]
+raw = ["rawpy"]
+scribus = ["xvfbwrapper"]
+testing = ["ImageHash", "pytest", "pytest-dotenv"]
+video = ["ffmpeg-python"]
+
+[[package]]
 name = "prometheus-client"
 version = "0.15.0"
 description = "Python client for the Prometheus monitoring system."
@@ -2637,6 +2759,17 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
+]
+
+[[package]]
+name = "pyexifinfo"
+version = "0.4.0"
+description = "Simple Metadata extraction using Exiftool"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyexifinfo-0.4.0.tar.gz", hash = "sha256:578b34b3c593fe77bbe6b62588f9f2ec679dca63f7d486148c9a6ff1fdd4bdc9"},
 ]
 
 [[package]]
@@ -2891,6 +3024,18 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-magic"
+version = "0.4.27"
+description = "File type identification using libmagic"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "python-magic-0.4.27.tar.gz", hash = "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b"},
+    {file = "python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3"},
+]
 
 [[package]]
 name = "python-slugify"
@@ -3371,6 +3516,25 @@ files = [
 ]
 
 [[package]]
+name = "tinycss2"
+version = "1.2.1"
+description = "A tiny CSS parser"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tinycss2-1.2.1-py3-none-any.whl", hash = "sha256:2b80a96d41e7c3914b8cda8bc7f705a4d9c49275616e886103dd839dfc847847"},
+    {file = "tinycss2-1.2.1.tar.gz", hash = "sha256:8cff3a8f066c2ec677c06dbc7b45619804a6938478d9d73c284b29d14ecb0627"},
+]
+
+[package.dependencies]
+webencodings = ">=0.4"
+
+[package.extras]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["flake8", "isort", "pytest"]
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -3569,6 +3733,22 @@ docs = ["proselint (>=0.13)", "sphinx (>=5.3)", "sphinx-argparse (>=0.3.2)", "sp
 testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=21.3)", "pytest (>=7.0.1)", "pytest-env (>=0.6.2)", "pytest-freezegun (>=0.4.2)", "pytest-mock (>=3.6.1)", "pytest-randomly (>=3.10.3)", "pytest-timeout (>=2.1)"]
 
 [[package]]
+name = "wand"
+version = "0.6.11"
+description = "Ctypes-based simple MagickWand API binding for Python"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Wand-0.6.11-py2.py3-none-any.whl", hash = "sha256:1b77e25439ace57f665d1ccc6cff2766fad0834005b89ae3e7aaf3ba12b124b0"},
+    {file = "Wand-0.6.11.tar.gz", hash = "sha256:b661700da9f8f1e931e52726e4fc643a565b9514f5883d41b773e3c37c9fa995"},
+]
+
+[package.extras]
+doc = ["Sphinx (>=5.3.0)"]
+test = ["pytest (>=7.2.0)"]
+
+[[package]]
 name = "watchdog"
 version = "2.2.1"
 description = "Filesystem events monitoring"
@@ -3649,6 +3829,18 @@ optional = false
 python-versions = "*"
 files = [
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
+]
+
+[[package]]
+name = "webencodings"
+version = "0.5.1"
+description = "Character encoding aliases for legacy web content"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
+    {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
 ]
 
 [[package]]
@@ -3759,7 +3951,18 @@ files = [
     {file = "wrapt-1.14.1.tar.gz", hash = "sha256:380a85cf89e0e69b7cfbe2ea9f765f004ff419f34194018a6827ac0e3edfed4d"},
 ]
 
+[[package]]
+name = "xvfbwrapper"
+version = "0.2.9"
+description = "run headless display inside X virtual framebuffer (Xvfb)"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "xvfbwrapper-0.2.9.tar.gz", hash = "sha256:bcf4ae571941b40254faf7a73432dfc119ad21ce688f1fdec533067037ecfc24"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "63c03ff6211f20d9ad19aa9761aac2896a70345a441315ea44e09e8e0a370fcc"
+content-hash = "e9c2b607d25d574affa4ee7b3dd4c184dfbb389fae0f64dd15463a8bbb27e9f0"
