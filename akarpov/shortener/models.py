@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
 
@@ -12,6 +13,9 @@ class Link(TimeStampedModel):
     enabled = models.BooleanField(default=True)
 
     viewed = models.IntegerField(default=0)
+
+    def get_absolute_url(self):
+        return reverse("shortener:view", kwargs={"slug": self.slug})
 
     def __str__(self):
         return f"link to {self.source}"

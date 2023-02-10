@@ -110,6 +110,7 @@ THIRD_PARTY_APPS = [
     "cacheops",
     "extra_settings",
     "drf_chunked_upload",
+    "active_link",
     # django-cms
     "cms",
     "menus",
@@ -514,3 +515,8 @@ DRF_CHUNKED_UPLOAD_PATH = "uploads/chucked/"
 # ------------------------------------------------------------------------------
 SHORTENER_ADD_SLUG = True
 SHORTENER_SLUG_LENGTH = 3
+
+
+# ACTIVE_LINK
+# ------------------------------------------------------------------------------
+ACTIVE_LINK_CSS_CLASS = "active"

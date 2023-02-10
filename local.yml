@@ -37,23 +37,6 @@ services:
     env_file:
       - ./.envs/.local/.postgres
 
-  docs:
-    image: akarpov_local_docs
-    container_name: akarpov_local_docs
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: ./compose/local/docs/Dockerfile
-    env_file:
-      - ./.envs/.local/.django
-    volumes:
-      - ./docs:/docs:z
-      - ./config:/app/config:z
-      - ./akarpov:/app/akarpov:z
-    ports:
-      - "9000:9000"
-    command: /start-docs
-
   mailhog:
     image: mailhog/mailhog:v1.0.0
     container_name: akarpov_local_mailhog

@@ -40,32 +40,31 @@
   <p>{{ post.body|safe }}</p>
   <div class="mt-4">
     <hr>
-    <div class="row g-2">
-      <div class="col-md-auto" id="rating">
-        {% if request.user.is_authenticated %}
-          {% autoescape off %} {{ rating_bar }} {% endautoescape %}
-        {% else %}
-          {% if post.rating < 0 %}
-          <div class="success col-auto align-self-center mt-1"> {{ post.rating }}</div>
-          {% elif post.rating == 0 %}
-          <div class="success col-auto align-self-center gray fw-light mt-1"> {{ post.rating }}</div>
+    <div class="row g-2 d-flex">
+      <div class="col-md-auto align-items-center justify-content-center row">
+        <div id="rating" class="col-auto">
+          {% if request.user.is_authenticated %}
+            {% autoescape off %} {{ rating_bar }} {% endautoescape %}
           {% else %}
-          <div class="success col-auto align-self-center mt-1"> +{{ post.rating }}</div>
+            {% if post.rating < 0 %}
+            <div class="col-auto align-self-center mt-1"> {{ post.rating }}</div>
+            {% elif post.rating == 0 %}
+            <div class="col-auto align-self-center gray fw-light mt-1"> {{ post.rating }}</div>
+            {% else %}
+            <div class="col-auto align-self-center mt-1"> +{{ post.rating }}</div>
+            {% endif %}
           {% endif %}
-        {% endif %}
+        </div>
+      <div class="justify-content-center text-center col-auto">
+        <i class="bi bi-eye"></i> <div class="ms-1">{{ post.post_views | intword }}</div>
       </div>
-      <div class="col-md-auto mt-2 d-flex justify-content-center text-center col-sm-2">
-        <i class="bi bi-eye align-self-center"></i> <div class="align-self-center ms-1">{{ post.post_views | intword }}</div>
+      <div class="justify-content-center text-center col-auto align-items-center justify-content-center">
+        <i class="bi bi-chat"></i> <div class="ms-1"> {{ post.comment_count }}</div>
       </div>
-      <div class="col-md-auto mt-2 d-flex justify-content-center text-center col-sm-2">
-        <i class="bi bi-chat align-self-center"></i> <div class="align-self-center ms-1"> {{ post.comment_count }}</div>
       </div>
-      <div class="col-6 col-sm-2 col-xl-6"></div>
-      <div class="col-md-auto mt-3 col-sm-2 d-flex justify-content-center text-center">
-        Created: {{ post.created|date:"d.m.Y" }} {{ post.created|time:"H:i" }}
-      </div>
-      <div class="col-md-auto mt-3 d-flex justify-content-center text-center">
-        Updated: {{ post.edited|date:"d.m.Y" }} {{ post.edited|time:"H:i" }}
+      <div class="col-md-auto align-items-center justify-content-center row ms-md-auto text-center">
+        <p class="col-auto">Created: {{ post.created|date:"d.m.Y" }} {{ post.created|time:"H:i" }}</p>
+        <p class="col-auto">Updated: {{ post.edited|date:"d.m.Y" }} {{ post.edited|time:"H:i" }}</p>
       </div>
     </div>
   </div>

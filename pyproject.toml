@@ -68,6 +68,7 @@ django-sekizai = "^4.0.0"
 amzqr = "^0.0.1"
 django-chunked-upload = "^2.0.0"
 drf-chunked-upload = "^0.5.1"
+django-active-link = "^0.1.8"
 
 
 [build-system]

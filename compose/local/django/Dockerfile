@@ -8,13 +8,6 @@ FROM python as python-build-stage
 
 ARG BUILD_ENVIRONMENT=local
 
-# Install apt packages
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # dependencies for building Python packages
-  build-essential \
-  # psycopg2 dependencies
-  libpq-dev
-
 
 # Python 'run' stage
 FROM python as python-run-stage
@@ -29,23 +22,18 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 # Install required system dependencies
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # psycopg2 dependencies
-  libpq-dev \
-  # Translations dependencies
-  gettext \
-  # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
+    apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN pip install poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
 
-# Configuring poetry
 RUN poetry config virtualenvs.create false
-COPY pyproject.toml poetry.lock /
 
-# Installing requirements
-RUN poetry install
+COPY ./pyproject.toml ./poetry.lock /app/
+RUN poetry install --no-root --only main
 
 
 COPY ./compose/production/django/entrypoint /entrypoint

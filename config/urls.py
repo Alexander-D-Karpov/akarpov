@@ -22,6 +22,7 @@ urlpatterns = [
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),
+    path("shortener/", include("akarpov.shortener.urls", namespace="shortener")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("akarpov.blog.urls", namespace="blog")),
