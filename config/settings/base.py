@@ -141,8 +141,8 @@ LOCAL_APPS = [
     "akarpov.users",
     "akarpov.blog",
     "akarpov.files",
-    "akarpov.shortener",
     "akarpov.pipeliner",
+    "akarpov.tools.shortener",
     "akarpov.tools.qr",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -519,4 +519,4 @@ SHORTENER_SLUG_LENGTH = 3
 
 # ACTIVE_LINK
 # ------------------------------------------------------------------------------
-ACTIVE_LINK_CSS_CLASS = "active"
+ACTIVE_LINK_CSS_CLASS = "nav-active"

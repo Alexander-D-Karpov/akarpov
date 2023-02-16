@@ -9,8 +9,8 @@
   {% endif %}
   <div class="row mb-2">
   {% for post in post_list %}
-      <div class="col-md-6">
-        <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+      <div class="col-md-6 col-xl-12">
+        <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative blog-cards">
           <div class="col p-4 d-flex flex-column position-static">
             <strong style="color: {{ post.h_tag.color }}" class="d-inline-block mb-2">{{ post.h_tag.name }}</strong>
             <h3 class="mb-0">{{ post.title }}</h3>
@@ -22,7 +22,7 @@
               <i class="bi bi-chat ms-3"></i> {{ post.comment_count }}</p>
           </div>
           {% if post.image_cropped %}
-            <img class="col-auto d-none d-lg-block img-fluid" style="object-fit: cover" src="{{ post.image_cropped.url }}" alt="">
+            <img class="col-auto d-none d-lg-block img-fluid col-xl-3" style="object-fit: cover" src="{{ post.image_cropped.url }}" alt="">
           {% endif %}
         </div>
       </div>

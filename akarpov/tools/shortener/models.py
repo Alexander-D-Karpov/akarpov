@@ -15,7 +15,7 @@ class Link(TimeStampedModel):
     viewed = models.IntegerField(default=0)
 
     def get_absolute_url(self):
-        return reverse("shortener:view", kwargs={"slug": self.slug})
+        return reverse("short_url", kwargs={"slug": self.slug})
 
     def __str__(self):
         return f"link to {self.source}"

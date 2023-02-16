@@ -38,13 +38,14 @@ class BaseBlock(PolymorphicModel):
 class ProviderBlock(BaseBlock):
     TYPE = "Provider"
     parent = None
+    children: list[BaseBlock]
 
     class Meta:
         abstract = True
 
 
 class BaseStorage(PolymorphicModel):
-    id: uuid.uuid4 = models.UUIDField(
+    id: uuid.UUID = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
 

@@ -1275,27 +1275,30 @@ celery = ["celery (>=5.1)"]
 
 [[package]]
 name = "django-stubs"
-version = "1.13.1"
+version = "1.14.0"
 description = "Mypy stubs for Django"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-stubs-1.13.1.tar.gz", hash = "sha256:bcc618ba353dabc540d982b9dac1d5a1921652f8fc2a13653d545a57d5e3cc0f"},
-    {file = "django_stubs-1.13.1-py3-none-any.whl", hash = "sha256:fbf2ee6a4bce76c3eb5f6707ccadb4cf1c2f1ec485e8c44701ca8de2d0a5df18"},
+    {file = "django-stubs-1.14.0.tar.gz", hash = "sha256:d53bcd4975a54ca5c9abbbd33b61f40d44191971018f2ea54f73b0a6a99e1a8b"},
+    {file = "django_stubs-1.14.0-py3-none-any.whl", hash = "sha256:b081d64d923171f79d4e57899b0980da847e4046b91166e3658a6151645a36c5"},
 ]
 
 [package.dependencies]
 django = "*"
 django-stubs-ext = ">=0.7.0"
-mypy = ">=0.980"
+mypy = [
+    {version = ">=0.980"},
+    {version = ">=0.991,<1.0", optional = true, markers = "extra == \"compatible-mypy\""},
+]
 tomli = "*"
 types-pytz = "*"
 types-PyYAML = "*"
 typing-extensions = "*"
 
 [package.extras]
-compatible-mypy = ["mypy (>=0.980,<0.990)"]
+compatible-mypy = ["mypy (>=0.991,<1.0)"]
 
 [[package]]
 name = "django-stubs-ext"
@@ -2046,7 +2049,6 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "livereload-2.6.3-py2.py3-none-any.whl", hash = "sha256:ad4ac6f53b2d62bb6ce1a5e6e96f1f00976a32348afedcb4b6d68df2a1d346e4"},
     {file = "livereload-2.6.3.tar.gz", hash = "sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869"},
 ]
 
@@ -3663,6 +3665,7 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
+    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 
@@ -3777,4 +3780,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "392fed32dc5e397e6fd56683185d571a8bd93faaf71d54bba6479d1dce4dab84"
+content-hash = "fe807601a32feb33caa293b0a8639c33ccf436b02efac27a56783dafb95f1942"

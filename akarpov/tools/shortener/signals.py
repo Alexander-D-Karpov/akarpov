@@ -1,8 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from akarpov.shortener.models import Link
-from akarpov.shortener.services import generate_slug
+from akarpov.tools.shortener.models import Link
+from akarpov.tools.shortener.services import generate_slug
 
 
 @receiver(post_save, sender=Link)

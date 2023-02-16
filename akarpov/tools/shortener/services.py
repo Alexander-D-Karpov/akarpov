@@ -1,21 +1,21 @@
 from django.conf import settings
 
-from akarpov.shortener.models import Link
+from akarpov.tools.shortener.models import Link
 from akarpov.utils.generators import generate_charset, get_pk_from_uuid, get_str_uuid
 
-lenght = settings.SHORTENER_SLUG_LENGTH
+length = settings.SHORTENER_SLUG_LENGTH
 
 
 def generate_slug(pk: int) -> str:
     if settings.SHORTENER_ADD_SLUG:
-        slug = generate_charset(lenght)
+        slug = generate_charset(length)
         return slug + get_str_uuid(pk)
     return get_str_uuid(pk)
 
 
 def get_link_from_slug(slug: str, check_whole=False) -> Link | bool:
     if settings.SHORTENER_ADD_SLUG and not check_whole:
-        payload = slug[lenght:]
+        payload = slug[length:]
         pk = get_pk_from_uuid(payload)
         try:
             return Link.objects.get(pk=pk)

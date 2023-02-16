@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import URLValidator
 
-from akarpov.shortener.models import Link
+from akarpov.tools.shortener.models import Link
 
 
 class LinkForm(forms.ModelForm):

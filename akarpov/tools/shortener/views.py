@@ -1,9 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.views.generic import CreateView, DetailView
 
-from akarpov.shortener.forms import LinkForm
-from akarpov.shortener.models import Link
-from akarpov.shortener.services import get_link_from_slug
+from akarpov.tools.shortener.forms import LinkForm
+from akarpov.tools.shortener.models import Link
+from akarpov.tools.shortener.services import get_link_from_slug
 
 
 class ShortLinkCreateView(CreateView):

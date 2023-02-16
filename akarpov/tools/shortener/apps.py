@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class ShortenerConfig(AppConfig):
-    name = "akarpov.shortener"
+    name = "akarpov.tools.shortener"
     verbose_name = _("Link shortener")
 
     def ready(self):
