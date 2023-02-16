@@ -40,7 +40,7 @@ mypy = "^0.991"
 django-stubs = "^1.13.1"
 pytest = "^7.2.0"
 pytest-sugar = "^0.9.6"
-djangorestframework-stubs = "^1.8.0"
+djangorestframework-stubs = {extras = ["compatible-mypy"], version = "^1.8.0"}
 sphinx = "^6.1.1"
 sphinx-autobuild = "^2021.3.14"
 flake8 = "^6.0.0"

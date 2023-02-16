@@ -8,7 +8,7 @@ from akarpov.users.models import User
 from akarpov.utils.generators import generate_charset
 
 
-def run(words: str, path: str = "/tmp/", user: User = None) -> QR:
+def run(words: str, path: str = "/tmp/", user: User | None = None) -> QR:
     version, level, qr_name = amzqr.run(
         words,
         version=1,

@@ -26,7 +26,7 @@ def merge(
 
 
 def main():
-    merge(DOTENV_FILE_PATH, PRODUCTION_DOTENV_FILE_PATHS)
+    merge(str(DOTENV_FILE_PATH), str(PRODUCTION_DOTENV_FILE_PATHS))
 
 
 @pytest.mark.parametrize("merged_file_count", range(3))

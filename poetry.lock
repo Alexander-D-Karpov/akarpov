@@ -1385,7 +1385,10 @@ files = [
 
 [package.dependencies]
 django-stubs = ">=1.13.0"
-mypy = ">=0.980"
+mypy = [
+    {version = ">=0.980"},
+    {version = ">=0.991,<0.1000", optional = true, markers = "extra == \"compatible-mypy\""},
+]
 requests = ">=2.0.0"
 types-PyYAML = ">=5.4.3"
 types-requests = ">=0.1.12"
@@ -2043,6 +2046,7 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
+    {file = "livereload-2.6.3-py2.py3-none-any.whl", hash = "sha256:ad4ac6f53b2d62bb6ce1a5e6e96f1f00976a32348afedcb4b6d68df2a1d346e4"},
     {file = "livereload-2.6.3.tar.gz", hash = "sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869"},
 ]
 
@@ -3659,7 +3663,6 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 
@@ -3774,4 +3777,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "69ccdf0950f670e050d0ee1985996ab9873538a9a39a72f58adeee63b3ada902"
+content-hash = "392fed32dc5e397e6fd56683185d571a8bd93faaf71d54bba6479d1dce4dab84"

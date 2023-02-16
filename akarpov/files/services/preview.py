@@ -25,7 +25,7 @@ def textfile_to_image(textfile_path) -> Image:
     with open(textfile_path) as f:
         lines = tuple(line.rstrip() for line in f.readlines())
 
-    font = None
+    font: ImageFont = None
     large_font = 20  # get better resolution with larger size
     for font_filename in COMMON_MONO_FONT_FILENAMES:
         try:
