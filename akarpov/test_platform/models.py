@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.models import PolymorphicModel
 
 from akarpov.users.models import User
+from akarpov.utils.base import SubclassesMixin
 from akarpov.utils.files import user_file_upload_mixin
 
 
@@ -26,6 +27,7 @@ class Form(models.Model):
     image_cropped = models.ImageField(upload_to="cropped/", blank=True)
 
     passed = models.IntegerField(default=0)
+    time_since = models.DateTimeField(null=True, blank=True)
     time_till = models.DateTimeField(null=True, blank=True)
 
     @property
@@ -40,8 +42,9 @@ class Form(models.Model):
         return f"form: {self.name}"
 
 
-class BaseQuestion(PolymorphicModel):
-    type = _("No type")
+class BaseQuestion(PolymorphicModel, SubclassesMixin):
+    type = "no_type"
+    type_plural = _("No type")
     form: Form = models.ForeignKey(
         "test_platform.Form", related_name="fields", on_delete=models.CASCADE
     )
@@ -54,24 +57,29 @@ class BaseQuestion(PolymorphicModel):
 
 
 class TextQuestion(BaseQuestion):
-    type = _("Text question")
+    type = "text"
+    type_plural = _("Text question")
     correct_answer = models.CharField(max_length=250, blank=False)
     answer_should_contain = models.CharField(max_length=250, blank=False)
     answer_should_not_contain = models.CharField(max_length=250, blank=False)
 
 
 class NumberQuestion(BaseQuestion):
-    type = _("Number question")
+    type = "number"
+    type_plural = _("Number question")
     correct_answer = models.IntegerField()
 
 
 class NumberRangeQuestion(BaseQuestion):
-    type = _("Number question")
+    type = "range"
+    type_plural = _("Number question")
     number_range_min = models.IntegerField(blank=False)
     number_range_max = models.IntegerField(blank=False)
 
 
 class SelectQuestion(BaseQuestion):
+    type = "select"
+    type_plural = _("Select question")
     min_required_answers = models.IntegerField(blank=False)
     max_required_answers = models.IntegerField(blank=False)
 
@@ -79,6 +87,9 @@ class SelectQuestion(BaseQuestion):
 class SelectAnswerQuestion(models.Model):
     id: uuid.UUID = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
+    )
+    question = models.ForeignKey(
+        "test_platform.SelectQuestion", related_name="answers", on_delete=models.CASCADE
     )
     value = models.CharField(max_length=150)
     correct = models.BooleanField(null=True)
