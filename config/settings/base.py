@@ -142,6 +142,7 @@ LOCAL_APPS = [
     "akarpov.blog",
     "akarpov.files",
     "akarpov.pipeliner",
+    "akarpov.test_platform",
     "akarpov.tools.shortener",
     "akarpov.tools.qr",
 ]
