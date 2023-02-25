@@ -1,5 +1,3 @@
-from abc import ABC
-
 from django import forms
 
 from akarpov.test_platform.models import (
@@ -14,12 +12,15 @@ from akarpov.test_platform.models import (
 
 
 class FormFormClass(forms.ModelForm):
+    time_since = forms.DateField(widget=forms.TextInput(attrs={"type": "date"}))
+    time_till = forms.DateField(widget=forms.TextInput(attrs={"type": "date"}))
+
     class Meta:
         model = Form
         fields = ["name", "description", "public", "image", "time_since", "time_till"]
 
 
-class BaseQuestionForm(forms.ModelForm, ABC):
+class BaseQuestionForm(forms.ModelForm):
     class Meta:
         model = BaseQuestion
         fields = ["question", "help", "required"]

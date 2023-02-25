@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Creating new Form on akarpov{% endblock %}
+
+{% block content %}
+<form class="pt-2" enctype="multipart/form-data" method="POST" id="designer-form">
+    {% csrf_token %}
+    {{ form.media }}
+    {% for field in form %}
+        {{ field|as_crispy_field }}
+    {% endfor %}
+    <div class="mt-4 flex justify-end space-x-4">
+        <button class="btn btn-secondary" type="submit" id="submit">
+            Save Changes
+        </button>
+    </div>
+{% for question, question_form in questions.items %}
+{{ question }}
+{% for field in question_form %}
+    {{ field|as_crispy_field }}
+{% endfor %}
+{% endfor %}
+</form>
+{% endblock %}
