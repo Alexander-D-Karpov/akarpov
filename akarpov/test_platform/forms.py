@@ -12,8 +12,12 @@ from akarpov.test_platform.models import (
 
 
 class FormFormClass(forms.ModelForm):
-    time_since = forms.DateField(widget=forms.TextInput(attrs={"type": "date"}))
-    time_till = forms.DateField(widget=forms.TextInput(attrs={"type": "date"}))
+    time_since = forms.DateField(
+        widget=forms.TextInput(attrs={"type": "date"}), required=False
+    )
+    time_till = forms.DateField(
+        widget=forms.TextInput(attrs={"type": "date"}), required=False
+    )
 
     class Meta:
         model = Form

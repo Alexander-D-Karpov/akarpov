@@ -1,12 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import CreateView
 
 from akarpov.test_platform.forms import FormFormClass
 from akarpov.test_platform.models import Form
-from akarpov.test_platform.services.forms import get_question_types
+from akarpov.test_platform.services.forms import get_question_types, parse_form_create
 
 
-class FromCreateView(LoginRequiredMixin, CreateView):
+class FromCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Form
     form_class = FormFormClass
 
@@ -19,6 +20,7 @@ class FromCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creator = self.request.user
+        print(parse_form_create(self.request.POST))
         return super().form_valid(form)
 
 

@@ -25,15 +25,9 @@
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
     {% block javascript %}
-      <!-- Bootstrap JS -->
-      <script defer src="{% static 'js/bootstrap.bundle.min.js' %}" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-      <!-- Your stuff: Third-party javascript libraries go here -->
-
-      <!-- place project specific Javascript in this file -->
-      <script defer src="{% static 'js/project.js' %}"></script>
-
     {% endblock javascript %}
-
+    <script defer src="{% static 'js/bootstrap.bundle.min.js' %}" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="{% static 'js/project.js' %}"></script>
   </head>
 
   <body>

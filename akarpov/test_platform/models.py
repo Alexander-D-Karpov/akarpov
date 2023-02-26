@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from polymorphic.models import PolymorphicModel
@@ -38,6 +39,10 @@ class Form(models.Model):
             else True
         )
 
+    def get_absolute_url(self):
+        # TODO change to admin
+        return reverse("test_platform:create")
+
     def __str__(self):
         return f"form: {self.name}"
 
@@ -59,29 +64,29 @@ class BaseQuestion(PolymorphicModel, SubclassesMixin):
 class TextQuestion(BaseQuestion):
     type = "text"
     type_plural = _("Text question")
-    correct_answer = models.CharField(max_length=250, blank=False)
-    answer_should_contain = models.CharField(max_length=250, blank=False)
-    answer_should_not_contain = models.CharField(max_length=250, blank=False)
+    correct_answer = models.CharField(max_length=250, blank=True)
+    answer_should_contain = models.CharField(max_length=250, blank=True)
+    answer_should_not_contain = models.CharField(max_length=250, blank=True)
 
 
 class NumberQuestion(BaseQuestion):
     type = "number"
     type_plural = _("Number question")
-    correct_answer = models.IntegerField()
+    correct_answer = models.IntegerField(blank=True)
 
 
 class NumberRangeQuestion(BaseQuestion):
     type = "range"
-    type_plural = _("Number question")
-    number_range_min = models.IntegerField(blank=False)
-    number_range_max = models.IntegerField(blank=False)
+    type_plural = _("Number range question")
+    number_range_min = models.IntegerField(blank=True)
+    number_range_max = models.IntegerField(blank=True)
 
 
 class SelectQuestion(BaseQuestion):
     type = "select"
     type_plural = _("Select question")
-    min_required_answers = models.IntegerField(blank=False)
-    max_required_answers = models.IntegerField(blank=False)
+    min_required_answers = models.IntegerField(blank=True)
+    max_required_answers = models.IntegerField(blank=True)
 
 
 class SelectAnswerQuestion(models.Model):
