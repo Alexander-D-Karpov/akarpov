@@ -1,0 +1,7 @@
+{% extends "fields/base.html" %}
+
+{% block content %}
+<p>
+  <input name="{{ order }}/{{ question.type }}" class="form-control" placeholder="Введите ответ" type="text" required="{{ question.required }}">
+</p>
+{% endblock %}

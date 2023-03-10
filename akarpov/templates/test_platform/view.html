@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  {% autoescape off %}
+  {{ form }}
+  {% endautoescape %}
+  <button class="btn btn-success ms-4">Отправить</button>
+</form>
+{% endblock %}

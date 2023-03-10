@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -41,7 +42,7 @@ class Form(models.Model):
 
     def get_absolute_url(self):
         # TODO change to admin
-        return reverse("test_platform:create")
+        return reverse("test_platform:view", kwargs={"slug": self.slug})
 
     def __str__(self):
         return f"form: {self.name}"
@@ -53,12 +54,21 @@ class BaseQuestion(PolymorphicModel, SubclassesMixin):
     form: Form = models.ForeignKey(
         "test_platform.Form", related_name="fields", on_delete=models.CASCADE
     )
+    order = models.IntegerField(default=0)
     question = models.CharField(max_length=250, blank=False)
     help = models.CharField(max_length=200, blank=True)
     required = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.type} - {self.question}"
+
+    def generate_html(self, num) -> str:
+        return render_to_string(
+            f"fields/{self.type}.html", context={"question": self, "order": num}
+        )
+
+    class Meta:
+        unique_together = ["form", "order"]
 
 
 class TextQuestion(BaseQuestion):

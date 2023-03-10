@@ -21,11 +21,11 @@ question_forms = {
 }
 
 
-def _get_fields_from_type(type: str):
+def _get_fields_and_class_from_type(type: str):
     for question in BaseQuestion.get_subclasses()[::-1]:
         if question.type == type:
             form = question_forms[question]
-            return form.Meta.fields
+            return question, form.Meta.fields + ["required"]
     raise ValueError
 
 
@@ -39,17 +39,19 @@ def get_question_types() -> dict[BaseQuestion, BaseQuestionForm]:
 
 def parse_form_create(values) -> list[dict[str, str]]:
     offset: dict[str, int] = {}
-    res: list[dict[str, str]] = []
+    res: list[dict[str, str | bool]] = []
     question_amount = len(values.getlist("type"))
     for i in range(question_amount):
         type = values.getlist("type")[i]
-        res.append({"type": type})
-        fields = _get_fields_from_type(type)
+        question, fields = _get_fields_and_class_from_type(type)
+        res.append({"type": question})
         for field in fields:
             if field in offset:
                 offset[field] += 1
             else:
                 offset[field] = 0
             value = values.getlist(field)[offset[field]]
+            if field == "required":
+                value = True if value != "off" else False
             res[i][field] = value
     return res

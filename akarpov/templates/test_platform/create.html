@@ -46,21 +46,32 @@ const select = document.getElementById('inputGroupSelect')
   select.innerHTML += `<option value="${type}">${description}</option>`
 
   questionPrototype = `
-  <div class="border p-4 mt-5 rounded-2">
-  <input type="hidden" value="${type}" name="type" />
-  {% for field in question_form %}
-      {{ field|as_crispy_field }}
-  {% endfor %}
+  <div class="row ms-2">
+  <div class="col col-11">
+    <input type="hidden" value="${type}" name="type" />
+    {% for field in question_form %}
+        {{ field|as_crispy_field }}
+    {% endfor %}
+    <div class="form-check form-switch">
+      <input name="required" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Required</label>
+    </div>
+  </div>
+  <div class="col col-1">
+      <button onclick="this.parentNode.parentNode.parentNode.remove()" type="button" class="m-2 btn border-0"><i class="bi bi-x-lg"></i></button>
+  </div>
   </div>
   `
   questions.push(questionPrototype)
 {% endfor %}
 
 button.onclick = function () {
-    console.log(q_index)
     let index = select.selectedIndex;
-    let div = questions[index];
-    form.innerHTML += div;
+    let div = document.createElement("div");
+    div.id = q_index;
+    div.className = "px-2 py-4 rounded-2 border mt-5";
+    div.innerHTML = questions[index]
+    form.appendChild(div);
     q_index += 1;
 }
 </script>

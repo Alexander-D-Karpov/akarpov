@@ -1,6 +1,9 @@
 from django.urls import path
 
-from akarpov.test_platform.views import from_create_view
+from akarpov.test_platform.views import form_create_view, form_view
 
 app_name = "test_platform"
-urlpatterns = [path("create", from_create_view, name="create")]
+urlpatterns = [
+    path("create", form_create_view, name="create"),
+    path("<str:slug>", form_view, name="view"),
+]

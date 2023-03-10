@@ -69,6 +69,8 @@ amzqr = "^0.0.1"
 django-chunked-upload = "^2.0.0"
 drf-chunked-upload = "^0.5.1"
 django-active-link = "^0.1.8"
+channels = "^4.0.0"
+django-upload-validator = "^1.1.6"
 
 
 [build-system]

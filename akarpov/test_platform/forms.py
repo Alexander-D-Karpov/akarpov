@@ -27,7 +27,7 @@ class FormFormClass(forms.ModelForm):
 class BaseQuestionForm(forms.ModelForm):
     class Meta:
         model = BaseQuestion
-        fields = ["question", "help", "required"]
+        fields = ["question", "help"]
 
 
 class TextQuestionForm(BaseQuestionForm):
@@ -67,6 +67,11 @@ class NumberRangeQuestionForm(BaseQuestionForm):
 
 
 class SelectQuestionForm(BaseQuestionForm):
+    # {} to add index on fronted for submission
+    answer = forms.CharField(
+        widget=forms.TextInput(attrs={"name": "{}_answers"}), required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super(BaseQuestionForm, self).__init__(*args, **kwargs)
 
@@ -75,6 +80,7 @@ class SelectQuestionForm(BaseQuestionForm):
         fields = BaseQuestionForm.Meta.fields + [
             "min_required_answers",
             "max_required_answers",
+            "answer",
         ]
 
 

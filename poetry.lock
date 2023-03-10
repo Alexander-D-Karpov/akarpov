@@ -446,6 +446,26 @@ files = [
 ]
 
 [[package]]
+name = "channels"
+version = "4.0.0"
+description = "Brings async, event-driven capabilities to Django 3.2 and up."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "channels-4.0.0-py3-none-any.whl", hash = "sha256:2253334ac76f67cba68c2072273f7e0e67dbdac77eeb7e318f511d2f9a53c5e4"},
+    {file = "channels-4.0.0.tar.gz", hash = "sha256:0ce53507a7da7b148eaa454526e0e05f7da5e5d1c23440e4886cf146981d8420"},
+]
+
+[package.dependencies]
+asgiref = ">=3.5.0,<4"
+Django = ">=3.2"
+
+[package.extras]
+daphne = ["daphne (>=4.0.0)"]
+tests = ["async-timeout", "coverage (>=4.5,<5.0)", "pytest", "pytest-asyncio", "pytest-django"]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.0.1"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -1347,6 +1367,21 @@ files = [
 
 [package.dependencies]
 Django = ">=3.2"
+
+[[package]]
+name = "django-upload-validator"
+version = "1.1.6"
+description = "A simple Django file type validator using python-magic"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-upload-validator-1.1.6.tar.gz", hash = "sha256:dbf93740fb42f8c9310b936838bbf99f873339c2f860de1c7c0d7a27464f7c8a"},
+    {file = "django_upload_validator-1.1.6-py3-none-any.whl", hash = "sha256:b4c1a2d2138b319288a20069c5dbdbbdb1257a447ec2f0b4e6cf9e8d6fd3d1bc"},
+]
+
+[package.dependencies]
+python-magic = "*"
 
 [[package]]
 name = "djangocms-admin-style"
@@ -2922,6 +2957,18 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-magic"
+version = "0.4.27"
+description = "File type identification using libmagic"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "python-magic-0.4.27.tar.gz", hash = "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b"},
+    {file = "python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3"},
+]
+
+[[package]]
 name = "python-slugify"
 version = "7.0.0"
 description = "A Python slugify application that also handles Unicode"
@@ -3793,4 +3840,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "47d4a706ed11e7da8599131523b32f44c6f9703559efd8b4f00245abd40a4a68"
+content-hash = "eb14567f6a4fa6a89dce0c68e386ca5d09e26a1e823a3d11eeaf387aae0eba9f"
