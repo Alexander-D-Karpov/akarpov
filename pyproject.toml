@@ -34,7 +34,7 @@ django-rest-auth = "^0.9.5"
 django-cors-headers = "^3.13.0"
 drf-spectacular = "^0.26.0"
 werkzeug = {extras = ["watchdog"], version = "^2.2.2"}
-ipdb = "^0.13.11"
+ipdb = "^0.13.13"
 watchfiles = "^0.18.1"
 mypy = "^0.991"
 django-stubs = {extras = ["compatible-mypy"], version = "^1.14.0"}
