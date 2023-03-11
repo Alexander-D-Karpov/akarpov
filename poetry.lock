@@ -1098,14 +1098,14 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-extra-settings"
-version = "0.7.0"
-description = "easily manage typed extra settings using the django admin."
+version = "0.9.1"
+description = "config and manage typed extra settings using just the django admin."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-extra-settings-0.7.0.tar.gz", hash = "sha256:65b4f29612b3f6a9a35c6ae61a00d9cc7a9aa0c046d1d60af8d0cff2387f1448"},
-    {file = "django_extra_settings-0.7.0-py3-none-any.whl", hash = "sha256:b3e4afd071a6d88b6df91e27aa5cb751b864fcb0ea30290d2f90ef4dcd970ef1"},
+    {file = "django-extra-settings-0.9.1.tar.gz", hash = "sha256:88074de091a166e61278425fcc94f61f9b4a916c37b93730f25f25457752cb5c"},
+    {file = "django_extra_settings-0.9.1-py3-none-any.whl", hash = "sha256:9a3b6618b3d8068e4c94e47b7eaa3593a5e1a023aa93fd2187f84479ad0ee03d"},
 ]
 
 [package.dependencies]
@@ -3848,4 +3848,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "aadb5b9d596cd3c85e3d2381461da361ebcf32276846a59a94346cf499123c28"
+content-hash = "28d64a5547060173f704f5dd6a0741da65b5df795e57e78b8a0a705f2c183233"
