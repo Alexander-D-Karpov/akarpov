@@ -708,6 +708,20 @@ django-crispy-forms = ">=1.13.0"
 test = ["pytest", "pytest-django"]
 
 [[package]]
+name = "cron-descriptor"
+version = "1.2.35"
+description = "A Python library that converts cron expressions into human readable strings."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "cron_descriptor-1.2.35.tar.gz", hash = "sha256:7b6fc5e07f3e505d247f35ef432a098d75769efdaf01b04ab8e42a528c75266d"},
+]
+
+[package.extras]
+dev = ["polib"]
+
+[[package]]
 name = "cryptography"
 version = "39.0.2"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -895,19 +909,20 @@ six = ">=1.4.0"
 
 [[package]]
 name = "django-celery-beat"
-version = "2.4.0"
+version = "2.5.0"
 description = "Database-backed Periodic Tasks."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-celery-beat-2.4.0.tar.gz", hash = "sha256:58efe9460e4373a241c2b3d839518f29a28ae19bc80a8dba20da204c7ea50613"},
-    {file = "django_celery_beat-2.4.0-py3-none-any.whl", hash = "sha256:a20b7a7857daaa2eea1f4cfefb2a965456800216f5763c6cf918c2e21372b3c8"},
+    {file = "django-celery-beat-2.5.0.tar.gz", hash = "sha256:cd0a47f5958402f51ac0c715bc942ae33d7b50b4e48cba91bc3f2712be505df1"},
+    {file = "django_celery_beat-2.5.0-py3-none-any.whl", hash = "sha256:ae460faa5ea142fba0875409095d22f6bd7bcc7377889b85e8cab5c0dfb781fe"},
 ]
 
 [package.dependencies]
 celery = ">=5.2.3,<6.0"
-Django = ">=2.2,<4.2"
+cron-descriptor = ">=1.2.32"
+Django = ">=2.2,<5.0"
 django-timezone-field = ">=5.0"
 python-crontab = ">=2.3.4"
 tzdata = "*"
@@ -3843,4 +3858,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "47fdabeb86bd4a1befec2534f23cfce49d4b941677e1ad687a492c401ffcd876"
+content-hash = "1050b1b4456061ae0abb960f7c936270dd87f084b0a283fb5cba3dbef4940e1f"
