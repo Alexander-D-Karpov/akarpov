@@ -4,10 +4,9 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from akarpov.common.models import BaseImageModel
-from akarpov.tools.shortener.models import ShortLink
 
 
-class User(AbstractUser, BaseImageModel, ShortLink):
+class User(AbstractUser, BaseImageModel):
     """
     Default custom user model for akarpov.
     If adding fields that need to be filled at user signup,
