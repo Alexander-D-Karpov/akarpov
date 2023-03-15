@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.views.generic import CreateView, DetailView
+from django.http import HttpResponseRedirect
+from django.views.generic import CreateView, DetailView, TemplateView
 
 from akarpov.tools.shortener.forms import LinkForm
 from akarpov.tools.shortener.models import Link
@@ -35,3 +36,16 @@ class LinkDetailView(DetailView):
 
 
 link_detail_view = LinkDetailView.as_view()
+
+
+class LinkRevokedView(TemplateView):
+    template_name = "shortener/revoked.html"
+
+
+link_revoked_view = LinkRevokedView.as_view()
+
+
+def redirect_view(request, slug):
+    # TODO: move to faster framework, like FastApi
+    link = get_link_from_slug(slug)
+    return HttpResponseRedirect(link.source)

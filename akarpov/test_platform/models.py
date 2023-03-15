@@ -7,12 +7,13 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from polymorphic.models import PolymorphicModel
 
+from akarpov.common.models import BaseImageModel
+from akarpov.tools.shortener.models import ShortLink
 from akarpov.users.models import User
 from akarpov.utils.base import SubclassesMixin
-from akarpov.utils.files import user_file_upload_mixin
 
 
-class Form(models.Model):
+class Form(BaseImageModel, ShortLink):
     name = models.CharField(max_length=200, blank=False)
     description = models.TextField(blank=True)
 
@@ -24,9 +25,6 @@ class Form(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
-    image = models.ImageField(upload_to=user_file_upload_mixin, blank=True)
-    image_cropped = models.ImageField(upload_to="cropped/", blank=True)
 
     passed = models.IntegerField(default=0)
     time_since = models.DateTimeField(null=True, blank=True)

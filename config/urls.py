@@ -10,7 +10,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from akarpov.tools.shortener.views import link_detail_view
+from akarpov.tools.shortener.views import redirect_view
 
 urlpatterns = [
     path("home", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -23,12 +23,13 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
+    path("files/", include("akarpov.files.urls", namespace="files")),
     path("forms/", include("akarpov.test_platform.urls", namespace="forms")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("akarpov.blog.urls", namespace="blog")),
-    path("s/<str:slug>", link_detail_view, name="short_url"),
+    path("s/<str:slug>", redirect_view, name="short_url"),
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -1,15 +1,16 @@
 from ckeditor_uploader.fields import RichTextUploadingField
 from colorfield.fields import ColorField
 from django.db import models
-from django.db.models import Count, ImageField, SlugField
+from django.db.models import Count, SlugField
 from django.urls import reverse
 
+from akarpov.common.models import BaseImageModel
+from akarpov.tools.shortener.models import ShortLink
 from akarpov.users.models import User
-from akarpov.utils.files import user_file_upload_mixin
 from akarpov.utils.string import cleanhtml
 
 
-class Post(models.Model):
+class Post(BaseImageModel, ShortLink):
     title = models.CharField(max_length=100, blank=False)
     body = RichTextUploadingField(blank=False)
 
@@ -24,9 +25,6 @@ class Post(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
-
-    image = ImageField(upload_to=user_file_upload_mixin, blank=True)
-    image_cropped = ImageField(upload_to="cropped/", blank=True)
 
     tags = models.ManyToManyField("blog.Tag", related_name="posts")
 
