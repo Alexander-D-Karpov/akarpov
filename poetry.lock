@@ -853,13 +853,13 @@ files = [
 
 [[package]]
 name = "django-allauth"
-version = "0.51.0"
+version = "0.53.0"
 description = "Integrated set of Django applications addressing authentication, registration, account management as well as 3rd party (social) account authentication."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 files = [
-    {file = "django-allauth-0.51.0.tar.gz", hash = "sha256:ca1622733b6faa591580ccd3984042f12d8c79ade93438212de249b7ffb6f91f"},
+    {file = "django-allauth-0.53.0.tar.gz", hash = "sha256:c8a32a1b163725e9e6b60dcd78e795cec749d68bd35003a33f7707c692928be2"},
 ]
 
 [package.dependencies]
@@ -3858,4 +3858,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "1050b1b4456061ae0abb960f7c936270dd87f084b0a283fb5cba3dbef4940e1f"
+content-hash = "e25f1e0eb0418a0e5d25f3f6497788be5d53c0cd1f9c2692b448ad38b2939424"
