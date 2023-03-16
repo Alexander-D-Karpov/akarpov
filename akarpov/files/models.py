@@ -18,14 +18,14 @@ class BaseFile(TimeStampedModel, ShortLink):
     """model to store user's files"""
 
     name = CharField(max_length=100)
-    description = TextField()
+    description = TextField(blank=True)
 
     slug = SlugField(max_length=20, blank=True)
     private = BooleanField(default=True)
 
     user = ForeignKey("users.User", related_name="files", on_delete=CASCADE)
     folder = ForeignKey(
-        "files.Folder", related_name="files", null=True, on_delete=CASCADE
+        "files.Folder", related_name="files", blank=True, null=True, on_delete=CASCADE
     )
 
     file = FileField(blank=False, upload_to=user_file_upload_mixin)
@@ -42,7 +42,7 @@ class Folder(TimeStampedModel, ShortLink):
     slug = SlugField(max_length=20, blank=True)
 
     user = ForeignKey("users.User", related_name="files_folders", on_delete=CASCADE)
-    parent = ForeignKey("self", related_name="children", on_delete=CASCADE)
+    parent = ForeignKey("self", blank=True, related_name="children", on_delete=CASCADE)
 
     def get_absolute_url(self):
         return reverse("files:folder", kwargs={"slug": self.slug})

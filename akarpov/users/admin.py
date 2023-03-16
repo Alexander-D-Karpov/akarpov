@@ -29,6 +29,7 @@ class UserAdmin(auth_admin.UserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("Other"), {"fields": ("short_link",)}),
     )
     list_display = ["username", "is_superuser"]
     search_fields = ["username", "email"]

@@ -38,9 +38,17 @@ class LinkViewMeta(models.Model):
 def create_model_link(sender, instance, created, **kwargs):
     # had to move to models due to circular import
     if created:
-        link = Link.objects.create(
-            source=instance.get_absolute_url(), creator=instance.creator
-        )
+        link = Link(source=instance.get_absolute_url())
+        if hasattr(instance, "private"):
+            if instance.private:
+                return
+        if hasattr(instance, "public"):
+            if not instance.public:
+                return
+        if hasattr(instance, "creator"):
+            link.creator = instance.creator
+
+        link.save()
         instance.short_link = link
         instance.save()
 
