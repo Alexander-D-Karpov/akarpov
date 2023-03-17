@@ -26,3 +26,4 @@
 # ignore bootstrap
 akarpov/static/js/bootstrap.bundle.min.js linguist-vendored
 akarpov/static/css/bootstrap.min.css linguist-vendored
+akarpov/static/ckeditor/** linguist-vendored
