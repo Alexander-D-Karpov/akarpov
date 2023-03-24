@@ -14,15 +14,13 @@ from akarpov.tools.shortener.views import redirect_view
 
 urlpatterns = [
     path("home", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
     path("health/", include("health_check.urls")),
     path("cms/", include("cms.urls")),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
+    path("about/", include("akarpov.about.urls", namespace="about")),
     path("files/", include("akarpov.files.urls", namespace="files")),
     path("forms/", include("akarpov.test_platform.urls", namespace="forms")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),

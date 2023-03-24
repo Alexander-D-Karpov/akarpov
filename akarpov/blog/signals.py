@@ -3,17 +3,12 @@ from django.dispatch import receiver
 
 from akarpov.blog.models import Post, PostRating, Tag
 from akarpov.common.tasks import crop_model_image
-from akarpov.utils.generators import generate_charset, generate_hex_color
+from akarpov.utils.generators import generate_hex_color
 
 
 @receiver(pre_save, sender=Post)
 def post_on_save(sender, instance: Post, **kwargs):
-    if instance.id is None:
-        slug = generate_charset(3)
-        while Post.objects.filter(slug=slug).exists():
-            slug = generate_charset(3)
-        instance.slug = slug
-    else:
+    if instance.id:
         previous = Post.objects.get(id=instance.id)
         if (
             previous.image != instance.image

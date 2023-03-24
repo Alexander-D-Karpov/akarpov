@@ -4,6 +4,8 @@ from django.db import models
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
+from akarpov.common.models import SlugModel
+
 
 class Link(TimeStampedModel):
     source = models.URLField(blank=False)
@@ -53,7 +55,7 @@ def create_model_link(sender, instance, created, **kwargs):
         instance.save()
 
 
-class ShortLink(models.Model):
+class ShortLink(SlugModel):
     short_link: Link | None = models.ForeignKey(
         "shortener.Link", blank=True, null=True, on_delete=models.SET_NULL
     )

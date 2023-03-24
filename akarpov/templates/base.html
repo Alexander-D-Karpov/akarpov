@@ -46,8 +46,8 @@
                         </li>
                         {% endif %}
                         <li>
-                            <a href="#" class="text-muted nav-link px-sm-0 px-2">
-                                <i class="fs-5 bi-table"></i><span class="ms-1 d-none d-sm-inline">Orders</span></a>
+                            <a href="{% url 'about:about' %}" class="{% active_link 'about' %} text-muted nav-link px-sm-0 px-2">
+                                <i class="fs-5 bi-person"></i><span class="ms-1 d-none d-sm-inline">About me</span></a>
                         </li>
                         <li class="dropdown">
                             <a href="#" class="text-muted nav-link dropdown-toggle px-sm-0 px-1" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false">

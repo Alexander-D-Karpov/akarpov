@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}sanspie: akarpov{% endblock title %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+    <script src="https://kit.fontawesome.com/87f586cb23.js" crossorigin="anonymous"></script>
+    <style>
+      .outer-link {
+       font-size: 1.5em;
+       transition: 150ms;
+      }
+      .outer-link:hover {
+       transform: scale(2.5);
+       transition: 150ms;
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+  <div class="row mb-3 row-cols-1 row-cols-md-5">
+    <div id="txt" class="col col-md-7 d-flex justify-content-center align-items-center text-center">
+        <div class="align-items-center">
+            <h1 class="display-1 text-center">sanspie</h1>
+            <h5 class="display-6 text-center"></h5>
+            <div class="list-group align-items-center mb-3">
+                <div class="list-group-item mt-3 border-0"><i class="fa-solid fa-code"></i> Web developer</div>
+                <div class="list-group-item mt-1 border-0"><i class="fa-solid fa-terminal"></i> DevOps</div>
+                <div class="list-group-item mt-1 border-0"><i class="fa-solid fa-flag"></i> CTF player</div>
+            </div>
+            <div class="row d-flex justify-content-center">
+                <div class="text-center col-md-5">
+                    <a href="https://t.me/s4nspie" class="btn outer-link m-1"><i class="fa-brands fa-telegram"></i></a>
+                    <a href="https://github.com/Alexander-D-Karpov" class="btn outer-link m-1"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://vk.com/al.karpov" class="btn outer-link m-1"><i class="fa-brands fa-vk"></i></a>
+                    <a href="https://www.linkedin.com/in/alexandr-karpov-ba8891218" class="btn outer-link m-1"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="mailto:alexandr.d.karpov@gmail.com" class="btn outer-link m-1"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="https://discord.com/users/SansPie#9074" class="btn outer-link m-1"><i class="fa-brands fa-discord"></i></a>
+                    <a href="https://ctftime.org/user/113621" class="btn outer-link m-1"><i class="fa-solid fa-font-awesome"></i></a>
+                    <a href="https://www.codewars.com/users/Alexander-D-Karpov" class="btn outer-link m-1"><i class="fa-solid fa-laptop-code"></i></a>
+                    <a href="https://last.fm/user/sanspie" class="btn outer-link m-1"><i class="fa-brands fa-lastfm"></i></a>
+                    <a href="https://steamcommunity.com/id/2280666013" class="btn outer-link m-1"><i class="fa-brands fa-steam"></i></a>
+                </div>
+            </div>
+            <br>
+            <details class="fs-6 text-center">
+                <summary>My stack/technologies:</summary>
+                <div class="text-muted">(the higher, the better I know it)</div>
+            </details>
+            <div class="d-flex justify-content-center text-center row">
+                <div class="col-md-5 mb-2">
+                    <i class="devicon-django-plain outer-link m-1"></i>
+                    <i class="devicon-python-plain outer-link m-1"></i>
+                    <i class="devicon-fastapi-plain outer-link m-1"></i>
+                    <i class="devicon-flask-original outer-link m-1"></i>
+                    <i class="devicon-linux-plain outer-link m-1"></i>
+                    <i class="devicon-docker-plain outer-link m-1"></i>
+                    <i class="devicon-javascript-plain outer-link m-1"></i>
+                    <i class="devicon-html5-plain outer-link m-1"></i>
+                    <i class="devicon-css3-plain outer-link m-1"></i>
+                    <i class="devicon-bootstrap-plain outer-link m-1"></i>
+                    <i class="devicon-nginx-original outer-link m-1"></i>
+                    <i class="devicon-git-plain outer-link m-1"></i>
+                    <i class="devicon-react-original outer-link m-1"></i>
+                    <i class="devicon-jquery-plain outer-link m-1"></i>
+                    <i class="devicon-bash-plain outer-link m-1"></i>
+                    <i class="devicon-postgresql-plain outer-link m-1"></i>
+                    <i class="devicon-sqlite-plain outer-link m-1"></i>
+                    <i class="devicon-redis-plain outer-link m-1"></i>
+                    <i class="devicon-uwsgi-plain outer-link m-1"></i>
+                    <i class="devicon-cplusplus-plain outer-link m-1"></i>
+                    <i class="devicon-graphql-plain outer-link m-1"></i>
+                    <i class="devicon-unity-original outer-link m-1"></i>
+                    <i class="devicon-debian-plain outer-link m-1"></i>
+                    <i class="devicon-vim-plain outer-link m-1"></i>
+                    <i class="devicon-ssh-original outer-link m-1"></i>
+                    <i class="devicon-markdown-original outer-link m-1"></i>
+                    <i class="devicon-mysql-plain outer-link m-1"></i>
+                    <i class="devicon-php-plain outer-link m-1"></i>
+                    <i class="devicon-figma-plain outer-link m-1"></i>
+                    <i class="devicon-mongodb-plain outer-link m-1"></i>
+                    <i class="devicon-apache-plain outer-link m-1"></i>
+                    <i class="devicon-go-original-wordmark outer-link m-1"></i>
+                    <i class="devicon-csharp-plain outer-link m-1"></i>
+                </div>
+            </div>
+            <br>
+            <div class="row justify-content-center">
+                <div class="fs-6 text-center">More about me:</div>
+                <p class="text-center mb-2 col col-md-8">I am 17 y. o. Python developer from Russia, specialized in creating Django web apps. I took part in the development of monolith websites on Django, Flask, FastAPI and microservices with Rest and Graphql. Also, I am interested in web app security and Linux servers administration.</p>
+            </div>
+            <br>
+        </div>
+    </div>
+    <div id="img" class="col col-md-5">
+        <img src="http://akarpov.ru/media/uploads/files/qMO4dDfIXP.webp" class="img-fluid" alt="">
+    </div>
+</div>
+<script>
+    let viewport_width = window.innerWidth;
+    if (viewport_width < 1444) {
+        img = document.getElementById("img");
+        img.parentNode.removeChild(img);
+        text = document.getElementById("txt");
+        text.className = "d-flex justify-content-center";
+        text.parentNode.className = "row";
+    }
+</script>
+
+<div id="projects" class="fs-6 text-center">Projects: </div>
+<div class="row row-cols-auto row-cols-md-2 g-4 m-2 d-flex d-block d-md-flex">
+    {% for project in projects %}
+    <div class="mb-3">
+        <a style="text-decoration: none; color: black" href="{{ project.get_absolute_url }}">
+            <div class="card h-100">
+                <div class="row g-2 gap-2">
+                    <div class="col-auto w-100 col-lg-auto col-md-auto col-sm-auto">
+                        <img style="max-height: 200px; object-fit: cover" alt="post image" src="{{ project.image.url }}" class="img-fluid col-auto card-img rounded-start">
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-body">
+                            <h5 class="card-title m-2">{{ project.name }}</h5>
+                            <p class="card-text m-2 mb-3">{{ project.description|truncatewords:10 }}</p>
+                            <p class="card-text">
+                                {% if project.source_link %}
+                                <a style="text-decoration: none; color: black" class="m-2" href="{{ project.source_link }}"><i class="bi bi-file-earmark-code"></i> Source code</a> {% endif %} {% if project.view_link %}
+                                <a style="text-decoration: none; color: black" class="m-2" href="{{ project.view_link }}"><i class="bi bi-box-arrow-up-right"></i> View project</a> {% endif %}
+                            </p>
+                            <p class="card-text mb-2"><small class="text-muted m-2">Created: {{ project.created|date:"d M Y" }} </small></p>
+                            {% if project.last_updated %}
+                            <p>
+                                <small class="text-muted m-2">Last updated: {{ project.last_updated|date:"d M Y" }} </small>
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

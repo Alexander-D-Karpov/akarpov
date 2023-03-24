@@ -20,7 +20,6 @@ class BaseFile(TimeStampedModel, ShortLink):
     name = CharField(max_length=100)
     description = TextField(blank=True)
 
-    slug = SlugField(max_length=20, blank=True)
     private = BooleanField(default=True)
 
     user = ForeignKey("users.User", related_name="files", on_delete=CASCADE)

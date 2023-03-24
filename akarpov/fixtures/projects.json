@@ -1,0 +1,352 @@
+[
+{
+    "model": "about.project",
+    "pk": 1,
+    "fields": {
+        "name": "Blog app",
+        "description": "App to create, view, comment and rate posts",
+        "md": "",
+        "image": "uploads/images/E7BE3B27-5184-4C34-969D-D05E25DA69BE.jpeg",
+        "created": "2021-12-15T09:28:22Z",
+        "modified": "2022-05-17T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-blog-app",
+        "view_link": "https://akarpov.ru/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 2,
+    "fields": {
+        "name": "User app",
+        "description": "App to handle user login, registration, setting and user profile. API also provided",
+        "md": "",
+        "image": "uploads/images/A185F924-5FDF-4580-8116-55FD575D273F.jpeg",
+        "created": "2021-12-15T09:36:34Z",
+        "modified": "2022-04-22T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-user-app",
+        "view_link": "https://akarpov.ru/user/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 3,
+    "fields": {
+        "name": "File share app",
+        "description": "App to share files",
+        "md": "- upload files\r\n- manage allowed upload space for user\r\n- delete files\r\n- create groups\r\n- upload files to groups and share them",
+        "image": "uploads/images/Screenshot_20220513_130820.png",
+        "created": "2021-12-27T21:00:00Z",
+        "modified": "2022-05-16T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-fileshare-app",
+        "view_link": "http://akarpov.ru/file/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 4,
+    "fields": {
+        "name": "About me app",
+        "description": "Page to share my links, stack and projects I made",
+        "md": "",
+        "image": "uploads/images/Screenshot_20220513_131404.png",
+        "created": "2022-02-01T21:00:00Z",
+        "modified": "2022-05-15T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/about-me",
+        "view_link": "https://akarpov.ru/about"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 5,
+    "fields": {
+        "name": "Image app",
+        "description": "Share your images",
+        "md": "- image lazy load\r\n- image optimization on backend\r\n- metadata extractor",
+        "image": "uploads/images/Screenshot_20220513_131716.png",
+        "created": "2022-04-18T21:00:00Z",
+        "modified": "2022-05-10T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-image-app",
+        "view_link": "https://akarpov.ru/pics/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 6,
+    "fields": {
+        "name": "Forms generator",
+        "description": "Site to generate and share forms",
+        "md": "- modes available for now:\r\n- - Question\r\n- - Number\r\n- - Select",
+        "image": "uploads/images/Screenshot_20220513_132259.png",
+        "created": "2022-04-14T21:00:00Z",
+        "modified": "2022-05-15T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-forms-app",
+        "view_link": "https://akarpov.ru/forms/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 7,
+    "fields": {
+        "name": "Music app",
+        "description": "App to handle music files, converting them to audio tracks",
+        "md": "- get list of songs\r\n- share song",
+        "image": "uploads/images/Screenshot_20220513_132850.png",
+        "created": "2022-02-07T21:00:00Z",
+        "modified": "2022-04-17T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-music-app",
+        "view_link": "https://akarpov.ru/music/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 8,
+    "fields": {
+        "name": "CTF platform",
+        "description": "Site to view tasks, submit flags, view attempts and start time",
+        "md": "",
+        "image": "uploads/images/Screenshot_20220513_133358.png",
+        "created": "2021-12-22T21:00:00Z",
+        "modified": "2022-03-15T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/django-ctf-app",
+        "view_link": "https://akarpov.ru/ctf/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 9,
+    "fields": {
+        "name": "Flower shop",
+        "description": "Site to create orders",
+        "md": "- create category\r\n- create product\r\n- get notification on order create from bot",
+        "image": "uploads/images/Screenshot_20220513_133815.png",
+        "created": "2022-04-05T21:00:00Z",
+        "modified": "2022-05-31T21:00:00Z",
+        "source_link": "",
+        "view_link": "https://sharoboom-livny.ru/"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 10,
+    "fields": {
+        "name": "Tender hackathon backend",
+        "description": "Backend for tender platform",
+        "md": "- [Tender hack site](https://tenderhack.ru/)\r\n- get data and create it on various endpoints\r\n- connect to session with web sockets",
+        "image": "uploads/images/Screenshot_20220513_134426.png",
+        "created": "2022-04-14T21:00:00Z",
+        "modified": "2022-04-16T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/tender_hack_back",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 11,
+    "fields": {
+        "name": "Bot Polling Master",
+        "description": "A small telegram bot to handle messages from users on several bots, gets data from web server to synchronize with frontend",
+        "md": "",
+        "image": "uploads/images/Screenshot_20220513_140011.png",
+        "created": "2022-03-17T21:00:00Z",
+        "modified": "2022-03-19T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/bot_polling_master",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 12,
+    "fields": {
+        "name": "vkHandler",
+        "description": "bot to fetch data from vk, get tags and send posts to user subscribed to tags. Notifies user if post contains date in the morning of this day",
+        "md": "",
+        "image": "uploads/images/Screenshot_20220513_145339.png",
+        "created": "2022-02-11T21:00:00Z",
+        "modified": "2022-02-14T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/vkHandler",
+        "view_link": "http://t.me/vkHand_bot"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 13,
+    "fields": {
+        "name": "Image API",
+        "description": "Api to handle and store images. Crop image, provide user session as JWT",
+        "md": "",
+        "image": "uploads/images/photo_2022-01-23_23-54-26.jpg",
+        "created": "2022-01-23T21:00:00Z",
+        "modified": "2022-01-23T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/image_api",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 14,
+    "fields": {
+        "name": "Music server",
+        "description": "MPD server over http with function to load tracks from YouTube, Yandex music and Spotify with metadata gathering from Spotify and Yandex",
+        "md": "[Stream utl](http://music.akarpov.ru)",
+        "image": "uploads/images/Screenshot_20220923_000907.png",
+        "created": "2022-09-19T21:00:00Z",
+        "modified": "2022-09-28T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/music_server",
+        "view_link": "http://music.akarpov.ru"
+    }
+},
+{
+    "model": "about.project",
+    "pk": 15,
+    "fields": {
+        "name": "Block site generator",
+        "description": "Backend for constructor sites. Create sites, blocks and build block hierarchy",
+        "md": "",
+        "image": "uploads/images/photo_2022-08-18_23-00-40.jpg",
+        "created": "2022-08-12T21:00:00Z",
+        "modified": "2022-08-21T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/agora_hack_backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 16,
+    "fields": {
+        "name": "RPG backend",
+        "description": "Chess RPG game backend with web sockets, timeouts and API",
+        "md": "",
+        "image": "uploads/images/image.png",
+        "created": "2022-06-03T21:00:00Z",
+        "modified": "2022-07-31T21:00:00Z",
+        "source_link": "https://github.com/evgen-app/chess_rpg_backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 17,
+    "fields": {
+        "name": "NLP DOC processer",
+        "description": "Backend for service to process docx, doc and other files to check if it follows standards.",
+        "md": "",
+        "image": "uploads/images/photo_2022-08-28_04-13-48.jpg",
+        "created": "2022-08-25T21:00:00Z",
+        "modified": "2022-08-27T21:00:00Z",
+        "source_link": "https://github.com/Ai-hack-MAGNUM-OPUS/backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 18,
+    "fields": {
+        "name": "Motivational platform",
+        "description": "Website to connect workers in teams and reward with cryptocurrency",
+        "md": "",
+        "image": "uploads/images/photo_2022-10-09_10-49-55.jpg",
+        "created": "2022-10-07T21:00:00Z",
+        "modified": "2022-10-11T21:00:00Z",
+        "source_link": "https://github.com/more-tech4-magnum-opus",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 19,
+    "fields": {
+        "name": "Product search engine",
+        "description": "API to handle and help search queries",
+        "md": "",
+        "image": "uploads/images/photo_2022-10-22_22-40-48.jpg",
+        "created": "2022-10-20T21:00:00Z",
+        "modified": "2022-10-22T21:00:00Z",
+        "source_link": "https://github.com/magnum-opus-tender-hack/backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 20,
+    "fields": {
+        "name": "DICOM edit platform",
+        "description": "complex platform to view dicom files and generate pathologies",
+        "md": "",
+        "image": "uploads/images/photo_2022-11-17_23-54-35.jpg",
+        "created": "2022-10-24T21:00:00Z",
+        "modified": "2022-11-05T21:00:00Z",
+        "source_link": "https://github.com/leaders-of-digital-9-task/backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 21,
+    "fields": {
+        "name": "Med Manage Platform",
+        "description": "App with wide functionality to create forms, manage patient info, create appointments, etc",
+        "md": "",
+        "image": "uploads/images/photo_2023-02-21_13-15-28.jpg",
+        "created": "2022-12-08T21:00:00Z",
+        "modified": "2022-12-08T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/med_backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 22,
+    "fields": {
+        "name": "cookiecutter-django",
+        "description": "My django cookiecutter for fast creation of django projects specified for API development.",
+        "md": "Features:\r\n\r\n - DRF\r\n - Poetry\r\n - Docker\r\n - CI\r\n - Celery\r\n - Structlog\r\n - Useful functions and auth",
+        "image": "uploads/images/photo_2023-02-21_13-28-05.jpg",
+        "created": "2023-01-06T21:00:00Z",
+        "modified": "2023-03-10T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/cookiecutter-django",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 23,
+    "fields": {
+        "name": "Exhauster analytics",
+        "description": "Ann app to process information from exhausters and try to warn and predict it",
+        "md": "",
+        "image": "uploads/images/photo_2023-02-19_07-33-56.jpg",
+        "created": "2023-02-18T21:00:00Z",
+        "modified": "2023-02-18T21:00:00Z",
+        "source_link": "https://github.com/evraz-hack/backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 24,
+    "fields": {
+        "name": "Real estate search",
+        "description": "",
+        "md": "",
+        "image": "uploads/images/photo_2023-02-21_13-41-32.jpg",
+        "created": "2023-02-18T21:00:00Z",
+        "modified": "2023-02-18T21:00:00Z",
+        "source_link": "https://github.com/BlackWallTeam/Backend",
+        "view_link": ""
+    }
+},
+{
+    "model": "about.project",
+    "pk": 25,
+    "fields": {
+        "name": "Podcast poller script",
+        "description": "Script to load current listening track from yandex music and send it to telegram chat.",
+        "md": "",
+        "image": "uploads/images/photo_2023-02-21_13-43-35.jpg",
+        "created": "2023-02-19T21:00:00Z",
+        "modified": "2023-02-19T21:00:00Z",
+        "source_link": "https://github.com/Alexander-D-Karpov/scripts/tree/master/podcasts",
+        "view_link": "https://t.me/sanspie_podcasts"
+    }
+}
+]

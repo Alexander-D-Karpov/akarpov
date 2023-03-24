@@ -139,6 +139,7 @@ ALL_AUTH_PROVIDERS = [
 
 LOCAL_APPS = [
     "akarpov.users",
+    "akarpov.about",
     "akarpov.blog",
     "akarpov.files",
     "akarpov.pipeliner",

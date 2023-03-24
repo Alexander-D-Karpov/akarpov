@@ -1,7 +1,7 @@
 from ckeditor_uploader.fields import RichTextUploadingField
 from colorfield.fields import ColorField
 from django.db import models
-from django.db.models import Count, SlugField
+from django.db.models import Count
 from django.urls import reverse
 
 from akarpov.common.models import BaseImageModel
@@ -15,7 +15,6 @@ class Post(BaseImageModel, ShortLink):
     body = RichTextUploadingField(blank=False)
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-    slug = SlugField(max_length=20, blank=True)
 
     post_views = models.IntegerField(default=0)
     rating = models.IntegerField(default=0)
@@ -65,6 +64,9 @@ class Post(BaseImageModel, ShortLink):
 
     class Meta:
         ordering = ["-created"]
+
+    class SlugMeta:
+        slug_length = 3
 
 
 class Tag(models.Model):
