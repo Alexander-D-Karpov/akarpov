@@ -76,5 +76,5 @@ def textfile_to_image(textfile_path) -> Image:
 def create_preview(file_path: str) -> str:
     # TODO: add text image generation/code image
     manager = PreviewManager(cache_path, create_folder=True)
-    path_to_preview_image = manager.get_jpeg_preview(file_path)
+    path_to_preview_image = manager.get_pdf_preview(file_path)
     return path_to_preview_image

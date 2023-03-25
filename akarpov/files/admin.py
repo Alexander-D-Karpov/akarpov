@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from akarpov.files.models import BaseFile, Folder
+from akarpov.files.models import File, Folder
 
-admin.site.register(BaseFile)
+admin.site.register(File)
 admin.site.register(Folder)

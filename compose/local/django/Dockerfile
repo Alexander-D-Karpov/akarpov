@@ -16,6 +16,7 @@ ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
 
 ENV PYTHONUNBUFFERED 1
+ENV DRAWIO_VERSION 15.7.3
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 
@@ -24,16 +25,21 @@ WORKDIR ${APP_HOME}
 # Install required system dependencies
 RUN apt-get update && \
     apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
+    # Dependencies for file preview generation
+    # apt-get install -y poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp libreoffice inkscape ffmpeg xvfb && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
+# Dependencies for file preview generation
+# RUN curl -LO https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage && mv drawio-x86_64-${DRAWIO_VERSION}.AppImage /usr/local/bin/drawio
 ENV PATH="/root/.local/bin:$PATH"
 
 RUN poetry config virtualenvs.create false
 
 COPY ./pyproject.toml ./poetry.lock /app/
 RUN poetry install --no-root --only main
+RUN preview --check-dependencies
 
 
 COPY ./compose/production/django/entrypoint /entrypoint

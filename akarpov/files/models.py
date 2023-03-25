@@ -14,7 +14,7 @@ from akarpov.tools.shortener.models import ShortLink
 from akarpov.utils.files import user_file_upload_mixin
 
 
-class BaseFile(TimeStampedModel, ShortLink):
+class File(TimeStampedModel, ShortLink):
     """model to store user's files"""
 
     name = CharField(max_length=100)
@@ -27,6 +27,7 @@ class BaseFile(TimeStampedModel, ShortLink):
         "files.Folder", related_name="files", blank=True, null=True, on_delete=CASCADE
     )
 
+    preview = FileField(blank=True, upload_to="file/previews/")
     file = FileField(blank=False, upload_to=user_file_upload_mixin)
 
     def get_absolute_url(self):
@@ -41,7 +42,9 @@ class Folder(TimeStampedModel, ShortLink):
     slug = SlugField(max_length=20, blank=True)
 
     user = ForeignKey("users.User", related_name="files_folders", on_delete=CASCADE)
-    parent = ForeignKey("self", blank=True, related_name="children", on_delete=CASCADE)
+    parent = ForeignKey(
+        "self", null=True, blank=True, related_name="children", on_delete=CASCADE
+    )
 
     def get_absolute_url(self):
         return reverse("files:folder", kwargs={"slug": self.slug})

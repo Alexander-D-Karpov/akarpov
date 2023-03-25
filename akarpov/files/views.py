@@ -1,11 +1,11 @@
 from django.views.generic import DetailView
 
-from akarpov.files.models import BaseFile, Folder
+from akarpov.files.models import File, Folder
 
 
 class FileView(DetailView):
     template_name = "files/view.html"
-    model = BaseFile
+    model = File
     slug_field = "slug"
 
 
