@@ -22,6 +22,7 @@ urlpatterns = [
     path("users/", include("akarpov.users.urls", namespace="users")),
     path("about/", include("akarpov.about.urls", namespace="about")),
     path("files/", include("akarpov.files.urls", namespace="files")),
+    path("files/", include("akarpov.music.urls", namespace="music")),
     path("forms/", include("akarpov.test_platform.urls", namespace="forms")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),
     path("ckeditor/", include("ckeditor_uploader.urls")),

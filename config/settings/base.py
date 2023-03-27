@@ -78,6 +78,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -142,6 +143,7 @@ LOCAL_APPS = [
     "akarpov.about",
     "akarpov.blog",
     "akarpov.files",
+    "akarpov.music",
     "akarpov.pipeliner",
     "akarpov.test_platform",
     "akarpov.tools.shortener",
@@ -522,3 +524,16 @@ SHORTENER_SLUG_LENGTH = 3
 # ACTIVE_LINK
 # ------------------------------------------------------------------------------
 ACTIVE_LINK_CSS_CLASS = "nav-active"
+
+# MUSIC
+# ------------------------------------------------------------------------------
+# MPD
+MUSIC_MPD_HOST = env("MPD_HOST", default="")
+MUSIC_MPD_PASSWORD = env("MPD_HOST", default="")
+
+# SPOTIFY
+MUSIC_SPOTIFY_ID = env("MPD_HOST", default="")
+MUSIC_SPOTIFY_SECRET = env("MPD_HOST", default="")
+
+# YANDEX_MUSIC
+MUSIC_YANDEX_TOKEN = env("MPD_HOST", default="")
