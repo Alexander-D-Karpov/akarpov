@@ -26,6 +26,24 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
 
+      - name: Cache packages
+        uses: actions/cache@v2
+        id: cache-packages
+        with:
+          path: "~/packages/"
+
+      - name: Install packages
+        env:
+          CACHE_HIT: ${{steps.cache-valgrind.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            sudo cp --verbose --force --recursive ~/packages/* /
+          else
+            sudo apt-get install --yes libimage-exiftool-perl libmagickwand-dev
+            mkdir -p ~/packages/
+            sudo dpkg -L libimage-exiftool-perl libmagickwand-dev  | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/packages/
+          fi
+
       - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
