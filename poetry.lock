@@ -990,18 +990,6 @@ python-crontab = ">=2.3.4"
 tzdata = "*"
 
 [[package]]
-name = "django-chunked-upload"
-version = "2.0.0"
-description = "Upload large files to Django in multiple chunks, with the ability to resume if the upload is interrupted."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "django-chunked-upload-2.0.0.tar.gz", hash = "sha256:fb8961029d6a9febb974fb24f529c7773c61a9e6467825db861aae29e1f0c978"},
-    {file = "django_chunked_upload-2.0.0-py3-none-any.whl", hash = "sha256:f81ce8d7a5df87c75c971b31dd15961712e729f8fbb38a9398c85cc01f89316d"},
-]
-
-[[package]]
 name = "django-ckeditor"
 version = "6.5.1"
 description = "Django admin CKEditor integration."
@@ -1511,22 +1499,6 @@ files = [
     {file = "docutils-0.19-py3-none-any.whl", hash = "sha256:5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc"},
     {file = "docutils-0.19.tar.gz", hash = "sha256:33995a6753c30b7f577febfc2c50411fec6aac7f7ffeb7c4cfe5991072dcf9e6"},
 ]
-
-[[package]]
-name = "drf-chunked-upload"
-version = "0.5.1"
-description = "Upload large files to Django REST Framework in multiple chunks, with the ability to resume if the upload is interrupted."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "drf-chunked-upload-0.5.1.tar.gz", hash = "sha256:7c4faa401295cc24bd270cee41f7f0af5268f91ec477237c4e40bcb51adddfef"},
-    {file = "drf_chunked_upload-0.5.1-py3-none-any.whl", hash = "sha256:1a2802d024f21e3ba86158bd31bb8fc33af96c0b8c0b87a759201ca0318f832a"},
-]
-
-[package.dependencies]
-Django = ">=2.2"
-djangorestframework = ">=3.11"
 
 [[package]]
 name = "drf-spectacular"
@@ -4085,4 +4057,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8bb4acf1ceb7b54ad1864fe625ca1aa68d4cc371ce45170bede728ad84fa2c84"
+content-hash = "fb7f1e1b7dc4819e5b86b247de8485a3be33db285283a39279c027ca073a7643"

@@ -109,7 +109,7 @@ THIRD_PARTY_APPS = [
     "polymorphic",
     "cacheops",
     "extra_settings",
-    "drf_chunked_upload",
+    "akarpov.contrib.chunked_upload",
     "active_link",
     # django-cms
     "cms",
