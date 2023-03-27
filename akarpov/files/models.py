@@ -10,11 +10,12 @@ from django.db.models import (
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
+from akarpov.contrib.chunked_upload.models import AbstractChunkedUpload
 from akarpov.tools.shortener.models import ShortLink
 from akarpov.utils.files import user_file_upload_mixin
 
 
-class File(TimeStampedModel, ShortLink):
+class File(AbstractChunkedUpload, TimeStampedModel, ShortLink):
     """model to store user's files"""
 
     name = CharField(max_length=100)
