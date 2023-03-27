@@ -1247,18 +1247,18 @@ django-classy-tags = ">=3.0"
 
 [[package]]
 name = "django-structlog"
-version = "4.1.1"
+version = "5.0.1"
 description = "Structured Logging for Django"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-structlog-4.1.1.tar.gz", hash = "sha256:6701948cd6d00bb0f826c8370dbb7dc9a6aefb720ac5a1c038493a10eff12495"},
-    {file = "django_structlog-4.1.1-py3-none-any.whl", hash = "sha256:8def459d8cd38726780265b36126ee1b5c87e3d468f12fe1985367591a294866"},
+    {file = "django-structlog-5.0.1.tar.gz", hash = "sha256:2ae2ca4239292a662d1bd6c7656c704fcfd9545b2e39a9501fd1e23800b1a1c4"},
+    {file = "django_structlog-5.0.1-py3-none-any.whl", hash = "sha256:f7d1209e4e48d807d3c6e7212a4c96d572a03d3e0ade7a3c9053b49bc70b33b8"},
 ]
 
 [package.dependencies]
-asgiref = "*"
+asgiref = ">=3.6.0"
 django = ">=3.2"
 django-ipware = "*"
 structlog = ">=21.4.0"
@@ -3909,4 +3909,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8edb99831e5923bf292bb5ddc55fa3d959fe08ec459b3eebb584206feb785e49"
+content-hash = "8d7eb5c27aac92f74b4ea1fc696729120a628f8af03aa70e5ca2bdc3d6a06ab3"
