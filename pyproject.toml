@@ -70,8 +70,8 @@ django-active-link = "^0.1.8"
 channels = "^4.0.0"
 django-upload-validator = "^1.1.6"
 markdown = "^3.4.3"
-preview-generator = {extras = ["all"], version = "^0.29"}
 pydotplus = "^2.0.2"
+preview-generator = "^0.29"
 
 
 [build-system]

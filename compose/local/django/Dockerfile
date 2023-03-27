@@ -26,7 +26,8 @@ WORKDIR ${APP_HOME}
 RUN apt-get update && \
     apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
     # Dependencies for file preview generation
-    # apt-get install -y poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp libreoffice inkscape ffmpeg xvfb && \
+    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev && \
+    # apt-get install -y poppler-utils libfile-mimeinfo-perl ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 libreoffice inkscape ffmpeg xvfb && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
