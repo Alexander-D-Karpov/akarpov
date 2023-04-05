@@ -4692,14 +4692,14 @@ multidict = ">=4.0"
 
 [[package]]
 name = "ytmusicapi"
-version = "0.25.1"
+version = "0.25.2"
 description = "Unofficial API for YouTube Music"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ytmusicapi-0.25.1-py3-none-any.whl", hash = "sha256:11f3df5ac5b2ccb125bd883abf321a614ef97b5ec4b7e56cc856be299d4c8358"},
-    {file = "ytmusicapi-0.25.1.tar.gz", hash = "sha256:b9cfdf8037ad4986824737dfd12cdf6d186cdd368aadf13687aae85a4923f324"},
+    {file = "ytmusicapi-0.25.2-py3-none-any.whl", hash = "sha256:3d47a8803dceeb0289c7cf29a0317c5d6051d0b7c28fda067f6abb001746f7ac"},
+    {file = "ytmusicapi-0.25.2.tar.gz", hash = "sha256:aa3165100ff5c0e1f49f9a046312f878c31eea83fde14af0707e3368ae923fe4"},
 ]
 
 [package.dependencies]
@@ -4759,4 +4759,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5f90f41158f16044973e5bf7b5f5b287c95a3370ba8a3fd0d4835a26bfb39499"
+content-hash = "4483e1fffe1002d470bd1f4e410edeac856662dbdc00c2c147122e3361b0dc76"
