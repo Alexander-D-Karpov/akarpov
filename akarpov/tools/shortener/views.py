@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.views.generic import CreateView, DetailView, TemplateView
 
 from akarpov.tools.shortener.forms import LinkForm
@@ -48,4 +48,6 @@ link_revoked_view = LinkRevokedView.as_view()
 def redirect_view(request, slug):
     # TODO: move to faster framework, like FastApi
     link = get_link_from_slug(slug)
+    if not link:
+        return HttpResponseNotFound("such link doesn't exist or has been revoked")
     return HttpResponseRedirect(link.source)

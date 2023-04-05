@@ -1,21 +1,30 @@
+from secrets import compare_digest
+
 from django.conf import settings
 
 from akarpov.tools.shortener.signals import Link
 from akarpov.utils.generators import get_pk_from_uuid
 
-length = settings.SHORTENER_SLUG_LENGTH
+if hasattr(settings, "SHORTENER_SLUG_LENGTH"):
+    length = settings.SHORTENER_SLUG_LENGTH
+else:
+    length = 0
 
 
-def get_link_from_slug(slug: str, check_whole=False) -> Link | bool:
-    if settings.SHORTENER_ADD_SLUG and not check_whole:
+def get_link_from_slug(slug: str, check_whole=True) -> Link | bool:
+    if settings.SHORTENER_ADD_SLUG and check_whole:
         payload = slug[length:]
         pk = get_pk_from_uuid(payload)
         try:
-            return Link.objects.get(pk=pk)
+            link = Link.objects.get(pk=pk)
+            if not compare_digest(link.slug, slug):
+                return False
+            return link
         except Link.DoesNotExist:
-            return get_link_from_slug(slug, check_whole=True)
+            return get_link_from_slug(slug, check_whole=False)
     pk = get_pk_from_uuid(slug)
     try:
-        return Link.objects.get(pk=pk)
+        link = Link.objects.get(pk=pk)
+        return link
     except Link.DoesNotExist:
         return False

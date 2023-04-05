@@ -5,7 +5,10 @@ from django.dispatch import receiver
 from akarpov.tools.shortener.models import Link
 from akarpov.utils.generators import generate_charset, get_str_uuid
 
-length = settings.SHORTENER_SLUG_LENGTH
+if hasattr(settings, "SHORTENER_SLUG_LENGTH"):
+    length = settings.SHORTENER_SLUG_LENGTH
+else:
+    length = 0
 
 
 def generate_slug(pk: int) -> str:

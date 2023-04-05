@@ -10,7 +10,6 @@ from akarpov.common.models import SlugModel
 class Link(TimeStampedModel):
     source = models.URLField(blank=False)
     slug = models.SlugField()
-
     creator = models.ForeignKey(
         "users.User", related_name="links", null=True, on_delete=models.SET_NULL
     )
