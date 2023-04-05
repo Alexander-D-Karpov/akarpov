@@ -74,6 +74,7 @@ CACHEOPS_REDIS = env.str("REDIS_URL")
 ROOT_URLCONF = "config.urls"
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 # APPS
 # ------------------------------------------------------------------------------
@@ -500,8 +501,8 @@ JAZZMIN_SETTINGS = {
     "site_title": "sanspie's site admin",
     "site_header": "site admin",
     "site_brand": "sanspie's site",
-    "site_logo": "/images/favicons/favicon.ico",
-    "login_logo": "/images/favicons/favicon.ico",
+    "site_logo": "images/favicons/favicon.ico",
+    "login_logo": "images/favicons/favicon.ico",
     "site_icon": None,
     "welcome_sign": "welcum back",
     "copyright": "admin on akarpov.ru",

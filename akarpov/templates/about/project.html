@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load markdown_extras %}
+
+{% block css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+*, html,body{
+	padding:0;
+	margin:0;
+	box-sizing:border-box;
+	font-family:'Poppins', sans-serif;
+	perspective:800px;
+}
+body{
+	width:100%;
+	min-height:100vh;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+}
+.timeline{
+	width:800px;
+	color:grey;
+	padding:30px 20px;
+}
+.timeline ul{
+	list-style-type:none;
+	border-left:2px solid #094a68;
+	padding:10px 5px;
+}
+.timeline ul li{
+	padding:20px 20px;
+	position:relative;
+	cursor:pointer;
+	transition:.5s;
+}
+.timeline ul li span{
+	color:white;
+	display:inline-block;
+	background-color:#1685b8;
+	border-radius:25px;
+	padding:2px 5px;
+	font-size:15px;
+	text-align:center;
+}
+.timeline ul li .content h3{
+	color:#34ace0;
+	font-size:17px;
+	padding-top:5px;
+}
+.timeline ul li .content p{
+	padding:5px 0 15px 0;
+	font-size:15px;
+}
+.timeline ul li:before{
+	position:absolute;
+	content:'';
+	width:10px;
+	height:10px;
+	background-color:#34ace0;
+	border-radius:50%;
+	left:-11px;
+	top:28px;
+	transition:.5s;
+}
+.timeline ul li:hover:before{
+	background-color:#0F0;
+	box-shadow:0 0 10px 2px #0F0;
+}
+@media (max-width:300px){
+	.timeline{
+		width:100%;
+		padding:30px 5px 30px 10px;
+	}
+	.timeline ul li .content h3{
+		color:#34ace0;
+		font-size:15px;
+	}
+
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <br>
+    <a class="mx-5" style="text-decoration: none; color: black" href="{% url "about:about" %}#projects"><i class="bi-arrow-left"></i> back to all projects</a>
+    <div class="row m-5 mb-5 g-1 row-cols-1 row-cols-md-2">
+        <div class="col">
+            <img class="img-fluid" src="{{ project.image.url }}" alt=""/>
+        </div>
+        <div class="col text-center d-flex row align-items-center">
+            <div class="align-items-center m-3">
+                <div class="align-self-center">
+                    <h1 class="fs-2">{{ project.name }}</h1>
+                    <p class="lead">{{ project.md | markdown | safe }}</p>
+                    <p>{{ project.description }}</p>
+                    <p>Created: {{ project.created|date:"d M Y" }}</p>
+                    <p>
+                        {% if project.source_link %}
+                        <a style="text-decoration: none; color: black" class="m-2" href="{{ project.source_link }}"><i class="bi bi-file-earmark-code"></i> Source code</a>
+                        {% endif %}
+                        {% if project.view_link %}
+                        <a style="text-decoration: none; color: black" class="m-2" href="{{ project.view_link }}"><i class="bi bi-box-arrow-up-right"></i> View project</a>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col justify-content-center">
+        {% if project.changes.exists %}
+          <h1 class="mb-5 ml-3">Project timeline:</h1>
+          <div class="timeline">
+              <ul>
+                {% for change in project.changes.all %}
+                <li>
+                  <span>{{ change.created | date }}</span>
+                  <div class="content">
+                    <h3>{{ change.name }}</h3>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+          </div>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}
