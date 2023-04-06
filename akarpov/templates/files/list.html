@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% for folder in folders %}
+  {{ folder.name }}
+{% endfor %}
+{% for file in file_list %}
+  {{ file.name }} - {{ file.file.url }}
+{% endfor %}
+{% endblock %}

@@ -1,6 +1,7 @@
 import os
 
-from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView, ListView
 from django.views.generic.base import TemplateView
 
 from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
@@ -10,6 +11,21 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadView,
 )
 from akarpov.files.models import File, Folder
+
+
+class TopFolderView(LoginRequiredMixin, ListView):
+    template_name = "files/list.html"
+    model = File
+
+    def get_queryset(self):
+        return File.objects.filter(user=self.request.user, folder__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        contex = super().get_context_data(**kwargs)
+        contex["folders"] = Folder.objects.filter(
+            user=self.request.user, parent__isnull=True
+        )
+        return contex
 
 
 class FileView(DetailView):
@@ -69,4 +85,4 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
             os.remove(uploaded_file.file.path)
 
     def get_response_data(self, chunked_upload, request):
-        return {"message": (self.message)}
+        return {"message": self.message}

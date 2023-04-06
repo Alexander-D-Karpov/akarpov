@@ -4,12 +4,14 @@ from akarpov.files.views import (
     ChunkedUploadDemo,
     MyChunkedUploadCompleteView,
     MyChunkedUploadView,
+    TopFolderView,
     files_view,
     folder_view,
 )
 
 app_name = "files"
 urlpatterns = [
+    path("", TopFolderView.as_view(), name="main"),
     path("upload", ChunkedUploadDemo.as_view(), name="chunked_upload"),
     path(
         "api/chunked_upload_complete/",

@@ -2,7 +2,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from akarpov.contrib.chunked_upload.constants import COMPLETE, UPLOADING
 from akarpov.contrib.chunked_upload.models import ChunkedUpload
