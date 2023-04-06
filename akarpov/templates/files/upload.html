@@ -71,7 +71,6 @@
             {"name": "upload_id", "value": data.result.upload_id}
           );
         }
-        $("#messages").append($('<p>').text(JSON.stringify(data.result)));
         var progress = parseInt(data.loaded / data.total * 100.0, 10);
         $("#progress").text(Array(progress).join("=") + "> " + progress + "%");
       },

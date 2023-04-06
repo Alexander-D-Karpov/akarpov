@@ -46,6 +46,10 @@ class MyChunkedUploadView(ChunkedUploadView):
 
 
 class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.message = "file is successfully uploaded"
+
     model = ChunkedUpload
 
     def check_permissions(self, request):
@@ -55,14 +59,14 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
             )
 
     def on_completion(self, uploaded_file, request):
-        File.objects.create(user=request.user, file=uploaded_file)
+        if uploaded_file.size <= request.user.left_file_upload:
+            File.objects.create(user=request.user, file=uploaded_file)
+            request.user.left_file_upload -= uploaded_file.size
+            request.user.save()
+        else:
+            self.message = "File is too large"
         if os.path.isfile(uploaded_file.file.path):
             os.remove(uploaded_file.file.path)
 
     def get_response_data(self, chunked_upload, request):
-        return {
-            "message": (
-                "You successfully uploaded '%s' (%s bytes)!"
-                % (chunked_upload.filename, chunked_upload.offset)
-            )
-        }
+        return {"message": (self.message)}

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, TextField
+from django.core.validators import MinValueValidator
+from django.db.models import CharField, IntegerField, TextField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -19,6 +20,11 @@ class User(AbstractUser, BaseImageModel, ShortLink):
     about = TextField(_("Description"), blank=True, max_length=100)
     first_name = None  # type: ignore
     last_name = None  # type: ignore
+
+    # files
+    left_file_upload = IntegerField(
+        "Left file upload(in bites)", default=0, validators=[MinValueValidator(0)]
+    )
 
     def get_absolute_url(self):
         """Get url for user's detail view.
