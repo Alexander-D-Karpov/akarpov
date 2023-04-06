@@ -6,8 +6,6 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.module_loading import import_string
 
-from akarpov.utils.files import user_file_upload_mixin
-
 # How long after creation the upload will expire
 DEFAULT_EXPIRATION_DELTA = timedelta(days=1)
 EXPIRATION_DELTA = getattr(
@@ -25,7 +23,7 @@ def default_upload_to(instance, filename):
     return time.strftime(filename)
 
 
-UPLOAD_TO = user_file_upload_mixin
+UPLOAD_TO = default_upload_to
 
 # Storage system
 

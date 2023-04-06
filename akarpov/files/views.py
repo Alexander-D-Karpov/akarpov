@@ -1,6 +1,10 @@
+import os
+
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
 
+from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
+from akarpov.contrib.chunked_upload.models import ChunkedUpload
 from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadCompleteView,
     ChunkedUploadView,
@@ -31,28 +35,29 @@ class ChunkedUploadDemo(TemplateView):
 
 
 class MyChunkedUploadView(ChunkedUploadView):
-    model = File
+    model = ChunkedUpload
     field_name = "the_file"
 
     def check_permissions(self, request):
-        # Allow non authenticated users to make uploads
-        pass
+        if not self.request.user.is_authenticated:
+            raise ChunkedUploadError(
+                403, message="you are not allowed to access this page"
+            )
 
 
 class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
-    model = File
+    model = ChunkedUpload
 
     def check_permissions(self, request):
-        # Allow non authenticated users to make uploads
-        pass
+        if not self.request.user.is_authenticated:
+            raise ChunkedUploadError(
+                403, message="you are not allowed to access this page"
+            )
 
     def on_completion(self, uploaded_file, request):
-        # Do something with the uploaded file. E.g.:
-        # * Store the uploaded file on another model:
-        # SomeModel.objects.create(user=request.user, file=uploaded_file)
-        # * Pass it as an argument to a function:
-        # function_that_process_file(uploaded_file)
-        pass
+        File.objects.create(user=request.user, file=uploaded_file)
+        if os.path.isfile(uploaded_file.file.path):
+            os.remove(uploaded_file.file.path)
 
     def get_response_data(self, chunked_upload, request):
         return {

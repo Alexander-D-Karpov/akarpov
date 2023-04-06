@@ -10,12 +10,11 @@ from django.db.models import (
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
-from akarpov.contrib.chunked_upload.models import AbstractChunkedUpload
 from akarpov.tools.shortener.models import ShortLink
 from akarpov.utils.files import user_file_upload_mixin
 
 
-class File(AbstractChunkedUpload, TimeStampedModel, ShortLink):
+class File(TimeStampedModel, ShortLink):
     """model to store user's files"""
 
     name = CharField(max_length=100)
@@ -36,6 +35,11 @@ class File(AbstractChunkedUpload, TimeStampedModel, ShortLink):
 
     def __str__(self):
         return f"file: {self.name}"
+
+
+class FileInTrash(TimeStampedModel):
+    user = ForeignKey("users.User", related_name="trash_files", on_delete=CASCADE)
+    file = FileField(blank=False, upload_to="file/trash/")
 
 
 class Folder(TimeStampedModel, ShortLink):
