@@ -46,7 +46,7 @@ class FileFolderView(DetailView):
 folder_view = FileFolderView.as_view()
 
 
-class ChunkedUploadDemo(TemplateView):
+class ChunkedUploadDemo(LoginRequiredMixin, TemplateView):
     template_name = "files/upload.html"
 
 
@@ -76,7 +76,9 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
 
     def on_completion(self, uploaded_file, request):
         if uploaded_file.size <= request.user.left_file_upload:
-            File.objects.create(user=request.user, file=uploaded_file)
+            File.objects.create(
+                user=request.user, file=uploaded_file, name=uploaded_file.name
+            )
             request.user.left_file_upload -= uploaded_file.size
             request.user.save()
         else:

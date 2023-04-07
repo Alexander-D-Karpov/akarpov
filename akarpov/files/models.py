@@ -17,9 +17,6 @@ from akarpov.utils.files import user_file_upload_mixin
 class File(TimeStampedModel, ShortLink):
     """model to store user's files"""
 
-    name = CharField(max_length=100)
-    description = TextField(blank=True)
-
     private = BooleanField(default=True)
 
     user = ForeignKey("users.User", related_name="files", on_delete=CASCADE)
@@ -29,6 +26,11 @@ class File(TimeStampedModel, ShortLink):
 
     preview = FileField(blank=True, upload_to="file/previews/")
     file = FileField(blank=False, upload_to=user_file_upload_mixin)
+
+    # meta
+    name = CharField(max_length=100, null=True, blank=True)
+    description = TextField(blank=True, null=True)
+    file_type = CharField(max_length=50, null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse("files:view", kwargs={"slug": self.slug})

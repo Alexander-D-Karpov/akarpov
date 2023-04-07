@@ -1,6 +1,8 @@
 from math import ceil
 
+import magic
 from PIL import Image, ImageDraw, ImageFont
+from preview_generator.exception import UnsupportedMimeType
 from preview_generator.manager import PreviewManager
 
 cache_path = "/tmp/preview_cache"
@@ -12,6 +14,8 @@ COMMON_MONO_FONT_FILENAMES = [
     "Consolas Mono.ttf",
     "Consola.ttf",
 ]
+
+manager = PreviewManager(cache_path, create_folder=True)
 
 
 def textfile_to_image(textfile_path) -> Image:
@@ -75,6 +79,18 @@ def textfile_to_image(textfile_path) -> Image:
 
 def create_preview(file_path: str) -> str:
     # TODO: add text image generation/code image
-    manager = PreviewManager(cache_path, create_folder=True)
-    path_to_preview_image = manager.get_pdf_preview(file_path)
+    try:
+        path_to_preview_image = manager.get_jpeg_preview(file_path)
+    except UnsupportedMimeType:
+        return ""
     return path_to_preview_image
+
+
+def get_file_mimetype(file_path: str) -> str:
+    return magic.from_file(file_path)
+
+
+def get_description(file_path: str) -> str:
+    if manager.has_text_preview(file_path):
+        return manager.get_text_preview(file_path)
+    return ""
