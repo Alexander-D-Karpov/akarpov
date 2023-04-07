@@ -38,6 +38,9 @@ class File(TimeStampedModel, ShortLink):
     def __str__(self):
         return f"file: {self.name}"
 
+    class Meta:
+        ordering = ["modified"]
+
 
 class FileInTrash(TimeStampedModel):
     user = ForeignKey("users.User", related_name="trash_files", on_delete=CASCADE)

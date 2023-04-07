@@ -4,7 +4,20 @@
 {% for folder in folders %}
   {{ folder.name }}
 {% endfor %}
-{% for file in file_list %}
-  {{ file.name }} - {{ file.file.url }}
-{% endfor %}
+<div class="row">
+  {% for file in file_list %}
+    <div class="col-sm-2">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ file.name }}</h5>
+          <p class="card-text">{{ file.description }}</p>
+          <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+        </div>
+      {% if file.preview %}
+      <img src="{{ file.preview.url }}" class="card-img-bottom" alt="">
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
 {% endblock %}

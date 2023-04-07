@@ -2,7 +2,6 @@ from math import ceil
 
 import magic
 from PIL import Image, ImageDraw, ImageFont
-from preview_generator.exception import UnsupportedMimeType
 from preview_generator.manager import PreviewManager
 
 cache_path = "/tmp/preview_cache"
@@ -79,11 +78,9 @@ def textfile_to_image(textfile_path) -> Image:
 
 def create_preview(file_path: str) -> str:
     # TODO: add text image generation/code image
-    try:
-        path_to_preview_image = manager.get_jpeg_preview(file_path)
-    except UnsupportedMimeType:
-        return ""
-    return path_to_preview_image
+    if manager.has_jpeg_preview(file_path):
+        return manager.get_jpeg_preview(file_path, height=500)
+    return ""
 
 
 def get_file_mimetype(file_path: str) -> str:
