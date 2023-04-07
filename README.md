@@ -2,7 +2,7 @@
 
 My collection of apps and tools
 
-Writen in Python 3.11 and Django 4.1
+Writen in Python 3.11 and Django 4.2
 
 ### local run via docker
 
@@ -19,3 +19,11 @@ $ black akarpov
 $ no_implicit_optional akarpov
 $ mypy --config-file setup.cfg akarpov
 ```
+
+### list of projects:
+- blog
+- fileshare
+- music radio + processor
+- test platform
+- short link generator
+- about me app
