@@ -28,7 +28,7 @@ CACHES = {
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = env("EMAIL_HOST", default="mailhog")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = 1025
+EMAIL_PORT = env("EMAIL_PORT", default="1025")
 
 # WhiteNoise
 # ------------------------------------------------------------------------------

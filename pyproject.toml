@@ -81,6 +81,11 @@ python-mpd2 = "^3.0.5"
 spotipy = "^2.22.1"
 yandex-music = "^2.0.1"
 pyjwt = "^2.6.0"
+rawpy = "^0.18.0"
+xvfbwrapper = "^0.2.9"
+vtk = "^9.2.6"
+ffmpeg-python = "^0.2.0"
+cairosvg = "^2.7.0"
 
 
 [build-system]
