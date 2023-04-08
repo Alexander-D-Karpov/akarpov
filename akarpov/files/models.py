@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.db.models import (
     CASCADE,
     BooleanField,
@@ -32,6 +35,16 @@ class File(TimeStampedModel, ShortLink):
     description = TextField(blank=True, null=True)
     file_type = CharField(max_length=50, null=True, blank=True)
 
+    @property
+    def file_image_url(self):
+        if self.preview:
+            return self.preview.url
+        end = self.file.path.split(".")[-1]
+        path = settings.STATICFILES_DIRS[0] + f"/images/files/{end}.png"
+        if os.path.isfile(path):
+            return settings.STATIC_URL + f"images/files/{end}.png"
+        return settings.STATIC_URL + "images/files/_blank.png"
+
     def get_absolute_url(self):
         return reverse("files:view", kwargs={"slug": self.slug})
 
@@ -39,7 +52,7 @@ class File(TimeStampedModel, ShortLink):
         return f"file: {self.name}"
 
     class Meta:
-        ordering = ["modified"]
+        ordering = ["-modified"]
 
 
 class FileInTrash(TimeStampedModel):

@@ -16,6 +16,7 @@ logger = structlog.get_logger(__name__)
 
 @shared_task()
 def process_file(pk: int):
+    pth = None
     file = FileModel.objects.get(pk=pk)
     if not file.name:
         file.name = file.file.name.split("/")[-1]
@@ -31,8 +32,18 @@ def process_file(pk: int):
     except Exception as e:
         logger.error(e)
     file.type = get_file_mimetype(file.file.path)
-    file.description = get_description(file.file.path)
+    descr = None
+    try:
+        descr = get_description(file.file.path)
+        if descr:
+            with open(descr, encoding="utf-8") as f:
+                data = f.read()
+                file.description = data
+    except Exception as e:
+        logger.error(e)
     file.save(update_fields=["preview", "name", "file_type", "description"])
     if pth and os.path.isfile(pth):
         os.remove(pth)
+    if descr and os.path.isfile(descr):
+        os.remove(descr)
     return pk
