@@ -10,8 +10,8 @@ from django.db.models import (
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
+from akarpov.files.services.files import user_unique_file_upload
 from akarpov.tools.shortener.models import ShortLink
-from akarpov.utils.files import user_file_upload_mixin
 
 
 class File(TimeStampedModel, ShortLink):
@@ -25,7 +25,7 @@ class File(TimeStampedModel, ShortLink):
     )
 
     preview = FileField(blank=True, upload_to="file/previews/")
-    file = FileField(blank=False, upload_to=user_file_upload_mixin)
+    file = FileField(blank=False, upload_to=user_unique_file_upload)
 
     # meta
     name = CharField(max_length=100, null=True, blank=True)
