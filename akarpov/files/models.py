@@ -45,6 +45,12 @@ class File(TimeStampedModel, ShortLink):
             return settings.STATIC_URL + f"images/files/{end}.png"
         return settings.STATIC_URL + "images/files/_blank.png"
 
+    @property
+    def file_size(self):
+        if self.file:
+            return self.file.size
+        return 0
+
     def get_absolute_url(self):
         return reverse("files:view", kwargs={"slug": self.slug})
 
