@@ -64,7 +64,7 @@ class MyChunkedUploadView(ChunkedUploadView):
 class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.message = "file is successfully uploaded"
+        self.message = {}
 
     model = ChunkedUpload
 
@@ -76,15 +76,22 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
 
     def on_completion(self, uploaded_file, request):
         if uploaded_file.size <= request.user.left_file_upload:
-            File.objects.create(
+            f = File.objects.create(
                 user=request.user, file=uploaded_file, name=uploaded_file.name
             )
             request.user.left_file_upload -= uploaded_file.size
             request.user.save()
+            self.message = {
+                "message": f"File {f.file.name.split('/')[-1]} successfully uploaded",
+                "status": True,
+            }
         else:
-            self.message = "File is too large"
+            self.message = {
+                "message": "File is too large, please increase disk space",
+                "status": False,
+            }
         if os.path.isfile(uploaded_file.file.path):
             os.remove(uploaded_file.file.path)
 
     def get_response_data(self, chunked_upload, request):
-        return {"message": self.message}
+        return self.message

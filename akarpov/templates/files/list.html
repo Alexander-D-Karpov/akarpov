@@ -1,5 +1,18 @@
 {% extends 'base.html' %}
-{% load humanize %}
+{% load humanize static %}
+
+{% block javascript %}
+  <script src="{% static 'js/jquery.js' %}"></script>
+  <script src="{% static 'js/jquery.ui.widget.js' %}"></script>
+  <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+  <script src="{% static 'js/jquery.iframe-transport.js' %}"></script>
+  <!-- The basic File Upload plugin -->
+  <script src="{% static 'js/jquery.fileupload.js' %}"></script>
+  <!-- Calculate md5 -->
+  <script src="{% static 'js/spark-md5.js' %}"></script>
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/notify.js' %}"></script>
+{% endblock %}
 
 {% block css %}
 <style>
@@ -24,6 +37,33 @@
   {{ folder.name }}
 {% endfor %}
 <div class="row">
+<div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
+    <div class="card-body d-flex flex-column justify-content-center align-items-center">
+      {% csrf_token %}
+      <fieldset class="upload_dropZone text-center mb-3 p-4">
+        <legend class="visually-hidden">Image uploader</legend>
+        <svg class="upload_svg" width="60" height="60" aria-hidden="true">
+          <use href="#icon-imageUpload"></use>
+        </svg>
+        <p class="small my-2">Drag &amp; Drop background image(s) inside dashed region<br><i>or</i></p>
+        <input multiple class="position-absolute invisible" id="chunked_upload" type="file" name="the_file">
+        <label class="btn btn-upload mb-3" for="chunked_upload">Choose file(s)</label>
+        <div class="upload_gallery d-flex flex-wrap justify-content-center gap-3 mb-0"></div>
+      </fieldset>
+      <svg style="display:none">
+        <defs>
+          <symbol id="icon-imageUpload" clip-rule="evenodd" viewBox="0 0 96 96">
+            <path d="M47 6a21 21 0 0 0-12.3 3.8c-2.7 2.1-4.4 5-4.7 7.1-5.8 1.2-10.3 5.6-10.3 10.6 0 6 5.8 11 13 11h12.6V22.7l-7.1 6.8c-.4.3-.9.5-1.4.5-1 0-2-.8-2-1.7 0-.4.3-.9.6-1.2l10.3-8.8c.3-.4.8-.6 1.3-.6.6 0 1 .2 1.4.6l10.2 8.8c.4.3.6.8.6 1.2 0 1-.9 1.7-2 1.7-.5 0-1-.2-1.3-.5l-7.2-6.8v15.6h14.4c6.1 0 11.2-4.1 11.2-9.4 0-5-4-8.8-9.5-9.4C63.8 11.8 56 5.8 47 6Zm-1.7 42.7V38.4h3.4v10.3c0 .8-.7 1.5-1.7 1.5s-1.7-.7-1.7-1.5Z M27 49c-4 0-7 2-7 6v29c0 3 3 6 6 6h42c3 0 6-3 6-6V55c0-4-3-6-7-6H28Zm41 3c1 0 3 1 3 3v19l-13-6a2 2 0 0 0-2 0L44 79l-10-5a2 2 0 0 0-2 0l-9 7V55c0-2 2-3 4-3h41Z M40 62c0 2-2 4-5 4s-5-2-5-4 2-4 5-4 5 2 5 4Z"></path>
+          </symbol>
+        </defs>
+      </svg>
+      <div id="progress" class="progress w-100" style="display: none" role="progressbar" aria-label="Warning example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <h1 id="progress-message"></h1>
+        <div id="progress-bar" class="progress-bar text-bg-warning" style="width: 0%">0%</div>
+      </div>
+      <div id="messages"></div>
+    </div>
+</div>
 {% for file in file_list %}
   <div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
       <div class="card-body d-flex flex-column">
@@ -37,4 +77,122 @@
   </div>
 {% endfor %}
 </div>
+{% endblock %}
+
+{% block inline_javascript %}
+  <script type="text/javascript">
+    $.notify.defaults(
+      {
+        // whether to hide the notification on click
+        clickToHide: true,
+        // whether to auto-hide the notification
+        autoHide: true,
+        // if autoHide, hide after milliseconds
+        autoHideDelay: 5000,
+        // show the arrow pointing at the element
+        arrowShow: true,
+        // arrow size in pixels
+        arrowSize: 5,
+        // position defines the notification position though uses the defaults below
+        position: '...',
+        // default positions
+        elementPosition: 'bottom right',
+        globalPosition: 'top right',
+        // default style
+        style: 'bootstrap',
+        // default class (string or [string])
+        className: 'error',
+        // show animation
+        showAnimation: 'slideDown',
+        // show animation duration
+        showDuration: 400,
+        // hide animation
+        hideAnimation: 'slideUp',
+        // hide animation duration
+        hideDuration: 200,
+        // padding between element and notification
+        gap: 2
+      }
+    )
+
+    var md5 = "",
+        csrf = $("input[name='csrfmiddlewaretoken']")[0].value,
+        form_data = [{"name": "csrfmiddlewaretoken", "value": csrf}];
+    function calculate_md5(file, chunk_size) {
+      var slice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+          chunks = Math.ceil(file.size / chunk_size),
+          current_chunk = 0,
+          spark = new SparkMD5.ArrayBuffer();
+      function onload(e) {
+        spark.append(e.target.result);  // append chunk
+        current_chunk++;
+        if (current_chunk < chunks) {
+          read_next_chunk();
+        } else {
+          md5 = spark.end();
+        }
+      };
+      function read_next_chunk() {
+        var reader = new FileReader();
+        reader.onload = onload;
+        var start = current_chunk * chunk_size,
+            end = Math.min(start + chunk_size, file.size);
+        reader.readAsArrayBuffer(slice.call(file, start, end));
+      };
+      read_next_chunk();
+    }
+    let ind = 0;
+    let files = []
+    $("#chunked_upload").fileupload({
+      url: "{% url 'files:api_chunked_upload' %}",
+      dataType: "json",
+      maxChunkSize: 1000000, // Chunks of 1000 kB
+      formData: form_data,
+      sequentialUploads: true,
+      add: function(e, data) { // Called before starting upload
+        files.push(data.files[0])
+        calculate_md5(files[ind], 1000000);  // Again, chunks of 1000 kB
+        data.submit();
+        $("#progress").css("display", "flex");
+      },
+      chunkdone: function (e, data) { // Called after uploading each chunk
+        if (form_data.length < 2) {
+          form_data.push(
+            {"name": "upload_id", "value": data.result.upload_id}
+          );
+        }
+        var progress = parseInt(data.loaded / data.total * 100.0, 10);
+        let sel = $("#progress-bar");
+        sel.css("width", progress + "%");
+        sel.text(progress + "%");
+      },
+      done: function (e, data) { // Called when the file has completely uploaded
+        $.ajax({
+          type: "POST",
+          url: "{% url 'files:api_chunked_upload_complete' %}",
+          data: {
+            csrfmiddlewaretoken: csrf,
+            upload_id: data.result.upload_id,
+            md5: md5
+          },
+          dataType: "json",
+            success: function(data) {
+            let s = ""
+            if(data['status'] === true){
+              s = "success"
+            } else {
+              s = "error"
+            }
+            $.notify(data['message'], s);
+            $("#progress").css("display", "none");
+            $("#progress-message").empty()
+          }
+        });
+        ind ++;
+        if (ind !== files.length){
+        calculate_md5(files[ind], 1000000);
+        }
+      },
+    })
+  </script>
 {% endblock %}
