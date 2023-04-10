@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
-from django.db.models import CharField, IntegerField, TextField
+from django.db.models import BigIntegerField, CharField, TextField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -22,7 +22,7 @@ class User(AbstractUser, BaseImageModel, ShortLink):
     last_name = None  # type: ignore
 
     # files
-    left_file_upload = IntegerField(
+    left_file_upload = BigIntegerField(
         "Left file upload(in bites)", default=0, validators=[MinValueValidator(0)]
     )
 

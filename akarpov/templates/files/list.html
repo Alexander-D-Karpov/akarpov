@@ -45,8 +45,8 @@
         <svg class="upload_svg" width="60" height="60" aria-hidden="true">
           <use href="#icon-imageUpload"></use>
         </svg>
-        <p class="small my-2">Drag &amp; Drop background image(s) inside dashed region<br><i>or</i></p>
-        <input multiple class="position-absolute invisible" id="chunked_upload" type="file" name="the_file">
+        <p class="small my-2">Drag &amp; Drop file(s) <br><i>or</i></p>
+        <input class="position-absolute invisible" id="chunked_upload" type="file" name="the_file">
         <label class="btn btn-upload mb-3" for="chunked_upload">Choose file(s)</label>
         <div class="upload_gallery d-flex flex-wrap justify-content-center gap-3 mb-0"></div>
       </fieldset>
@@ -118,11 +118,13 @@
     var md5 = "",
         csrf = $("input[name='csrfmiddlewaretoken']")[0].value,
         form_data = [{"name": "csrfmiddlewaretoken", "value": csrf}];
+
     function calculate_md5(file, chunk_size) {
       var slice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
           chunks = Math.ceil(file.size / chunk_size),
           current_chunk = 0,
           spark = new SparkMD5.ArrayBuffer();
+
       function onload(e) {
         spark.append(e.target.result);  // append chunk
         current_chunk++;
@@ -132,6 +134,7 @@
           md5 = spark.end();
         }
       };
+
       function read_next_chunk() {
         var reader = new FileReader();
         reader.onload = onload;
@@ -141,21 +144,31 @@
       };
       read_next_chunk();
     }
-    let ind = 0;
-    let files = []
+
+    let body = $("#body")
+    let cur = false
     $("#chunked_upload").fileupload({
       url: "{% url 'files:api_chunked_upload' %}",
       dataType: "json",
       maxChunkSize: 1000000, // Chunks of 1000 kB
       formData: form_data,
+      prependFiles: true,
+      dropZone: body,
+      pasteZone: body,
       sequentialUploads: true,
+      autoUpload: false,
       add: function(e, data) { // Called before starting upload
-        files.push(data.files[0])
-        calculate_md5(files[ind], 1000000);  // Again, chunks of 1000 kB
-        data.submit();
-        $("#progress").css("display", "flex");
+        if (cur !== true){
+          cur = true
+          console.log("add", data.files[0])
+          form_data.splice(1);
+          calculate_md5(data.files[0], 1000000);
+          data.submit();
+          $("#progress").css("display", "flex");
+        }
       },
       chunkdone: function (e, data) { // Called after uploading each chunk
+        console.log("chunkdone", data.files[0])
         if (form_data.length < 2) {
           form_data.push(
             {"name": "upload_id", "value": data.result.upload_id}
@@ -167,6 +180,7 @@
         sel.text(progress + "%");
       },
       done: function (e, data) { // Called when the file has completely uploaded
+        console.log("done", data.files[0])
         $.ajax({
           type: "POST",
           url: "{% url 'files:api_chunked_upload_complete' %}",
@@ -188,11 +202,8 @@
             $("#progress-message").empty()
           }
         });
-        ind ++;
-        if (ind !== files.length){
-        calculate_md5(files[ind], 1000000);
+        cur = false
         }
-      },
     })
   </script>
 {% endblock %}
