@@ -152,11 +152,8 @@
       dataType: "json",
       maxChunkSize: 1000000, // Chunks of 1000 kB
       formData: form_data,
-      prependFiles: true,
       dropZone: body,
       pasteZone: body,
-      sequentialUploads: true,
-      autoUpload: false,
       add: function(e, data) { // Called before starting upload
         if (cur !== true){
           cur = true

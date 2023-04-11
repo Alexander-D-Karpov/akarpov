@@ -14,3 +14,9 @@ def user_unique_file_upload(instance, filename):
         slug = generate_charset(5)
 
     return os.path.join(f"files/{username}/{slug}", filename)
+
+
+def trash_file_upload(instance, filename):
+    """stores user trash files"""
+    username = instance.user.username
+    return os.path.join(f"file/trash/{username}", filename)

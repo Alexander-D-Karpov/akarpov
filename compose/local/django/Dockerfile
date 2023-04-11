@@ -27,7 +27,6 @@ RUN apt-get update && \
     apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
     # Dependencies for file preview generation
     apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg && \
-    # apt-get install -y poppler-utils libfile-mimeinfo-perl ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 libreoffice inkscape xvfb && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
@@ -51,6 +50,9 @@ COPY ./compose/local/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
+COPY ./compose/local/django/install_preview_dependencies /install_preview_dependencies
+RUN sed -i 's/\r$//g' /install_preview_dependencies
+RUN chmod +x /install_preview_dependencies
 
 COPY ./compose/local/django/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker

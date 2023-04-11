@@ -13,7 +13,7 @@ from django.db.models import (
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
-from akarpov.files.services.files import user_unique_file_upload
+from akarpov.files.services.files import trash_file_upload, user_unique_file_upload
 from akarpov.tools.shortener.models import ShortLink
 
 
@@ -62,8 +62,9 @@ class File(TimeStampedModel, ShortLink):
 
 
 class FileInTrash(TimeStampedModel):
+    name = CharField(max_length=200, blank=True)
     user = ForeignKey("users.User", related_name="trash_files", on_delete=CASCADE)
-    file = FileField(blank=False, upload_to="file/trash/")
+    file = FileField(blank=False, upload_to=trash_file_upload)
 
 
 class Folder(TimeStampedModel, ShortLink):
