@@ -57,8 +57,8 @@
           </symbol>
         </defs>
       </svg>
+      <p class="text-break" id="progress-message"></p>
       <div id="progress" class="progress w-100" style="display: none" role="progressbar" aria-label="Warning example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-        <h1 id="progress-message"></h1>
         <div id="progress-bar" class="progress-bar text-bg-warning" style="width: 0%">0%</div>
       </div>
       <div id="messages"></div>
@@ -72,11 +72,36 @@
         <div class="align-self-stretch align-items-center justify-content-center d-flex flex-column fill-height controlsdiv">
           <img src="{{ file.file_image_url }}" class="img-fluid" alt="">
         </div>
+
+        <a href="{% url 'files:view' file.slug %}" class="stretched-link"></a>
         <p class="card-text mb-4 mt-2 ms-3"><small class="text-muted">{{ file.modified | naturaltime }}</small></p>
       </div>
   </div>
 {% endfor %}
 </div>
+{% if page_obj.has_other_pages %}
+<div class="btn-group" role="group" aria-label="Item pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-warning">&laquo;</a>
+    {% endif %}
+
+    {% for page_number in page_obj.paginator.page_range %}
+        {% if page_obj.number == page_number %}
+            <button class="btn btn-outline-warning active">
+                <span>{{ page_number }} <span class="sr-only">(current)</span></span>
+            </button>
+        {% else %}
+            <a href="?page={{ page_number }}" class="btn btn-outline-warning">
+                {{ page_number }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-warning">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block inline_javascript %}
@@ -157,15 +182,14 @@
       add: function(e, data) { // Called before starting upload
         if (cur !== true){
           cur = true
-          console.log("add", data.files[0])
           form_data.splice(1);
           calculate_md5(data.files[0], 1000000);
           data.submit();
           $("#progress").css("display", "flex");
+          $("#progress-message").text("loading file: " + data.files[0].name);
         }
       },
       chunkdone: function (e, data) { // Called after uploading each chunk
-        console.log("chunkdone", data.files[0])
         if (form_data.length < 2) {
           form_data.push(
             {"name": "upload_id", "value": data.result.upload_id}
@@ -177,7 +201,10 @@
         sel.text(progress + "%");
       },
       done: function (e, data) { // Called when the file has completely uploaded
-        console.log("done", data.files[0])
+        var progress = 100;
+        let sel = $("#progress-bar");
+        sel.css("width", progress + "%");
+        sel.text(progress + "%");
         $.ajax({
           type: "POST",
           url: "{% url 'files:api_chunked_upload_complete' %}",

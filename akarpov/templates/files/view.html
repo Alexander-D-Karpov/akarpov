@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block javascript %}
+{% autoescape off %}
+{{ preview_static }}
+{% endautoescape %}
+{% endblock %}
+
+{% block content %}
+<div class="row m-2">
+  <div class="col-auto">
+    <h1 class="fs-1">{{ file.name }}</h1>
+    {% if not has_perm %}
+        <p>Uploaded by: <a href="{% url 'users:detail' file.user.username %}">
+        {% if file.user.image_cropped %}<img class="rounded" width="20" src="{{ file.user.image_cropped.url }}" alt=""> {% endif %}
+          {{ file.user.username }}</a></p>
+    {% endif %}
+    <p class="mt-2">Last updated: {{ file.modified|date:"d.m.Y" }} {{ file.modified|time:"H:i" }}</p>
+    <p>File size: {{ file.file_size | filesizeformat }}</p>
+    {% if file.file_type %}
+    <p>File type: {{ file.file_type }}</p>
+    {% endif %}
+    {% if file.description %}
+    <p>{{ file.description }}</p>
+    {% endif %}
+  </div>
+  <div class="col-auto">
+  {% autoescape off %}
+  {{ preview_content }}
+  {% endautoescape %}
+  </div>
+</div>
+{% endblock %}

@@ -31,7 +31,7 @@ def process_file(pk: int):
                 )
     except Exception as e:
         logger.error(e)
-    file.type = get_file_mimetype(file.file.path)
+    file.file_type = get_file_mimetype(file.file.path)
     descr = None
     try:
         descr = get_description(file.file.path)

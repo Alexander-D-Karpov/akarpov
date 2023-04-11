@@ -84,7 +84,8 @@ def create_preview(file_path: str) -> str:
 
 
 def get_file_mimetype(file_path: str) -> str:
-    return magic.from_file(file_path)
+    mime = magic.Magic(mime=True)
+    return mime.from_file(file_path)
 
 
 def get_description(file_path: str) -> str:

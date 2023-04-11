@@ -11,10 +11,12 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadView,
 )
 from akarpov.files.models import File, Folder
+from akarpov.files.previews import previews
 
 
 class TopFolderView(LoginRequiredMixin, ListView):
     template_name = "files/list.html"
+    paginate_by = 20
     model = File
 
     def get_queryset(self):
@@ -32,6 +34,20 @@ class FileView(DetailView):
     template_name = "files/view.html"
     model = File
     slug_field = "slug"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["has_perm"] = self.object.user == self.request.user
+        static = ""
+        content = ""
+        if self.object.file_type:
+            t1, t2 = self.object.file_type.split("/")
+            if t1 in previews:
+                if t2 in previews[t1]:
+                    static, content = previews[t1][t2](self.object)
+        context["preview_static"] = static
+        context["preview_content"] = content
+        return context
 
 
 files_view = FileView.as_view()

@@ -51,7 +51,7 @@
                         </li>
                         {% if request.user.is_authenticated %}
                         <li>
-                            <a href="{% url 'files:main' %}" class="{% active_link 'files' %} text-muted nav-link px-sm-0 px-2">
+                            <a href="{% url 'files:main' %}" class="{% active_link 'files:main' %} text-muted nav-link px-sm-0 px-2">
                                 <i class="fs-5 bi-folder-fill"></i><span class="ms-1 d-none d-sm-inline">Files</span></a>
                         </li>
                         {% endif %}
