@@ -11,7 +11,7 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadView,
 )
 from akarpov.files.models import File, Folder
-from akarpov.files.previews import previews
+from akarpov.files.previews import extensions, previews
 
 
 class TopFolderView(LoginRequiredMixin, ListView):
@@ -41,10 +41,15 @@ class FileView(DetailView):
         static = ""
         content = ""
         if self.object.file_type:
-            t1, t2 = self.object.file_type.split("/")
-            if t1 in previews:
-                if t2 in previews[t1]:
-                    static, content = previews[t1][t2](self.object)
+            if self.object.file_type == "application/octet-stream":
+                extension = self.object.file.path.split(".")[-1]
+                if extension in extensions:
+                    static, content = extensions[extension](self.object)
+            else:
+                t1, t2 = self.object.file_type.split("/")
+                if t1 in previews:
+                    if t2 in previews[t1]:
+                        static, content = previews[t1][t2](self.object)
         context["preview_static"] = static
         context["preview_content"] = content
         return context

@@ -7,4 +7,4 @@ dpkg -i draw.io-amd64-13.0.3.deb
 rm draw.io-amd64-13.0.3.deb
 apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
 rm -rf /var/lib/apt/lists/*
-preview --check-dependencies``
+preview --check-dependencies

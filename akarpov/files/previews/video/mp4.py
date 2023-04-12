@@ -9,7 +9,7 @@ def view(file: File) -> (str, str):
     content = f"""
 
       <video id="my_video_1" class="video-js vjs-default-skin" height="500px"
-          controls poster='{file.preview.url}'
+          controls poster='{file.preview.url if file.preview else ''}'
           data-setup='{data}'>
         <source src="{file.file.url}" type='video/mp4' />
       </video>

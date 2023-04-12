@@ -10,6 +10,8 @@ def view(file: File) -> (str, str):
         <div>
           <img id="image" class="img-fluid" src="{file.file.url}" alt="Picture">
         </div>
+        <div id="images">
+        </div
       <script src="/static/js/jquery.js"></script>
     """
         + """
@@ -23,10 +25,7 @@ def view(file: File) -> (str, str):
               }
             });
 
-            // Get the Viewer.js instance after initialized
             var viewer = $image.data('viewer');
-
-            // View a list of images
             $('#images').viewer();
       </script>
     """

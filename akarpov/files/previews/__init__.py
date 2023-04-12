@@ -1,3 +1,20 @@
-from . import image, video
+from . import audio, image, video
 
-previews = {"video": {"mp4": video.mp4.view}, "image": {"jpeg": image.jpeg.view}}
+previews = {
+    "audio": {
+        "aac": audio.basic.view,
+        "mpeg": audio.basic.view,
+        "ogg": audio.basic.view,
+        "opus": audio.basic.view,
+        "wav": audio.basic.view,
+        "webm": audio.basic.view,
+    },
+    "video": {"mp4": video.mp4.view},
+    "image": {
+        "jpeg": image.basic.view,
+        "png": image.basic.view,
+        "avif": image.basic.view,
+    },
+}
+
+extensions = {"mp4": video.mp4.view, "mp3": audio.basic.view, "avif": image.basic.view}

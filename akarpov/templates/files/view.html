@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="row m-2">
-  <div class="col-auto">
+  <div class="col-md-4 col-sm-6">
     <h1 class="fs-1">{{ file.name }}</h1>
     {% if not has_perm %}
         <p>Uploaded by: <a href="{% url 'users:detail' file.user.username %}">
@@ -24,7 +24,7 @@
     <p>{{ file.description }}</p>
     {% endif %}
   </div>
-  <div class="col-auto">
+  <div class="col-md-8 col-sm-10">
   {% autoescape off %}
   {{ preview_content }}
   {% endautoescape %}
