@@ -2,8 +2,9 @@ from akarpov.files.models import File
 
 
 def view(file: File) -> (str, str):
-    static = """
+    static = f"""
     <link  href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.css" rel="stylesheet">
+    <meta property="og:title" content="{file.name}" />
     """
     content = (
         f"""

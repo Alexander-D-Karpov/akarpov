@@ -2,7 +2,8 @@ from akarpov.files.models import File
 
 
 def view(file: File) -> (str, str):
-    static = """
+    static = f"""
+    <meta property="og:title" content="{file.name}" />
     """
     content = (
         """

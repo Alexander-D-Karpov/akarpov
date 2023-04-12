@@ -5,11 +5,7 @@ from celery import shared_task
 from django.core.files import File
 
 from akarpov.files.models import File as FileModel
-from akarpov.files.services.preview import (
-    create_preview,
-    get_description,
-    get_file_mimetype,
-)
+from akarpov.files.services.preview import create_preview, get_file_mimetype
 
 logger = structlog.get_logger(__name__)
 
@@ -32,18 +28,7 @@ def process_file(pk: int):
     except Exception as e:
         logger.error(e)
     file.file_type = get_file_mimetype(file.file.path)
-    descr = None
-    try:
-        descr = get_description(file.file.path)
-        if descr:
-            with open(descr, encoding="utf-8") as f:
-                data = f.read()
-                file.description = data
-    except Exception as e:
-        logger.error(e)
-    file.save(update_fields=["preview", "name", "file_type", "description"])
+    file.save(update_fields=["preview", "name", "file_type"])
     if pth and os.path.isfile(pth):
         os.remove(pth)
-    if descr and os.path.isfile(descr):
-        os.remove(descr)
     return pk

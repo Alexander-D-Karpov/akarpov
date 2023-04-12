@@ -9,7 +9,7 @@ previews = {
         "wav": audio.basic.view,
         "webm": audio.basic.view,
     },
-    "video": {"mp4": video.mp4.view},
+    "video": {"mp4": video.mp4.view, "quicktime": video.basic.view},
     "image": {
         "jpeg": image.basic.view,
         "png": image.basic.view,
@@ -17,4 +17,9 @@ previews = {
     },
 }
 
-extensions = {"mp4": video.mp4.view, "mp3": audio.basic.view, "avif": image.basic.view}
+extensions = {
+    "mp4": video.mp4.view,
+    "mp3": audio.basic.view,
+    "avif": image.basic.view,
+    "mov": video.basic.view,
+}

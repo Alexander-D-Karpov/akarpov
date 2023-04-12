@@ -48,10 +48,55 @@ def create_model_link(sender, instance, created, **kwargs):
                 return
         if hasattr(instance, "creator"):
             link.creator = instance.creator
+        elif hasattr(instance, "user"):
+            link.creator = instance.user
+        elif hasattr(instance, "owner"):
+            link.creator = instance.owner
 
         link.save()
         instance.short_link = link
         instance.save()
+
+
+def update_model_link(sender, instance, **kwargs):
+    model = sender
+    if instance.id:
+        previous = model.objects.get(id=instance.id)
+        prev_private = False
+        cur_private = False
+        if hasattr(instance, "private"):
+            if instance.private:
+                cur_private = True
+        if hasattr(instance, "public"):
+            if not instance.public:
+                cur_private = True
+        if hasattr(previous, "private"):
+            if previous.private:
+                prev_private = True
+        if hasattr(previous, "public"):
+            if not previous.public:
+                prev_private = True
+
+        if prev_private != cur_private:
+            if prev_private:
+                # instance was private, public now, need to create short link
+                if hasattr(instance, "short_link"):
+                    if not instance.short_link:
+                        link = Link(source=instance.get_absolute_url())
+                        if hasattr(instance, "creator"):
+                            link.creator = instance.creator
+                        elif hasattr(instance, "user"):
+                            link.creator = instance.user
+                        elif hasattr(instance, "owner"):
+                            link.creator = instance.owner
+                        link.save()
+                        instance.short_link = link
+            else:
+                # instance was public, private now, need to delete short link
+                if hasattr(previous, "short_link"):
+                    if previous.short_link:
+                        previous.short_link.delete()
+                        instance.short_link = None
 
 
 class ShortLink(SlugModel):
@@ -63,6 +108,7 @@ class ShortLink(SlugModel):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         models.signals.post_save.connect(create_model_link, sender=cls)
+        models.signals.pre_save.connect(update_model_link, sender=cls)
 
     @abstractmethod
     def get_absolute_url(self):

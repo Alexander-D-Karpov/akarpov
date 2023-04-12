@@ -1,7 +1,9 @@
 import os
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, ListView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.views.generic import DetailView, ListView, RedirectView
 from django.views.generic.base import TemplateView
 
 from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
@@ -56,6 +58,17 @@ class FileView(DetailView):
 
 
 files_view = FileView.as_view()
+
+
+class DeleteFileView(LoginRequiredMixin, RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        file = get_object_or_404(File, slug=kwargs["slug"])
+        if file.user == self.request.user:
+            file.delete()
+        return reverse("files:main")
+
+
+delete_file_view = DeleteFileView.as_view()
 
 
 class FileFolderView(DetailView):
