@@ -43,15 +43,15 @@ class FileView(DetailView):
         static = ""
         content = ""
         if self.object.file_type:
-            if self.object.file_type == "application/octet-stream":
-                extension = self.object.file.path.split(".")[-1]
-                if extension in extensions:
-                    static, content = extensions[extension](self.object)
-            else:
-                t1, t2 = self.object.file_type.split("/")
-                if t1 in previews:
-                    if t2 in previews[t1]:
-                        static, content = previews[t1][t2](self.object)
+            t1, t2 = self.object.file_type.split("/")
+            extension = self.object.file.path.split(".")[-1]
+            loaded = False
+            if t1 in previews:
+                if t2 in previews[t1]:
+                    static, content = previews[t1][t2](self.object)
+                    loaded = True
+            if not loaded and extension in extensions:
+                static, content = extensions[extension](self.object)
         context["preview_static"] = static
         context["preview_content"] = content
         return context

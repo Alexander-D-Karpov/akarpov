@@ -13,7 +13,7 @@ def view(file: File) -> (str, str):
         </div>
         <div id="images">
         </div
-      <script src="/static/js/jquery.js"></script>
+      <script src="/static/js/jquery.min.js"></script>
     """
         + """
           <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.js">

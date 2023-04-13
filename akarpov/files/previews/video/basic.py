@@ -5,7 +5,7 @@ def view(file: File) -> (str, str):
     static = f"""
     <meta property="og:title" content="{file.name}" />
     <meta property="og:type" content="video.movie" />
-    <meta property="og:video" content="dev2.akarpov.ru/{file.file.url}" />
+    <meta property="og:video" content="{file.file.url}" />
     <meta property="og:video:type" content="{file.file_type}" />
     <meta property="og:video:width" content="720" />
     <meta property="og:video:height" content="480" />
