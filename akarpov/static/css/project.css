@@ -507,7 +507,7 @@ p {
 }
 
 .sidebar {
-  max-height: 15%;
+  max-height: 7%;
 }
 
 @media (min-width: 576px) {

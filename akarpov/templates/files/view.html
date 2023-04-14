@@ -9,7 +9,7 @@
 {% block content %}
 <div class="row m-2">
   <h1 class="fs-1 text-break mb-4">{{ file.name }}</h1>
-  <div class="col-md-4 col-sm-6 col-xs-auto">
+  <div class="col-md-4 col-sm-6 col-xs-auto mb-5">
     {% if not has_perm %}
         <p>Uploaded by: <a href="{% url 'users:detail' file.user.username %}">
         {% if file.user.image_cropped %}<img class="rounded" width="20" src="{{ file.user.image_cropped.url }}" alt=""> {% endif %}
@@ -39,7 +39,7 @@
       {% endif %}
     </div>
   </div>
-  <div class="col-md-8 col-sm-10 col-xs-auto">
+  <div class="col-md-8 col-sm-10 col-xs-auto mt-xs-4">
   {% autoescape off %}
   {{ preview_content }}
   {% endautoescape %}
