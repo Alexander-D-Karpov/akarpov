@@ -19,7 +19,7 @@ previews = {
         "avif": image.basic.view,
         "bmp": image.basic.view,
     },
-    "text": {"css": text.common.view, "plain": text.plain.view},
+    "text": {"css": text.common.view, "plain": text.plain.view, "csv": text.csv.view},
 }
 
 source_code = {}
