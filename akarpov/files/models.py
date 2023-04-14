@@ -31,9 +31,9 @@ class File(TimeStampedModel, ShortLink):
     file = FileField(blank=False, upload_to=user_unique_file_upload)
 
     # meta
-    name = CharField(max_length=100, null=True, blank=True)
+    name = CharField(max_length=255, null=True, blank=True)
     description = TextField(blank=True, null=True)
-    file_type = CharField(max_length=50, null=True, blank=True)
+    file_type = CharField(max_length=255, null=True, blank=True)
 
     @property
     def file_image_url(self):

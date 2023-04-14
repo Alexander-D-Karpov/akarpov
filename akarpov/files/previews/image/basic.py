@@ -8,7 +8,7 @@ def view(file: File) -> (str, str):
     """
     content = (
         f"""
-        <div>
+        <div class='col-auto'>
           <img id="image" class="img-fluid" src="{file.file.url}" alt="Picture">
         </div>
         <div id="images">

@@ -96,6 +96,7 @@ def view(file: File) -> (str, str):
     """
     content = (
         """
+    <div class="col-auto">
     <div id="jstree_demo_div">
         <ul data-jstree='{ "opened" : true }>"""
         + f"""
@@ -108,7 +109,9 @@ def view(file: File) -> (str, str):
             {r}
         </li>
     </ul>
-    </div> """
+    </div>
+     </div>
+     """
         + """
     <script src="/static/js/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>

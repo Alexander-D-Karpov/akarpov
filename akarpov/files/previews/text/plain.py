@@ -14,10 +14,10 @@ def view(file: File) -> (str, str):
     static = f"""
     <meta property="og:title" content="{file.name}" />
     """
-    content = "<pre>"
+    content = "<div class='col-auto'><pre>"
     with file.file.open("r") as f:
         lines = f.readlines()
     for line in lines:
         content += f"""<div class='code language-plaintext'>{html.escape(line)}</div>"""
-    content += "</pre>"
+    content += "</pre></div>"
     return static, content

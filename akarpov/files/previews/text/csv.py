@@ -8,6 +8,37 @@ from akarpov.files.models import File
 logger = structlog.get_logger(__name__)
 
 
+def get_csv_table(reader):
+    content = "<div class='col-auto'><table class='table table-hover'>"
+    header = next(reader)
+    content += """<thead><tr>"""
+    for el in header:
+        content += f"""<th scope="col">{el}</th>"""
+    content += """</tr></thead>\n"""
+    if header:
+        content += """<tbody>"""
+        i = 0
+        for row in reader:
+            r = "<tr>"
+            if i >= 5000:
+                for _ in header:
+                    r += """<th>the remaining data was trunked</th>"""
+                r += "</tr>\n"
+                content += r
+                break
+            for ind, el in enumerate(row):
+                if ind == 0:
+                    r += f"""<th scope="row">{el}</th>"""
+                else:
+                    r += f"""<th>{el}</th>"""
+            r += "</tr>\n"
+            content += r
+            i += 1
+        content += """</tbody>"""
+    content += "</table></div>"
+    return content
+
+
 def view(file: File):
     try:
         try:
@@ -15,8 +46,7 @@ def view(file: File):
                 dialect = csv.Sniffer().sniff(csvfile.read(1024))
                 csvfile.seek(0)
                 reader = csv.reader(csvfile, dialect)
-                for row in reader:
-                    print(row)
+                content = get_csv_table(reader)
         except UnicodeDecodeError:
             rawdata = open("file.csv", "rb").read()
             enc = chardet.detect(rawdata)
@@ -25,10 +55,8 @@ def view(file: File):
                 dialect = csv.Sniffer().sniff(csvfile.read(1024))
                 csvfile.seek(0)
                 reader = csv.reader(csvfile, dialect)
-                for row in reader:
-                    print(row)
+                content = get_csv_table(reader)
     except Exception as e:
         logger.error(e)
     static = ""
-    content = ""
     return static, content

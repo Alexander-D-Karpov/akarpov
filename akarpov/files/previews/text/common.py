@@ -37,7 +37,7 @@ def view(file: File) -> (str, str):
     <meta property="og:title" content="{file.name}" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-light.min.css">
     """
-    content = "<pre>"
+    content = "<div class='col-auto'><pre>"
     with file.file.open("r") as f:
         lines = f.readlines()
     for line in lines:
@@ -45,7 +45,7 @@ def view(file: File) -> (str, str):
             f"""<div class='code language-{extension}'>{html.escape(line)}</div>"""
         )
     content += (
-        """</pre>
+        """</pre></div>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
       """
         + f"""
