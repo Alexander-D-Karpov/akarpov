@@ -22,10 +22,11 @@ language_previews = {
     "scala": "scala",
     "sc": "scala",
     "sql": "sql",
-    "html": "html",
     "rs": "rust",
     "pl": "perl",
     "PL": "perl",
+    "htm": "html",
+    "html": "html",
 }
 
 

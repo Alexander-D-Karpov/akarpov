@@ -1,5 +1,6 @@
 import os
 
+import structlog
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
@@ -16,6 +17,8 @@ from akarpov.contrib.chunked_upload.views import (
 from akarpov.files.forms import FileForm
 from akarpov.files.models import File, Folder
 from akarpov.files.previews import extensions, previews
+
+logger = structlog.get_logger(__name__)
 
 
 class TopFolderView(LoginRequiredMixin, ListView):
@@ -60,16 +63,21 @@ class FileView(DetailView):
         context["has_perm"] = self.object.user == self.request.user
         static = ""
         content = ""
-        if self.object.file_type:
-            t1, t2 = self.object.file_type.split("/")
-            extension = self.object.file.path.split(".")[-1]
-            loaded = False
-            if t1 in previews:
-                if t2 in previews[t1]:
-                    static, content = previews[t1][t2](self.object)
-                    loaded = True
-            if not loaded and extension in extensions:
+        extension = self.object.file.path.split(".")[-1]
+        try:
+            if self.object.file_type:
+                t1, t2 = self.object.file_type.split("/")
+                loaded = False
+                if t1 in previews:
+                    if t2 in previews[t1]:
+                        static, content = previews[t1][t2](self.object)
+                        loaded = True
+                if not loaded and extension in extensions:
+                    static, content = extensions[extension](self.object)
+            elif extension in extensions:
                 static, content = extensions[extension](self.object)
+        except Exception as e:
+            logger.error(e)
         context["preview_static"] = static
         context["preview_content"] = content
         return context
