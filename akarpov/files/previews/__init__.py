@@ -1,4 +1,4 @@
-from . import application, audio, image, text, video
+from . import application, audio, font, image, text, video
 
 previews = {
     "application": {
@@ -37,6 +37,7 @@ previews = {
         "plain": text.plain.view,
         "csv": text.csv.view,
     },
+    "font": {"otf": font.otf.view},
 }
 
 source_code = {}
@@ -62,4 +63,5 @@ extensions = {
     "jar": application.zip.view,
     "mpeg": video.mp4.view,
     "oga": audio.oga.view,
+    "otf": font.otf.view,
 } | source_code
