@@ -6,6 +6,7 @@ from akarpov.files.views import (
     MyChunkedUploadView,
     TopFolderView,
     delete_file_view,
+    file_update,
     files_view,
     folder_view,
 )
@@ -23,6 +24,7 @@ urlpatterns = [
         "api/chunked_upload/", MyChunkedUploadView.as_view(), name="api_chunked_upload"
     ),
     path("<str:slug>", files_view, name="view"),
+    path("<str:slug>/update", file_update, name="update"),
     path("<str:slug>/delete", delete_file_view, name="delete"),
     path("f/<str:slug>", folder_view, name="folder"),
 ]

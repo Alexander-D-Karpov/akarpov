@@ -8,7 +8,12 @@
 
 {% block content %}
 <div class="row m-2">
-  <h1 class="fs-1 text-break mb-4">{{ file.name }}</h1>
+  <h1 class="fs-1 text-break mb-4">{{ file.name }}
+  {% if has_perm %}
+  <a class="justify-content-center" href="{% url 'files:update' file.slug %}">
+  <i style="color:black" class="bi bi-pen fs-6"></i></a>
+  {% endif %}
+  </h1>
   <div class="col-md-4 col-sm-6 col-xs-auto mb-5">
     {% if not has_perm %}
         <p>Uploaded by: <a href="{% url 'users:detail' file.user.username %}">
@@ -17,6 +22,7 @@
     {% endif %}
     <p class="mt-2">Last updated: {{ file.modified|date:"d.m.Y" }} {{ file.modified|time:"H:i" }}</p>
     <p>File size: {{ file.file_size | filesizeformat }}</p>
+    <p>File name: {{ file.file_name }}</p>
     {% if file.file_type %}
     <p>File type: {{ file.file_type }}</p>
     {% endif %}

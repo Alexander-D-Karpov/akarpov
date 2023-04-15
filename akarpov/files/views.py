@@ -1,9 +1,10 @@
 import os
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import DetailView, ListView, RedirectView
+from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 from django.views.generic.base import TemplateView
 
 from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
@@ -12,6 +13,7 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadCompleteView,
     ChunkedUploadView,
 )
+from akarpov.files.forms import FileForm
 from akarpov.files.models import File, Folder
 from akarpov.files.previews import extensions, previews
 
@@ -30,6 +32,22 @@ class TopFolderView(LoginRequiredMixin, ListView):
             user=self.request.user, parent__isnull=True
         )
         return contex
+
+
+class FileUpdateView(LoginRequiredMixin, UpdateView):
+    model = File
+    form_class = FileForm
+
+    def get_object(self):
+        file = get_object_or_404(File, slug=self.kwargs["slug"])
+        if file.user != self.request.user:
+            raise PermissionDenied
+        return file
+
+    template_name = "files/form.html"
+
+
+file_update = FileUpdateView.as_view()
 
 
 class FileView(DetailView):

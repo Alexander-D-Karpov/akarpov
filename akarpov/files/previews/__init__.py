@@ -3,6 +3,8 @@ from . import application, audio, image, text, video
 previews = {
     "application": {
         "zip": application.zip.view,
+        "doc": application.doc.view,
+        "docx": application.docx.view,
     },
     "audio": {
         "aac": audio.basic.view,
@@ -18,6 +20,7 @@ previews = {
         "png": image.basic.view,
         "avif": image.basic.view,
         "bmp": image.basic.view,
+        "gif": image.gif.view,
     },
     "text": {"css": text.common.view, "plain": text.plain.view, "csv": text.csv.view},
 }
@@ -32,4 +35,7 @@ extensions = {
     "avif": image.basic.view,
     "bmp": image.basic.view,
     "mov": video.basic.view,
+    "doc": application.doc.view,
+    "docx": application.docx.view,
+    "gif": image.gif.view,
 } | source_code

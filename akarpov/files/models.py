@@ -36,6 +36,10 @@ class File(TimeStampedModel, ShortLink):
     file_type = CharField(max_length=255, null=True, blank=True)
 
     @property
+    def file_name(self):
+        return self.file.path.split("/")[-1]
+
+    @property
     def file_image_url(self):
         if self.preview:
             return self.preview.url

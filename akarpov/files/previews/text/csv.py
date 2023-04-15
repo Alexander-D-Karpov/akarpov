@@ -48,15 +48,15 @@ def view(file: File):
                 reader = csv.reader(csvfile, dialect)
                 content = get_csv_table(reader)
         except UnicodeDecodeError:
-            rawdata = open("file.csv", "rb").read()
+            rawdata = open(file.file.path, "rb").read()
             enc = chardet.detect(rawdata)
-            print(enc)
             with open(file.file.path, newline="", encoding=enc["encoding"]) as csvfile:
                 dialect = csv.Sniffer().sniff(csvfile.read(1024))
                 csvfile.seek(0)
                 reader = csv.reader(csvfile, dialect)
                 content = get_csv_table(reader)
     except Exception as e:
+        content = "couldn't parse csv file"
         logger.error(e)
     static = ""
     return static, content

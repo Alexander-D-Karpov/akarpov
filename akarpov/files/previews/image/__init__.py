@@ -1,1 +1,1 @@
-from . import basic  # noqa
+from . import basic, gif  # noqa

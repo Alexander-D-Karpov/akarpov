@@ -1,1 +1,1 @@
-from . import zip  # noqa
+from . import doc, docx, zip  # noqa
