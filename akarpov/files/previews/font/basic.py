@@ -2,10 +2,18 @@ import string
 
 from akarpov.files.models import File
 
+text = " ".join(string.printable)
+formats = {
+    "ttf": "truetype",
+    "otf": "opentype",
+    "woff": "woff",
+    "woff2": "woff2",
+}
+
 
 def view(file: File):
-    text = " ".join(string.printable)
     name = file.file.path.split("/")[-1].split(".")[0]
+    extension = file.file.path.split("/")[-1].split(".")[-1]
     static = (
         """
     <style>
@@ -13,7 +21,7 @@ def view(file: File):
     """
         + f"""
         font-family: {name};
-        src: url("{file.file.url}") format("opentype");
+        src: url("{file.file.url}") format("{formats[extension]}");
         """
         + """
     }
