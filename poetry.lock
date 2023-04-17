@@ -1683,14 +1683,14 @@ django-classy-tags = ">=3.0"
 
 [[package]]
 name = "django-structlog"
-version = "5.0.1"
+version = "5.0.2"
 description = "Structured Logging for Django"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-structlog-5.0.1.tar.gz", hash = "sha256:2ae2ca4239292a662d1bd6c7656c704fcfd9545b2e39a9501fd1e23800b1a1c4"},
-    {file = "django_structlog-5.0.1-py3-none-any.whl", hash = "sha256:f7d1209e4e48d807d3c6e7212a4c96d572a03d3e0ade7a3c9053b49bc70b33b8"},
+    {file = "django-structlog-5.0.2.tar.gz", hash = "sha256:1015bbf8d43e3293725fd09c0bb13a216d1025e8a2547bf718b4542828da7e8b"},
+    {file = "django_structlog-5.0.2-py3-none-any.whl", hash = "sha256:2f19d940a336873fc003e4207c94b0ef0f810703ee0d7f411ca541fe173b8ca0"},
 ]
 
 [package.dependencies]
@@ -4695,15 +4695,15 @@ test = ["pytest"]
 
 [[package]]
 name = "spotipy"
-version = "2.16.0"
+version = "2.16.1"
 description = "A light weight Python library for the Spotify Web API"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "spotipy-2.16.0-py2-none-any.whl", hash = "sha256:800330badc1b953417dace1532a586220d35b2240eb2e538e883e19e6bf1b53d"},
-    {file = "spotipy-2.16.0-py3-none-any.whl", hash = "sha256:9d07b8948c30d8a338805440797263749ccad07c22009f9b3112aa2bcb2ebcea"},
-    {file = "spotipy-2.16.0.tar.gz", hash = "sha256:315eadd1248053ed336b4d3adbf2e3c32895fdbb0cfcd170542c848c8fd45649"},
+    {file = "spotipy-2.16.1-py2-none-any.whl", hash = "sha256:2670ad5715d5bd53a353708eea0ab2aa154232e2fe25d826dc39da5b910f0e17"},
+    {file = "spotipy-2.16.1-py3-none-any.whl", hash = "sha256:9d4f0c5857a2c9bb72b39d66e38182ccaf62bcf18a5a16b4f2be8e802eca2f2c"},
+    {file = "spotipy-2.16.1.tar.gz", hash = "sha256:4564a6b05959deb82acc96a3fe6883db1ad9f8c73b7ff3b9f1f44db43feba0b8"},
 ]
 
 [package.dependencies]
