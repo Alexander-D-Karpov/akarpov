@@ -86,7 +86,7 @@ vtk = "^9.2.6"
 ffmpeg-python = "^0.2.0"
 cairosvg = "^2.7.0"
 textract = "^1.6.5"
-spotipy = "2.16"
+spotipy = "2.16.1"
 
 
 [build-system]
