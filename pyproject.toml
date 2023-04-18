@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 pytz = "^2023.3"
-psutil = "^5.9.4"
+psutil = "^5.9.5"
 python-slugify = "^7.0.0"
 pillow = "^9.5.0"
 argon2-cffi = "^21.3.0"
