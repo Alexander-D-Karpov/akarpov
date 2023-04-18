@@ -1380,14 +1380,14 @@ django = ">=3.2"
 
 [[package]]
 name = "django-cms"
-version = "3.11.1"
+version = "3.11.2"
 description = "Lean enterprise content management powered by Django."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-cms-3.11.1.tar.gz", hash = "sha256:f40e7d6a8a17c75f95ec65ec854eeccd2e0ef67dec8355784257ef9a6f45a363"},
-    {file = "django_cms-3.11.1-py2.py3-none-any.whl", hash = "sha256:074f089c2eee510e3dab6c9083998eda79427f0166b0a0e4a6dbb43611a5d1ed"},
+    {file = "django-cms-3.11.2.tar.gz", hash = "sha256:fbafa51f0a71209f0495fe8489a2f50b4b401a4a46a05440ed1b30ae7b07bf66"},
+    {file = "django_cms-3.11.2-py2.py3-none-any.whl", hash = "sha256:2ca0c836ef60d28ddab65d4cac31612a732a15f855091502e9ae2ad27915fcc9"},
 ]
 
 [package.dependencies]
@@ -1397,6 +1397,7 @@ django-formtools = ">=2.1"
 django-sekizai = ">=0.7"
 django-treebeard = ">=4.3"
 djangocms-admin-style = ">=1.2"
+packaging = "*"
 
 [[package]]
 name = "django-colorfield"
@@ -5626,4 +5627,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "28b785774d50ebcf1893129c66b1dbcfa17d735cc3f676c6023808ce7575be34"
+content-hash = "711bbb29ca177766b2cda9b372ed73627262c38d7a65cc36935c9faa163b0afa"
