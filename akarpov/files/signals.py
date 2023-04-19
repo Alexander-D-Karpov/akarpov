@@ -33,3 +33,10 @@ def move_file_to_trash(sender, instance, **kwargs):
             os.remove(path)
             if os.path.isdir(file_dir) and len(os.listdir(file_dir)) == 0:
                 os.rmdir(file_dir)
+
+
+@receiver(post_delete, sender=FileInTrash)
+def trunk_deleted_file(sender, instance, **kwargs):
+    if instance.file:
+        if os.path.isfile(instance.file.path):
+            os.remove(instance.file.path)
