@@ -8,6 +8,7 @@ previews = {
         "doc": application.doc.view,
         "docx": application.docx.view,
         "vnd.oasis.opendocument.text": application.odt.view,
+        "x-httpd-php": text.common.view,
     },
     "audio": {
         "aac": audio.basic.view,

@@ -24,6 +24,7 @@ class Post(BaseImageModel, ShortLink):
 
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
+    public = models.BooleanField(default=True)
 
     tags = models.ManyToManyField("blog.Tag", related_name="posts")
 

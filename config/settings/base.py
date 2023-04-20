@@ -84,6 +84,7 @@ DJANGO_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.sites",
+    "django.contrib.sitemaps",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",  # Handy template tags
@@ -113,6 +114,7 @@ THIRD_PARTY_APPS = [
     "extra_settings",
     "akarpov.contrib.chunked_upload",
     "active_link",
+    "robots",
     # django-cms
     "cms",
     "menus",
@@ -538,3 +540,8 @@ MUSIC_SPOTIFY_SECRET = env("MPD_HOST", default="")
 
 # YANDEX_MUSIC
 MUSIC_YANDEX_TOKEN = env("MPD_HOST", default="")
+
+# ROBOTS
+# ------------------------------------------------------------------------------
+ROBOTS_USE_SITEMAP = True
+ROBOTS_USE_SCHEME_IN_HOST = True

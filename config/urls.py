@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.contrib.sitemaps.views import sitemap
+from django.urls import include, path, re_path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from drf_spectacular.views import (
@@ -12,9 +13,17 @@ from drf_spectacular.views import (
 
 from akarpov.about.views import about_view
 from akarpov.tools.shortener.views import redirect_view
+from config.sitemaps import sitemaps
 
 urlpatterns = [
     path("home", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    re_path(r"^robots\.txt", include("robots.urls")),
+    path(
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps},
+        name="django.contrib.sitemaps.views.sitemap",
+    ),
     path("health/", include("health_check.urls")),
     path("cms/", include("cms.urls")),
     # Django Admin, use {% url 'admin:index' %}
