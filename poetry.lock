@@ -3419,6 +3419,7 @@ files = [
     {file = "Pillow-9.5.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:c1170d6b195555644f0616fd6ed929dfcf6333b8675fcca044ae5ab110ded296"},
     {file = "Pillow-9.5.0-cp311-cp311-win32.whl", hash = "sha256:54f7102ad31a3de5666827526e248c3530b3a33539dbda27c6843d19d72644ec"},
     {file = "Pillow-9.5.0-cp311-cp311-win_amd64.whl", hash = "sha256:cfa4561277f677ecf651e2b22dc43e8f5368b74a25a8f7d1d4a3a243e573f2d4"},
+    {file = "Pillow-9.5.0-cp311-cp311-win_arm64.whl", hash = "sha256:965e4a05ef364e7b973dd17fc765f42233415974d773e82144c9bbaaaea5d089"},
     {file = "Pillow-9.5.0-cp312-cp312-win32.whl", hash = "sha256:22baf0c3cf0c7f26e82d6e1adf118027afb325e703922c8dfc1d5d0156bb2eeb"},
     {file = "Pillow-9.5.0-cp312-cp312-win_amd64.whl", hash = "sha256:432b975c009cf649420615388561c0ce7cc31ce9b2e374db659ee4f7d57a1f8b"},
     {file = "Pillow-9.5.0-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:5d4ebf8e1db4441a55c509c4baa7a0587a0210f7cd25fcfe74dbbce7a4bd1906"},
@@ -5575,14 +5576,14 @@ multidict = ">=4.0"
 
 [[package]]
 name = "ytmusicapi"
-version = "0.25.2"
+version = "1.0.1"
 description = "Unofficial API for YouTube Music"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ytmusicapi-0.25.2-py3-none-any.whl", hash = "sha256:3d47a8803dceeb0289c7cf29a0317c5d6051d0b7c28fda067f6abb001746f7ac"},
-    {file = "ytmusicapi-0.25.2.tar.gz", hash = "sha256:aa3165100ff5c0e1f49f9a046312f878c31eea83fde14af0707e3368ae923fe4"},
+    {file = "ytmusicapi-1.0.1-py3-none-any.whl", hash = "sha256:700bad8438154173db9801a86a0d41cc109b1cdad547306bd39c77b257ca3355"},
+    {file = "ytmusicapi-1.0.1.tar.gz", hash = "sha256:9d34e674caba2e2f2c457df664483a01b5c805445d431e4a3f422448e6e2199b"},
 ]
 
 [package.dependencies]
@@ -5642,4 +5643,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "667d1226a682d79bea11fdee05d079b1b494ac325167ca069f79f4d18d1a7d04"
+content-hash = "b2289ddce90956c8f342bae08ea1d41be1aa1a39e58ccd807b2f3a4f212175fc"
