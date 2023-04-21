@@ -80,3 +80,20 @@ extensions = (
     | source_code
     | fonts_ext
 )
+
+
+meta = {
+    "video": {
+        "mp4": video.basic.meta,
+        "ogg": video.basic.meta,
+        "mpeg": video.basic.meta,
+        "quicktime": video.basic.meta,
+    }
+}
+
+meta_extensions = {
+    "mp4": video.basic.meta,
+    "mov": video.basic.meta,
+    "ogv": video.basic.meta,
+    "mpeg": video.basic.meta,
+}

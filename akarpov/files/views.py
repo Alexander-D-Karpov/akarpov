@@ -3,6 +3,7 @@ import os
 import structlog
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, RedirectView, UpdateView
@@ -16,7 +17,7 @@ from akarpov.contrib.chunked_upload.views import (
 )
 from akarpov.files.forms import FileForm
 from akarpov.files.models import File, Folder
-from akarpov.files.previews import extensions, previews
+from akarpov.files.previews import extensions, meta, meta_extensions, previews
 
 logger = structlog.get_logger(__name__)
 
@@ -58,11 +59,21 @@ class FileView(DetailView):
     model = File
     slug_field = "slug"
 
+    def dispatch(self, request, *args, **kwargs):
+        # redirect if bot
+        file = self.get_object()
+        useragent = request.META["HTTP_USER_AGENT"].lower()
+        if "bot" in useragent:
+            if file.file_type and file.file_type.split("/")[0] == "image":
+                return HttpResponseRedirect(file.file.url)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["has_perm"] = self.object.user == self.request.user
         static = ""
         content = ""
+        meta_s = ""
         extension = self.object.file.path.split(".")[-1]
         try:
             if self.object.file_type:
@@ -76,10 +87,23 @@ class FileView(DetailView):
                     static, content = extensions[extension](self.object)
             elif extension in extensions:
                 static, content = extensions[extension](self.object)
+
+            if self.object.file_type:
+                t1, t2 = self.object.file_type.split("/")
+                loaded = False
+                if t1 in meta:
+                    if t2 in meta[t1]:
+                        meta_s = meta[t1][t2](self.object)
+                        loaded = True
+                if not loaded and extension in meta_extensions:
+                    meta_s = meta_extensions[extension](self.object)
+            elif extension in meta_extensions:
+                meta_s = meta_extensions[extension](self.object)
         except Exception as e:
             logger.error(e)
         context["preview_static"] = static
         context["preview_content"] = content
+        context["meta"] = meta_s
         return context
 
 

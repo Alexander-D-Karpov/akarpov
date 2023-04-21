@@ -15,6 +15,10 @@ services:
     depends_on:
       - postgres
       - redis
+    volumes:
+      - type: bind
+        source: /var/www/media/
+        target: /app/akarpov/media/
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
@@ -36,11 +40,19 @@ services:
 
   celeryworker:
     <<: *django
+    volumes:
+      - type: bind
+        source: /var/www/media/
+        target: /app/akarpov/media/
     image: akarpov_production_celeryworker
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
+    volumes:
+      - type: bind
+        source: /var/www/media/
+        target: /app/akarpov/media/
     image: akarpov_production_celerybeat
     command: /start-celerybeat
 

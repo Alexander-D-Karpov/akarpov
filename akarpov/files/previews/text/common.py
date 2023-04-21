@@ -63,3 +63,29 @@ def view(file: File) -> (str, str):
     )
 
     return static, content
+
+
+def meta(file: File):
+    descr = ""
+    i = 0
+    with file.file.open("r") as f:
+        lines = f.readlines()
+    for line in lines:
+        descr += line + "\n"
+        i += 1
+        if i > 100:
+            descr += "..."
+            break
+    url = file.get_absolute_url()
+
+    meat_f = f"""
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{file.name}">
+    <meta property="og:url" content="{url}">
+    <meta property="og:image" content="">
+    <meta property="og:description" content="{descr}">
+    <meta property="article:author" content="{file.user.username}">
+    <meta property="article:published_time" content="{file.created}">
+    <meta property="article:modified_time" content="{file.modified}">
+    """
+    return meat_f

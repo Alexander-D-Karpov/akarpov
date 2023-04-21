@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
 
+{% block meta %}
+{% autoescape off %}
+{{ meta }}
+{% endautoescape %}
+{% endblock %}
+
 {% block javascript %}
 {% autoescape off %}
 {{ preview_static }}
 {% endautoescape %}
 {% endblock %}
+
 
 {% block content %}
 <div class="row m-2">
