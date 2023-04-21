@@ -34,7 +34,7 @@ previews = {
     },
     "text": {
         "css": text.common.view,
-        "html": text.common.view,
+        "html": text.html.view,
         "javascript": text.common.view,
         "plain": text.plain.view,
         "csv": text.csv.view,
@@ -76,6 +76,7 @@ extensions = (
         "mpeg": video.mp4.view,
         "oga": audio.oga.view,
         "pdf": application.pdf.view,
+        "html": text.html.view,
     }
     | source_code
     | fonts_ext
@@ -88,12 +89,23 @@ meta = {
         "ogg": video.basic.meta,
         "mpeg": video.basic.meta,
         "quicktime": video.basic.meta,
-    }
+    },
+    "text": {
+        "css": text.common.meta,
+        "html": text.common.meta,
+        "javascript": text.common.meta,
+        "plain": text.common.meta,
+    },
 }
+
+
+meta_source_code = {}
+for ext in text.common.language_previews.keys():
+    source_code[ext] = text.common.meta
 
 meta_extensions = {
     "mp4": video.basic.meta,
     "mov": video.basic.meta,
     "ogv": video.basic.meta,
     "mpeg": video.basic.meta,
-}
+} | meta_source_code

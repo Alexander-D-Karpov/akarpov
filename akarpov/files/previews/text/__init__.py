@@ -1,1 +1,1 @@
-from . import common, csv, plain  # noqa
+from . import common, csv, html, plain  # noqa

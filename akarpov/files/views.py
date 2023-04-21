@@ -18,6 +18,7 @@ from akarpov.contrib.chunked_upload.views import (
 from akarpov.files.forms import FileForm
 from akarpov.files.models import File, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
+from akarpov.files.services.preview import get_base_meta
 
 logger = structlog.get_logger(__name__)
 
@@ -69,38 +70,47 @@ class FileView(DetailView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["has_perm"] = self.object.user == self.request.user
         static = ""
         content = ""
         meta_s = ""
         extension = self.object.file.path.split(".")[-1]
+
         try:
+            meta_loaded = False
             if self.object.file_type:
                 t1, t2 = self.object.file_type.split("/")
                 loaded = False
+
+                # get static and content for file view by mimetype
                 if t1 in previews:
                     if t2 in previews[t1]:
                         static, content = previews[t1][t2](self.object)
                         loaded = True
                 if not loaded and extension in extensions:
                     static, content = extensions[extension](self.object)
-            elif extension in extensions:
-                static, content = extensions[extension](self.object)
 
-            if self.object.file_type:
-                t1, t2 = self.object.file_type.split("/")
-                loaded = False
+                # get meta tags by mimetype
                 if t1 in meta:
                     if t2 in meta[t1]:
                         meta_s = meta[t1][t2](self.object)
-                        loaded = True
-                if not loaded and extension in meta_extensions:
+                        meta_loaded = True
+                if not meta_loaded and extension in meta_extensions:
                     meta_s = meta_extensions[extension](self.object)
-            elif extension in meta_extensions:
-                meta_s = meta_extensions[extension](self.object)
+            else:
+                # get static and content for file view by file extension
+                if extension in extensions:
+                    static, content = extensions[extension](self.object)
+                # get meta tags by file extension
+                if extension in meta_extensions:
+                    meta_s = meta_extensions[extension](self.object)
+                    meta_loaded = True
+            if not meta_loaded:
+                meta_s = get_base_meta(self.object)
         except Exception as e:
             logger.error(e)
+
+        context = super().get_context_data(**kwargs)
+        context["has_perm"] = self.object.user == self.request.user
         context["preview_static"] = static
         context["preview_content"] = content
         context["meta"] = meta_s
