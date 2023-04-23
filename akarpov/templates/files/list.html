@@ -37,6 +37,7 @@
   {{ folder.name }}
 {% endfor %}
 <div class="row justify-content-center">
+{% if request.user.is_authenticated %}
 <div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
     <div class="card-body d-flex flex-column justify-content-center align-items-center">
       {% csrf_token %}
@@ -64,8 +65,10 @@
       <div id="messages"></div>
     </div>
 </div>
-{% for file in file_list %}
+{% endif %}
+{% for file in basefileitem_list %}
   <div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
+      {% if file.is_file %}
       <div class="card-body d-flex flex-column">
         <h5 class="card-title">{{ file.name }}</h5>
         <p class="card-text mb-4"><small class="text-muted">{{ file.file_size | filesizeformat }}</small></p>
@@ -76,6 +79,19 @@
         <a href="{% url 'files:view' file.slug %}" class="stretched-link"></a>
         <p class="card-text mb-4 mt-2 ms-3"><small class="text-muted">{{ file.modified | naturaltime }}</small></p>
       </div>
+      {% else %}
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{ file.name }}</h5>
+        <p class="card-text mb-4"><small class="text-muted">{{ file.size | filesizeformat }}, {{ file.amount }} {% if file.amount == 1 %} item {% else %} items {% endif %}</small></p>
+        <div class="align-self-stretch align-items-center justify-content-center d-flex flex-column fill-height controlsdiv">
+          <i class="bi bi-folder"></i>
+        </div>
+
+        <a href="{% url 'files:folder' file.slug %}" class="stretched-link"></a>
+        <p class="card-text mb-4 mt-2 ms-3"><small class="text-muted">{{ file.modified | naturaltime }}</small></p>
+      </div>
+
+      {% endif %}
   </div>
 {% endfor %}
 </div>
@@ -207,7 +223,11 @@
         sel.text(progress + "%");
         $.ajax({
           type: "POST",
+        {% if folder_slug %}
+          url: "{% url 'files:api_chunked_upload_complete_folder' slug=folder_slug %}",
+        {% else %}
           url: "{% url 'files:api_chunked_upload_complete' %}",
+        {% endif %}
           data: {
             csrfmiddlewaretoken: csrf,
             upload_id: data.result.upload_id,

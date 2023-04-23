@@ -65,18 +65,18 @@ def view(file: File) -> (str, str):
 
 
 def meta(file: File):
-    descr = ""
+    description = ""
     i = 0
     with file.file.open("r") as f:
         lines = f.readlines()
     for line in lines:
         if i == 0:
-            descr += line + "\n"
+            description += line + "\n"
         else:
-            descr += line + "    "
+            description += line + "    "
         i += 1
         if i > 20:
-            descr += "..."
+            description += "..."
             break
     url = file.get_absolute_url()
     section = ""
@@ -88,7 +88,7 @@ def meta(file: File):
     <meta property="og:title" content="{file.name}">
     <meta property="og:url" content="{url}">
     <meta property="og:image" content="">
-    <meta property="og:description" content="{html.escape(descr)}">
+    <meta property="og:description" content="{html.escape(description)}">
     <meta property="article:author" content="{file.user.username}">
     <meta property="article:section" content="{section}">
     <meta property="article:published_time" content="{file.created}">

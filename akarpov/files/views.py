@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.timezone import now
 from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 from django.views.generic.base import TemplateView
 
@@ -16,7 +17,7 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadView,
 )
 from akarpov.files.forms import FileForm
-from akarpov.files.models import File, Folder
+from akarpov.files.models import BaseFileItem, File, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
 from akarpov.files.services.preview import get_base_meta
 
@@ -26,17 +27,43 @@ logger = structlog.get_logger(__name__)
 class TopFolderView(LoginRequiredMixin, ListView):
     template_name = "files/list.html"
     paginate_by = 19
-    model = File
-
-    def get_queryset(self):
-        return File.objects.filter(user=self.request.user, folder__isnull=True)
+    model = BaseFileItem
 
     def get_context_data(self, **kwargs):
-        contex = super().get_context_data(**kwargs)
-        contex["folders"] = Folder.objects.filter(
-            user=self.request.user, parent__isnull=True
-        )
-        return contex
+        context = super().get_context_data(**kwargs)
+        context["folder_slug"] = None
+        return context
+
+    def get_queryset(self):
+        return BaseFileItem.objects.filter(user=self.request.user, parent__isnull=True)
+
+
+class FileFolderView(ListView):
+    template_name = "files/folder.html"
+    model = BaseFileItem
+    paginate_by = 39
+    slug_field = "slug"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.object = None
+
+    def get_context_data(self, **kwargs):
+        folder = self.get_object()
+        context = super().get_context_data(**kwargs)
+        context["folder_slug"] = folder.slug
+        return context
+
+    def get_object(self, *args):
+        obj = get_object_or_404(Folder, slug=self.kwargs["slug"])
+        if self.object:
+            return self.object
+        self.object = obj
+        return obj
+
+    def get_queryset(self):
+        folder = self.get_object()
+        return BaseFileItem.objects.filter(parent=folder)
 
 
 class FileUpdateView(LoginRequiredMixin, UpdateView):
@@ -131,12 +158,6 @@ class DeleteFileView(LoginRequiredMixin, RedirectView):
 delete_file_view = DeleteFileView.as_view()
 
 
-class FileFolderView(DetailView):
-    template_name = "files/folder.html"
-    model = Folder
-    slug_field = "slug"
-
-
 folder_view = FileFolderView.as_view()
 
 
@@ -169,17 +190,42 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
             )
 
     def on_completion(self, uploaded_file, request):
-        if uploaded_file.size <= request.user.left_file_upload:
+        folder = None
+        prepared = True
+        if "slug" in self.kwargs and self.kwargs["slug"]:
+            try:
+                folder = Folder.objects.get(slug=self.kwargs["slug"])
+                if folder.user != self.request.user:
+                    self.message = {
+                        "message": "You can't upload to this folder",
+                        "status": False,
+                    }
+                    prepared = False
+            except Folder.DoesNotExist:
+                self.message = {
+                    "message": "Folder doesn't exist",
+                    "status": False,
+                }
+                prepared = False
+        if prepared and uploaded_file.size <= request.user.left_file_upload:
             f = File.objects.create(
-                user=request.user, file=uploaded_file, name=uploaded_file.name
+                user=request.user,
+                file_obj=uploaded_file,
+                name=uploaded_file.name,
+                parent=folder,
             )
+            if folder:
+                folder.modified = now()
+                folder.size += uploaded_file.size
+                folder.amount += 1
+                folder.save()
             request.user.left_file_upload -= uploaded_file.size
             request.user.save()
             self.message = {
                 "message": f"File {f.file.name.split('/')[-1]} successfully uploaded",
                 "status": True,
             }
-        else:
+        elif prepared:
             self.message = {
                 "message": "File is too large, please increase disk space",
                 "status": False,
