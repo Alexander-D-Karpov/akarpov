@@ -17,11 +17,14 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableView
 from django_tables2.export import ExportMixin
 
+from akarpov.common.views import SuperUserRequiredMixin
 from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
 from akarpov.contrib.chunked_upload.models import ChunkedUpload
 from akarpov.contrib.chunked_upload.views import (
-    ChunkedUploadCompleteView,
-    ChunkedUploadView,
+    ChunkedUploadCompleteView as ChunkedUploadABSCompleteView,
+)
+from akarpov.contrib.chunked_upload.views import (
+    ChunkedUploadView as ChunkedUploadABSView,
 )
 from akarpov.files.filters import FileFilter
 from akarpov.files.forms import FileForm, FolderForm
@@ -207,7 +210,7 @@ class DeleteFileView(LoginRequiredMixin, RedirectView):
 delete_file_view = DeleteFileView.as_view()
 
 
-class ChunkedUploadView(ChunkedUploadView):
+class ChunkedUploadView(ChunkedUploadABSView):
     model = ChunkedUpload
     field_name = "the_file"
 
@@ -218,7 +221,7 @@ class ChunkedUploadView(ChunkedUploadView):
             )
 
 
-class ChunkedUploadCompleteView(ChunkedUploadCompleteView):
+class ChunkedUploadCompleteView(ChunkedUploadABSCompleteView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.message = {}
@@ -298,14 +301,10 @@ class ReportFileView(RedirectView):
 report_file = ReportFileView.as_view()
 
 
-class ListFileReports(LoginRequiredMixin, ListView):
+class ListFileReports(SuperUserRequiredMixin, ListView):
     model = FileReport
+    queryset = FileReport.objects.all()
     template_name = "files/reports.html"
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return FileReport.objects.all()
-        return FileReport.objects.none()
 
 
 file_report_list = ListFileReports.as_view()

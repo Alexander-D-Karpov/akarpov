@@ -36,7 +36,7 @@
 <div class="ms-3 row">
   {% if is_folder_owner %}
     {% if folder_slug %}
-    <nav aria-label="breadcrumb">
+    <nav class="col" aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'files:main' %}">home</a></li>
         {% for f in folders %}
@@ -45,7 +45,7 @@
       </ol>
     </nav>
     {% else %}
-    <nav aria-label="breadcrumb">
+    <nav class="col" aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'files:main' %}">home</a></li>
       </ol>
@@ -53,9 +53,13 @@
     {% endif %}
   {% endif %}
   {% if request.user.is_authenticated and is_folder_owner %}
-  <div class="d-flex justify-content-end me-5">
+  <div class="d-flex justify-content-end me-5 col">
     <a class="me-5" href="{% url 'files:table' %}">table view</a>
   </div>
+  {% endif %}
+  </div>
+  <div class="row">
+  {% if request.user.is_authenticated and is_folder_owner %}
   <div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
       <div class="card-body d-flex flex-column justify-content-center align-items-center">
         {% csrf_token %}
