@@ -39,13 +39,13 @@ class BaseFileItem(PolymorphicModel):
     def is_file(self):
         return type(self) is File
 
-    def get_folder_chain(self):
-        folders = [self]
+    def get_top_folders(self):
+        folders = []
         obj = self
         while obj.parent:
             folders.append(obj.parent)
             obj = obj.parent
-        return folders
+        return folders[::-1]
 
     def save(self, *args, **kwargs):
         update_fields = kwargs.get("update_fields", None)

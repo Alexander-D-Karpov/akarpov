@@ -1,1 +1,8 @@
 {% extends 'files/list.html' %}
+
+{% block meta %}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ folder.name }}">
+  <meta property="og:url" content="{{ folder.get_absolute_url }}">
+  <meta property="og:description" content="folder on akarpov.ru">
+{% endblock %}

@@ -3,6 +3,7 @@ import os
 from django.core.files.base import File
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.utils.timezone import now
 
 from akarpov.files.models import File as FileModel
 from akarpov.files.models import FileInTrash
@@ -10,8 +11,13 @@ from akarpov.files.tasks import process_file
 
 
 @receiver(post_save, sender=FileModel)
-def post_on_create(sender, instance: FileModel, created, **kwargs):
+def file_on_create(sender, instance: FileModel, created, **kwargs):
     if created:
+        for folder in instance.get_top_folders():
+            folder.modified = now()
+            folder.size += instance.file.size
+            folder.amount += 1
+            folder.save()
         process_file.apply_async(
             kwargs={
                 "pk": instance.pk,
@@ -23,6 +29,12 @@ def post_on_create(sender, instance: FileModel, created, **kwargs):
 @receiver(post_delete, sender=FileModel)
 def move_file_to_trash(sender, instance, **kwargs):
     if instance.file:
+        for folder in instance.get_top_folders():
+            folder.modified = now()
+            folder.size -= instance.file.size
+            folder.amount -= 1
+            folder.save()
+
         name = instance.file.name.split("/")[-1]
         trash = FileInTrash(user=instance.user, name=name)
         trash.file = File(instance.file, name=name)

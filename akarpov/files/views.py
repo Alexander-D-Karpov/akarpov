@@ -6,9 +6,16 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils.timezone import now
-from django.views.generic import DetailView, ListView, RedirectView, UpdateView
-from django.views.generic.base import TemplateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    RedirectView,
+    UpdateView,
+)
+from django_filters.views import FilterView
+from django_tables2 import SingleTableView
+from django_tables2.export import ExportMixin
 
 from akarpov.contrib.chunked_upload.exceptions import ChunkedUploadError
 from akarpov.contrib.chunked_upload.models import ChunkedUpload
@@ -16,22 +23,29 @@ from akarpov.contrib.chunked_upload.views import (
     ChunkedUploadCompleteView,
     ChunkedUploadView,
 )
-from akarpov.files.forms import FileForm
+from akarpov.files.filters import FileFilter
+from akarpov.files.forms import FileForm, FolderForm
 from akarpov.files.models import BaseFileItem, File, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
 from akarpov.files.services.preview import get_base_meta
+from akarpov.files.tables import FileTable
 
 logger = structlog.get_logger(__name__)
 
 
 class TopFolderView(LoginRequiredMixin, ListView):
     template_name = "files/list.html"
-    paginate_by = 19
+    paginate_by = 18
     model = BaseFileItem
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["folder_slug"] = None
+        context["folder_form"] = FolderForm()
+        context["is_folder_owner"] = True
+
+        # folder path
+        context["folders"] = []
         return context
 
     def get_queryset(self):
@@ -41,17 +55,28 @@ class TopFolderView(LoginRequiredMixin, ListView):
 class FileFolderView(ListView):
     template_name = "files/folder.html"
     model = BaseFileItem
-    paginate_by = 39
+    paginate_by = 38
     slug_field = "slug"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.object = None
 
+    def get_paginate_by(self, queryset):
+        if self.request.user == self.get_object().user:
+            # return 38 items for owner to fit file and folder forms
+            return 38
+        return 40
+
     def get_context_data(self, **kwargs):
         folder = self.get_object()
         context = super().get_context_data(**kwargs)
         context["folder_slug"] = folder.slug
+        context["folder_form"] = FolderForm()
+        context["is_folder_owner"] = self.request.user == self.get_object().user
+
+        # folder path
+        context["folders"] = folder.get_top_folders() + [folder]
         return context
 
     def get_object(self, *args):
@@ -70,7 +95,7 @@ class FileUpdateView(LoginRequiredMixin, UpdateView):
     model = File
     form_class = FileForm
 
-    def get_object(self):
+    def get_object(self, *args):
         file = get_object_or_404(File, slug=self.kwargs["slug"])
         if file.user != self.request.user:
             raise PermissionDenied
@@ -80,6 +105,27 @@ class FileUpdateView(LoginRequiredMixin, UpdateView):
 
 
 file_update = FileUpdateView.as_view()
+
+
+class FolderCreateView(LoginRequiredMixin, CreateView):
+    model = Folder
+    form_class = FolderForm
+
+    def form_valid(self, form):
+        folder = None
+        if "slug" in self.kwargs and self.kwargs["slug"]:
+            folder = get_object_or_404(Folder, slug=self.kwargs["slug"])
+        form.instance.user = self.request.user
+        form.instance.parent = folder
+        super().form_valid(form)
+        if folder:
+            return HttpResponseRedirect(
+                reverse("files:folder", kwargs={"slug": folder.slug})
+            )
+        return HttpResponseRedirect(reverse("files:main"))
+
+
+folder_create = FolderCreateView.as_view()
 
 
 class FileView(DetailView):
@@ -161,10 +207,6 @@ delete_file_view = DeleteFileView.as_view()
 folder_view = FileFolderView.as_view()
 
 
-class ChunkedUploadDemo(LoginRequiredMixin, TemplateView):
-    template_name = "files/upload.html"
-
-
 class MyChunkedUploadView(ChunkedUploadView):
     model = ChunkedUpload
     field_name = "the_file"
@@ -214,11 +256,6 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
                 name=uploaded_file.name,
                 parent=folder,
             )
-            if folder:
-                folder.modified = now()
-                folder.size += uploaded_file.size
-                folder.amount += 1
-                folder.save()
             request.user.left_file_upload -= uploaded_file.size
             request.user.save()
             self.message = {
@@ -235,3 +272,17 @@ class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
 
     def get_response_data(self, chunked_upload, request):
         return self.message
+
+
+class FileTableView(LoginRequiredMixin, FilterView, ExportMixin, SingleTableView):
+    model = File
+    table_class = FileTable
+    filterset_class = FileFilter
+    template_name = "files/tables.html"
+    paginate_by = 200
+
+    def get_queryset(self, **kwargs):
+        return File.objects.filter(user=self.request.user)
+
+
+file_table = FileTableView.as_view()

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load django_tables2 crispy_forms_tags %}
+
+{% block css %}
+  <style>
+  .pagination {
+    gap: 20px;
+  }
+  </style>
+{% endblock %}
+
+
+{% block content %}
+  <div class="justify-content-end d-flex">
+    <a href="{% url 'files:main' %}">View in folder view</a>
+  </div>
+  <form class="mb-4 p-2" >
+  <div class="row d-flex">
+  {% for field in filter.form %}
+    <div class="col col-md-4 col-sm-5 justify-content-center align-self-center">{{ field | as_crispy_field }}</div>
+  {% endfor %}
+  </div>
+  <div class="row">
+  <div class="col col-auto justify-content-center align-self-center">
+    <button class="btn btn-success mt-3">Apply filters</button>
+  </div>
+  <div class="col col-auto justify-content-center align-self-center">
+    <a style="text-decoration: none" href="{% export_url "xlsx" %}" class="btn btn-warning mt-3">Export into Excel</a>
+  </div>
+  </div>
+  </form>
+  <div class="table-responsive">
+    {% render_table table %}
+  </div>
+{% endblock %}

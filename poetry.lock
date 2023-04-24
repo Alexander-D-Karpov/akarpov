@@ -1520,6 +1520,21 @@ files = [
 jsonfield = ">=3.0.0"
 
 [[package]]
+name = "django-filter"
+version = "23.1"
+description = "Django-filter is a reusable Django application for allowing users to filter querysets dynamically."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django-filter-23.1.tar.gz", hash = "sha256:dee5dcf2cea4d7f767e271b6d01f767fce7500676d5e5dc58dac8154000b87df"},
+    {file = "django_filter-23.1-py3-none-any.whl", hash = "sha256:e3c52ad83c32fb5882125105efb5fea2a1d6a85e7dc64b04ef52edbf14451b6c"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+
+[[package]]
 name = "django-formtools"
 version = "2.4"
 description = "A set of high-level abstractions for Django forms"
@@ -1756,6 +1771,24 @@ files = [
 [package.dependencies]
 django = "*"
 typing-extensions = "*"
+
+[[package]]
+name = "django-tables2"
+version = "2.5.3"
+description = "Table/data-grid framework for Django"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-tables2-2.5.3.tar.gz", hash = "sha256:f6c1623aac188d29aae9cf6b4de3211c96c525e49890654bec3359c181600eb9"},
+    {file = "django_tables2-2.5.3-py2.py3-none-any.whl", hash = "sha256:e336fdf8899a8fab110550a40cad956064bd4054818e0b972c1893b3e2542168"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+
+[package.extras]
+tablib = ["tablib"]
 
 [[package]]
 name = "django-timezone-field"
@@ -4781,6 +4814,28 @@ tests = ["coverage[toml]", "freezegun (>=0.2.8)", "pretend", "pytest (>=6.0)", "
 typing = ["mypy", "rich", "twisted"]
 
 [[package]]
+name = "tablib"
+version = "3.4.0"
+description = "Format agnostic tabular data library (XLS, JSON, YAML, CSV, etc.)"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tablib-3.4.0-py3-none-any.whl", hash = "sha256:0f9c45141195c472202f30d82c0c035bf7e0dd7e4da2257815e506acff4ab364"},
+    {file = "tablib-3.4.0.tar.gz", hash = "sha256:77ea97faf6f92a7e198c05bd0c690f3cba57b83ea45a636b72f967cb6fe6f160"},
+]
+
+[package.extras]
+all = ["markuppy", "odfpy", "openpyxl (>=2.6.0)", "pandas", "pyyaml", "tabulate", "xlrd", "xlwt"]
+cli = ["tabulate"]
+html = ["markuppy"]
+ods = ["odfpy"]
+pandas = ["pandas"]
+xls = ["xlrd", "xlwt"]
+xlsx = ["openpyxl (>=2.6.0)"]
+yaml = ["pyyaml"]
+
+[[package]]
 name = "termcolor"
 version = "2.2.0"
 description = "ANSI color formatting for output in terminal"
@@ -5642,4 +5697,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "667d1226a682d79bea11fdee05d079b1b494ac325167ca069f79f4d18d1a7d04"
+content-hash = "c065bd831f46b58518895fa101821a580bebe3f7792348ca31d6a4fb4aab2b82"

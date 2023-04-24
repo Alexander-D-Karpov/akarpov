@@ -14,6 +14,17 @@
 
 
 {% block content %}
+{% if has_perm %}
+<nav class="ms-3" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'files:main' %}">home</a></li>
+    {% for f in file.get_top_folders %}
+    <li class="breadcrumb-item"><a href="{% url 'files:folder' slug=f.slug %}">{{ f.name }}</a></li>
+    {% endfor %}
+    <li class="breadcrumb-item active" aria-current="page">{{ file.name }}</li>
+  </ol>
+</nav>
+{% endif %}
 <div class="row m-2">
   <h1 class="fs-1 text-break mb-4">{{ file.name }}
   {% if has_perm %}

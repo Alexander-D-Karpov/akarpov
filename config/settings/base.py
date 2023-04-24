@@ -115,6 +115,8 @@ THIRD_PARTY_APPS = [
     "akarpov.contrib.chunked_upload",
     "active_link",
     "robots",
+    "django_filters",
+    "django_tables2",
     # django-cms
     "cms",
     "menus",

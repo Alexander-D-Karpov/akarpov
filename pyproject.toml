@@ -88,6 +88,9 @@ cairosvg = "^2.7.0"
 textract = "^1.6.5"
 spotipy = "2.16.1"
 django-robots = "^5.0"
+django-tables2 = "^2.5.3"
+django-filter = "^23.1"
+tablib = "^3.4.0"
 
 
 [build-system]
