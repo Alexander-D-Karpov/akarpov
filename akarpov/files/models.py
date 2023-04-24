@@ -5,9 +5,11 @@ from django.db.models import (
     CASCADE,
     BooleanField,
     CharField,
+    DateTimeField,
     FileField,
     ForeignKey,
     IntegerField,
+    Model,
     SlugField,
     TextField,
 )
@@ -31,6 +33,9 @@ class BaseFileItem(PolymorphicModel):
     user = ForeignKey("users.User", related_name="files", on_delete=CASCADE)
     created = AutoCreatedField("created")
     modified = AutoLastModifiedField("updated")
+
+    views = IntegerField(default=0)
+    downloads = IntegerField(default=0)
 
     class Meta:
         ordering = ["-modified"]
@@ -118,3 +123,11 @@ class FileInTrash(TimeStampedModel):
     name = CharField(max_length=200, blank=True)
     user = ForeignKey("users.User", related_name="trash_files", on_delete=CASCADE)
     file = FileField(blank=False, upload_to=trash_file_upload)
+
+
+class FileReport(Model):
+    created = DateTimeField(auto_now_add=True)
+    file = ForeignKey("files.File", related_name="reports", on_delete=CASCADE)
+
+    def __str__(self):
+        return f"report on {self.file}"

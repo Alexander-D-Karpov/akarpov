@@ -5,9 +5,6 @@ from akarpov.files.models import File
 
 class FileTable(tables.Table):
     name = tables.columns.Column("name", linkify=True)
-    time = tables.columns.DateTimeColumn(
-        format="H:m:s", accessor="modified", verbose_name="Time"
-    )
     folder = tables.columns.Column(
         linkify=True, accessor="parent", verbose_name="Folder"
     )
@@ -22,7 +19,8 @@ class FileTable(tables.Table):
             "name",
             "created",
             "modified",
-            "time",
+            "views",
+            "downloads",
             "folder",
             "private",
             "file",

@@ -25,7 +25,7 @@ from akarpov.contrib.chunked_upload.views import (
 )
 from akarpov.files.filters import FileFilter
 from akarpov.files.forms import FileForm, FolderForm
-from akarpov.files.models import BaseFileItem, File, Folder
+from akarpov.files.models import BaseFileItem, File, FileReport, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
 from akarpov.files.services.preview import get_base_meta
 from akarpov.files.tables import FileTable
@@ -89,6 +89,9 @@ class FileFolderView(ListView):
     def get_queryset(self):
         folder = self.get_object()
         return BaseFileItem.objects.filter(parent=folder)
+
+
+folder_view = FileFolderView.as_view()
 
 
 class FileUpdateView(LoginRequiredMixin, UpdateView):
@@ -204,10 +207,7 @@ class DeleteFileView(LoginRequiredMixin, RedirectView):
 delete_file_view = DeleteFileView.as_view()
 
 
-folder_view = FileFolderView.as_view()
-
-
-class MyChunkedUploadView(ChunkedUploadView):
+class ChunkedUploadView(ChunkedUploadView):
     model = ChunkedUpload
     field_name = "the_file"
 
@@ -218,7 +218,7 @@ class MyChunkedUploadView(ChunkedUploadView):
             )
 
 
-class MyChunkedUploadCompleteView(ChunkedUploadCompleteView):
+class ChunkedUploadCompleteView(ChunkedUploadCompleteView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.message = {}
@@ -286,3 +286,26 @@ class FileTableView(LoginRequiredMixin, FilterView, ExportMixin, SingleTableView
 
 
 file_table = FileTableView.as_view()
+
+
+class ReportFileView(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        file = get_object_or_404(File, slug=kwargs["slug"])
+        FileReport.objects.create(file=file)
+        return reverse("files:view", kwargs={"slug": file.slug})
+
+
+report_file = ReportFileView.as_view()
+
+
+class ListFileReports(LoginRequiredMixin, ListView):
+    model = FileReport
+    template_name = "files/reports.html"
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return FileReport.objects.all()
+        return FileReport.objects.none()
+
+
+file_report_list = ListFileReports.as_view()

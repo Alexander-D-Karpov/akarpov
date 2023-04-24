@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+<div class="list-group">
+  {% for file in filereport_list %}
+  <a href="{{ file.file.get_absolute_url }}" class="list-group-item list-group-item-action">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">{{ file.file.name }}</h5>
+      <small>{{ file.created | naturaltime }}</small>
+    </div>
+    <small>{{ file.file.file_type }}</small>
+  </a>
+  {% endfor %}
+</div>

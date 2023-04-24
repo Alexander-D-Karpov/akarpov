@@ -52,10 +52,10 @@
     </nav>
     {% endif %}
   {% endif %}
-  <div class="d-flex justify-content-end me-5">
-    <a class="me-5" href="{% url 'files:table' %}">View in table view</a>
-  </div>
   {% if request.user.is_authenticated and is_folder_owner %}
+  <div class="d-flex justify-content-end me-5">
+    <a class="me-5" href="{% url 'files:table' %}">table view</a>
+  </div>
   <div class="col-lg-2 col-xxl-2 col-md-4 col-sm-6 col-xs-12 mb-3 m-3 d-flex align-items-stretch card">
       <div class="card-body d-flex flex-column justify-content-center align-items-center">
         {% csrf_token %}
