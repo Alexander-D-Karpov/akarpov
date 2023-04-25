@@ -9,6 +9,7 @@ previews = {
         "docx": application.docx.view,
         "vnd.oasis.opendocument.text": application.odt.view,
         "x-httpd-php": text.common.view,
+        "json": application.json.view,
     },
     "audio": {
         "aac": audio.basic.view,
@@ -77,6 +78,7 @@ extensions = (
         "oga": audio.oga.view,
         "pdf": application.pdf.view,
         "html": text.html.view,
+        "json": application.json.view,
     }
     | source_code
     | fonts_ext
