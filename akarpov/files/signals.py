@@ -15,7 +15,7 @@ def file_on_create(sender, instance: FileModel, created, **kwargs):
     if created:
         for folder in instance.get_top_folders():
             folder.modified = now()
-            folder.size += instance.file.size
+            folder.size += instance.file_size
             folder.amount += 1
             folder.save()
         process_file.apply_async(
@@ -29,18 +29,25 @@ def file_on_create(sender, instance: FileModel, created, **kwargs):
 @receiver(post_delete, sender=FileModel)
 def move_file_to_trash(sender, instance, **kwargs):
     if instance.file:
+        file_size = 0
+        path = instance.file.path
+        file_dir = "/".join(path.split("/")[:-1]) + "/"
+
+        if os.path.isfile(path):
+            file_size = instance.file.size
+
         for folder in instance.get_top_folders():
             folder.modified = now()
-            folder.size -= instance.file.size
+            folder.size -= file_size
             folder.amount -= 1
             folder.save()
 
-        name = instance.file.name.split("/")[-1]
-        trash = FileInTrash(user=instance.user, name=name)
-        trash.file = File(instance.file, name=name)
-        trash.save()
-        path = instance.file.path
-        file_dir = "/".join(path.split("/")[:-1]) + "/"
+        if os.path.isfile(path):
+            name = instance.file.name.split("/")[-1]
+            trash = FileInTrash(user=instance.user, name=name)
+            trash.file = File(instance.file, name=name)
+            trash.save()
+
         if os.path.isfile(path):
             os.remove(path)
             if os.path.isdir(file_dir) and len(os.listdir(file_dir)) == 0:

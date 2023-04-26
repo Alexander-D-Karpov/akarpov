@@ -42,6 +42,10 @@
         {% for f in folders %}
         <li class="breadcrumb-item"><a href="{% url 'files:folder' slug=f.slug %}">{{ f.name }}</a></li>
         {% endfor %}
+      <a class="justify-content-center ms-2" href="{% url 'files:folder_update' folder_slug %}">
+      <i style="color:black" class="bi bi-pen fs-6"></i></a>
+      <a class="justify-content-center ms-2" href="{% url 'files:folder_delete' folder_slug %}">
+      <i style="color:black" class="bi bi-trash fs-6"></i></a>
       </ol>
     </nav>
     {% else %}

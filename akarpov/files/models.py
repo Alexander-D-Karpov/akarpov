@@ -124,6 +124,9 @@ class FileInTrash(TimeStampedModel):
     user = ForeignKey("users.User", related_name="trash_files", on_delete=CASCADE)
     file = FileField(blank=False, upload_to=trash_file_upload)
 
+    def __str__(self):
+        return self.name
+
 
 class FileReport(Model):
     created = DateTimeField(auto_now_add=True)

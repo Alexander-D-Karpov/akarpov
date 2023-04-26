@@ -30,6 +30,7 @@ from akarpov.files.filters import FileFilter
 from akarpov.files.forms import FileForm, FolderForm
 from akarpov.files.models import BaseFileItem, File, FileReport, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
+from akarpov.files.services.folders import delete_folder
 from akarpov.files.services.preview import get_base_meta
 from akarpov.files.tables import FileTable
 
@@ -202,8 +203,11 @@ files_view = FileView.as_view()
 class DeleteFileView(LoginRequiredMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         file = get_object_or_404(File, slug=kwargs["slug"])
+        parent = file.parent
         if file.user == self.request.user:
             file.delete()
+        if parent:
+            return reverse("files:folder", kwargs={"slug": parent.slug})
         return reverse("files:main")
 
 
@@ -308,3 +312,33 @@ class ListFileReports(SuperUserRequiredMixin, ListView):
 
 
 file_report_list = ListFileReports.as_view()
+
+
+class FolderUpdateView(LoginRequiredMixin, UpdateView):
+    model = Folder
+    form_class = FolderForm
+
+    def get_object(self, *args):
+        file = get_object_or_404(Folder, slug=self.kwargs["slug"])
+        if file.user != self.request.user:
+            raise PermissionDenied
+        return file
+
+    template_name = "files/form.html"
+
+
+folder_update = FolderUpdateView.as_view()
+
+
+class DeleteFolderView(LoginRequiredMixin, RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        folder = get_object_or_404(Folder, slug=kwargs["slug"])
+        parent = folder.parent
+        if folder.user == self.request.user:
+            delete_folder(folder)
+        if parent:
+            return reverse("files:folder", kwargs={"slug": parent.slug})
+        return reverse("files:main")
+
+
+delete_folder_view = DeleteFolderView.as_view()
