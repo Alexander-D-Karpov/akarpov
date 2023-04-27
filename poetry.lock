@@ -5527,13 +5527,13 @@ files = [
 
 [[package]]
 name = "yandex-music"
-version = "2.0.1"
+version = "2.1.0"
 description = "Неофициальная Python библиотека для работы с API сервиса Яндекс.Музыка."
 category = "main"
 optional = false
 python-versions = "~=3.7"
 files = [
-    {file = "yandex-music-2.0.1.tar.gz", hash = "sha256:d01f35d72aa0a6deca474566fff18109af7fcc8ef0377876e6c83da1ae096671"},
+    {file = "yandex-music-2.1.0.tar.gz", hash = "sha256:6211e8ffe0bad8d79815578a1cd86ee45630784f93c5f5ec73bf2228b7ab27ba"},
 ]
 
 [package.dependencies]
@@ -5698,4 +5698,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "cf3ed0fdbb3500255eff2babe87788a51df5c5a329ca23a0792f3c123a4a2742"
+content-hash = "2338225a40b5062c7c14740799b6817a33a774d4676baac8609d950091cae084"
