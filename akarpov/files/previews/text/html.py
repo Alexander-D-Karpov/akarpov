@@ -4,6 +4,8 @@ from akarpov.files.models import File
 
 
 def view(file: File) -> (str, str):
+    if file.file_size > 10 * 1024 * 1024:
+        return "", "file is too large to view"
     static = f"""
     <meta property="og:title" content="{file.name}" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-light.min.css">

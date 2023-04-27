@@ -6,6 +6,8 @@ from akarpov.files.previews.text.common import language_previews
 
 
 def view(file: File) -> (str, str):
+    if file.file_size > 10 * 1024 * 1024:
+        return "", "file is too large to view"
     extension = file.file.path.split(".")[-1]
     if hasattr(text, extension):
         return getattr(text, extension).view(file)
