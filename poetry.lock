@@ -1710,14 +1710,14 @@ django-classy-tags = ">=3.0"
 
 [[package]]
 name = "django-structlog"
-version = "5.0.2"
+version = "5.1.0"
 description = "Structured Logging for Django"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-structlog-5.0.2.tar.gz", hash = "sha256:1015bbf8d43e3293725fd09c0bb13a216d1025e8a2547bf718b4542828da7e8b"},
-    {file = "django_structlog-5.0.2-py3-none-any.whl", hash = "sha256:2f19d940a336873fc003e4207c94b0ef0f810703ee0d7f411ca541fe173b8ca0"},
+    {file = "django-structlog-5.1.0.tar.gz", hash = "sha256:e7a86b01e11b32296095d35565b44f9f179acb9563aa3e85cae698539db07756"},
+    {file = "django_structlog-5.1.0-py3-none-any.whl", hash = "sha256:a2dbe27e4add95cd386bcdfd7e05fe4547b02061881b0ee743b84a3d55a5df89"},
 ]
 
 [package.dependencies]
@@ -5527,13 +5527,13 @@ files = [
 
 [[package]]
 name = "yandex-music"
-version = "2.0.1"
+version = "2.1.0"
 description = "Неофициальная Python библиотека для работы с API сервиса Яндекс.Музыка."
 category = "main"
 optional = false
 python-versions = "~=3.7"
 files = [
-    {file = "yandex-music-2.0.1.tar.gz", hash = "sha256:d01f35d72aa0a6deca474566fff18109af7fcc8ef0377876e6c83da1ae096671"},
+    {file = "yandex-music-2.1.0.tar.gz", hash = "sha256:6211e8ffe0bad8d79815578a1cd86ee45630784f93c5f5ec73bf2228b7ab27ba"},
 ]
 
 [package.dependencies]
@@ -5631,14 +5631,14 @@ multidict = ">=4.0"
 
 [[package]]
 name = "ytmusicapi"
-version = "0.25.2"
+version = "1.0.2"
 description = "Unofficial API for YouTube Music"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ytmusicapi-0.25.2-py3-none-any.whl", hash = "sha256:3d47a8803dceeb0289c7cf29a0317c5d6051d0b7c28fda067f6abb001746f7ac"},
-    {file = "ytmusicapi-0.25.2.tar.gz", hash = "sha256:aa3165100ff5c0e1f49f9a046312f878c31eea83fde14af0707e3368ae923fe4"},
+    {file = "ytmusicapi-1.0.2-py3-none-any.whl", hash = "sha256:8e3f364dbb0d4e9bbbbcac65e65c2449e7e236478ecc00e6b5bc25455e488eee"},
+    {file = "ytmusicapi-1.0.2.tar.gz", hash = "sha256:f798bfedd49738bece82aac15b2d97f04578ccb1572f347a350cb704df4d0e10"},
 ]
 
 [package.dependencies]
