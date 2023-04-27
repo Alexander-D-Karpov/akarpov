@@ -1710,14 +1710,14 @@ django-classy-tags = ">=3.0"
 
 [[package]]
 name = "django-structlog"
-version = "5.0.2"
+version = "5.1.0"
 description = "Structured Logging for Django"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-structlog-5.0.2.tar.gz", hash = "sha256:1015bbf8d43e3293725fd09c0bb13a216d1025e8a2547bf718b4542828da7e8b"},
-    {file = "django_structlog-5.0.2-py3-none-any.whl", hash = "sha256:2f19d940a336873fc003e4207c94b0ef0f810703ee0d7f411ca541fe173b8ca0"},
+    {file = "django-structlog-5.1.0.tar.gz", hash = "sha256:e7a86b01e11b32296095d35565b44f9f179acb9563aa3e85cae698539db07756"},
+    {file = "django_structlog-5.1.0-py3-none-any.whl", hash = "sha256:a2dbe27e4add95cd386bcdfd7e05fe4547b02061881b0ee743b84a3d55a5df89"},
 ]
 
 [package.dependencies]
@@ -5698,4 +5698,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2338225a40b5062c7c14740799b6817a33a774d4676baac8609d950091cae084"
+content-hash = "da34f6b6380f581216534e1c852bb1d367efb6f22dce54431f8068edf38bde72"
