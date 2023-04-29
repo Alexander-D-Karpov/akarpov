@@ -36,6 +36,7 @@ urlpatterns = [
     path("music/", include("akarpov.music.urls", namespace="music")),
     path("forms/", include("akarpov.test_platform.urls", namespace="forms")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),
+    path("gallery/", include("akarpov.gallery.urls", namespace="gallery")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("akarpov.blog.urls", namespace="blog")),

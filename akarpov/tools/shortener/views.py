@@ -11,7 +11,7 @@ class ShortLinkCreateView(CreateView):
     model = Link
     form_class = LinkForm
 
-    template_name = "shortener/create.html"
+    template_name = "tools/shortener/create.html"
 
     def form_valid(self, form):
         if self.request.user.is_authenticated:
@@ -24,7 +24,7 @@ short_link_create_view = ShortLinkCreateView.as_view()
 
 class LinkDetailView(DetailView):
 
-    template_name = "shortener/view.html"
+    template_name = "tools/shortener/view.html"
 
     def get_object(self, *args, **kwargs):
         link = get_link_from_slug(self.kwargs["slug"])
@@ -39,7 +39,7 @@ link_detail_view = LinkDetailView.as_view()
 
 
 class LinkRevokedView(TemplateView):
-    template_name = "shortener/revoked.html"
+    template_name = "tools/shortener/revoked.html"
 
 
 link_revoked_view = LinkRevokedView.as_view()
