@@ -136,7 +136,7 @@ HEALTH_CHECKS = [
     "health_check.contrib.redis",
 ]
 
-ALL_AUTH_PROVIDERS = [
+ALLAUTH_PROVIDERS = [
     "allauth.socialaccount.providers.github",
     # "allauth.socialaccount.providers.google",
     # "allauth.socialaccount.providers.telegram",
@@ -149,6 +149,7 @@ LOCAL_APPS = [
     "akarpov.blog",
     "akarpov.files",
     "akarpov.music",
+    "akarpov.gallery",
     "akarpov.pipeliner",
     "akarpov.test_platform",
     "akarpov.tools.shortener",
@@ -156,7 +157,7 @@ LOCAL_APPS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = (
-    DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALL_AUTH_PROVIDERS
+    DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + HEALTH_CHECKS + ALLAUTH_PROVIDERS
 )
 
 # MIGRATIONS
