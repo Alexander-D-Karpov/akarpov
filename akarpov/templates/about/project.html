@@ -95,6 +95,7 @@ body{
                     <p class="lead">{{ project.md | markdown | safe }}</p>
                     <p>{{ project.description }}</p>
                     <p>Created: {{ project.created|date:"d M Y" }}</p>
+                    <p>Last updated: {{ project.modified|date:"d M Y" }}</p>
                     <p>
                         {% if project.source_link %}
                         <a style="text-decoration: none; color: black" class="m-2" href="{{ project.source_link }}"><i class="bi bi-file-earmark-code"></i> Source code</a>
