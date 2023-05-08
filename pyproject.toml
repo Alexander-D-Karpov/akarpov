@@ -89,7 +89,7 @@ textract = "^1.6.5"
 spotipy = "2.16.1"
 django-robots = "^5.0"
 django-tables2 = "^2.5.3"
-django-filter = "^23.1"
+django-filter = "^23.2"
 tablib = "^3.4.0"
 
 
