@@ -41,11 +41,11 @@ django-stubs = {extras = ["compatible-mypy"], version = "^1.14.0"}
 pytest = "^7.3.0"
 pytest-sugar = "^0.9.6"
 djangorestframework-stubs = {extras = ["compatible-mypy"], version = "^1.8.0"}
-sphinx = "^6.2.1"
+sphinx = "^7.0.0"
 sphinx-autobuild = "^2021.3.14"
 flake8 = "^6.0.0"
 flake8-isort = "^6.0.0"
-coverage = "^7.2.4"
+coverage = "^7.2.5"
 black = "^22.12.0"
 pylint-django = "^2.5.3"
 pylint-celery = "^0.3"
@@ -89,7 +89,7 @@ textract = "^1.6.5"
 spotipy = "2.16.1"
 django-robots = "^5.0"
 django-tables2 = "^2.5.3"
-django-filter = "^23.1"
+django-filter = "^23.2"
 tablib = "^3.4.0"
 
 
