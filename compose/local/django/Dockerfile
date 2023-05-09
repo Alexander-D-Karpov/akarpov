@@ -24,9 +24,9 @@ WORKDIR ${APP_HOME}
 
 # Install required system dependencies
 RUN apt-get update && \
-    apt-get install -y build-essential gdal libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
+    apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
     # Dependencies for file preview generation
-    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg && \
+    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg gdal && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
