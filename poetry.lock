@@ -1705,14 +1705,14 @@ files = [
 
 [[package]]
 name = "django-sekizai"
-version = "4.0.0"
+version = "4.1.0"
 description = "Django Sekizai"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django-sekizai-4.0.0.tar.gz", hash = "sha256:3304732a8da09e311df0f851185c9b2d57867126f2c73f00326f57d0ffbc2d68"},
-    {file = "django_sekizai-4.0.0-py3-none-any.whl", hash = "sha256:98ec08acf2670d441cf0f57ec0a3623f3e2e1a75a61735dec53162016f041284"},
+    {file = "django-sekizai-4.1.0.tar.gz", hash = "sha256:2aca36cbae0b5c0cefed9565416ec442335767fb3145bff11e58622fc653cdad"},
+    {file = "django_sekizai-4.1.0-py3-none-any.whl", hash = "sha256:aa12e66ba0335fbe726b7d74cf4e8716b89a0be99a1304a9b9e8b191229e2e4a"},
 ]
 
 [package.dependencies]
@@ -5366,6 +5366,7 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
+    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 
@@ -5708,4 +5709,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2365c910257ce91b09f72d236f19cf15257b5561f7fc746fed7c8e1f6155c0d4"
+content-hash = "c62c49bdf43a7513ffab944e0b76b3d62b3e9191c2d238ec6e215cbdeb2653a1"
