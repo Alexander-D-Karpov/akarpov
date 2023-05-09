@@ -117,6 +117,7 @@ THIRD_PARTY_APPS = [
     "robots",
     "django_filters",
     "django_tables2",
+    "location_field",
     # django-cms
     "cms",
     "menus",
@@ -548,3 +549,10 @@ MUSIC_YANDEX_TOKEN = env("MPD_HOST", default="")
 # ------------------------------------------------------------------------------
 ROBOTS_USE_SITEMAP = True
 ROBOTS_USE_SCHEME_IN_HOST = True
+
+# LOCATION_FIELD
+# ------------------------------------------------------------------------------
+LOCATION_FIELD = {
+    "map.provider": "openstreetmap",
+    "search.provider": "nominatim",
+}

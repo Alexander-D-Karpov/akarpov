@@ -1614,6 +1614,17 @@ Django = ">=2.2"
 tests = ["coverage"]
 
 [[package]]
+name = "django-location-field"
+version = "2.7.0"
+description = "Location field for Django"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django_location_field-2.7.0-py2.py3-none-any.whl", hash = "sha256:25745b3f409c0c7a1dfb5773f4f7505acbe7d0eaba93c2b9ce24ef368b71a24c"},
+]
+
+[[package]]
 name = "django-model-utils"
 version = "4.3.1"
 description = "Django model mixins and utilities"
@@ -5355,7 +5366,6 @@ category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 
@@ -5698,4 +5708,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5837eb6fa52d084699060d6fbf6fa9c599ccf9da936a4e80e418e5636a743c17"
+content-hash = "2365c910257ce91b09f72d236f19cf15257b5561f7fc746fed7c8e1f6155c0d4"

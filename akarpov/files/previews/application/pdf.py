@@ -21,7 +21,9 @@ def view(file: File):
     """
 
     content = (
-        """
+        f"""
+        <a href="{file.file.url}">View in system pdf viewer</a>"""
+        + """
         <div id="pdf" class="col-auto">
         </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.5.141/pdf.min.js"></script>

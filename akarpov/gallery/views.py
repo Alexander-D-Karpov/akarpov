@@ -1,7 +1,8 @@
+from django.shortcuts import get_object_or_404
 from django.views import generic
 
 from akarpov.common.views import HasPermissions
-from akarpov.gallery.models import Collection
+from akarpov.gallery.models import Collection, Image, Tag
 
 
 class ListCollectionsView(generic.ListView):
@@ -15,6 +16,20 @@ class ListCollectionsView(generic.ListView):
 
 
 list_collections_view = ListCollectionsView.as_view()
+
+
+class ListTagImagesView(generic.ListView):
+    model = Image
+    template_name = "gallery/images.html"
+
+    def get_queryset(self):
+        tag = get_object_or_404(Tag, slug=self.kwargs["slug"])
+        if self.request.user.is_authenticated:
+            return Image.objects.filter(tags__contain=tag, user=self.request.user)
+        return Image.objects.filter(tags__contain=tag, collection__public=True)
+
+
+list_tag_images_view = ListTagImagesView.as_view()
 
 
 class CollectionView(generic.DetailView, HasPermissions):
