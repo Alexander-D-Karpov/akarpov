@@ -23,10 +23,11 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 # Install required system dependencies
-RUN apt-get update && \
+RUN add-apt-repository ppa:ubuntugis/ppa && \
+    apt-get update && \
     apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
     # Dependencies for file preview generation
-    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg gdal && \
+    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg gdal-bin && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
