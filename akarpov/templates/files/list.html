@@ -72,7 +72,7 @@
           <svg class="upload_svg" width="60" height="60" aria-hidden="true">
             <use href="#icon-imageUpload"></use>
           </svg>
-          <p class="small my-2">Drag &amp; Drop file(s) <br><i>or</i></p>
+          <p class="small my-2">Drag &amp; Drop file(s) <small>({{ request.user.left_file_upload | filesizeformat }} left)</small><br><i>or</i></p>
           <input class="position-absolute invisible" id="chunked_upload" type="file" name="the_file">
           <label class="btn btn-upload mb-3" for="chunked_upload">Choose file(s)</label>
           <div class="upload_gallery d-flex flex-wrap justify-content-center gap-3 mb-0"></div>
