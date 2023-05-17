@@ -57,14 +57,14 @@ django-coverage-plugin = "^3.0.0"
 pytest-django = "^4.5.2"
 gunicorn = "^20.1.0"
 sentry-sdk = "^1.21.0"
-django-anymail = {extras = ["mailgun"], version = "^9.1"}
+django-anymail = {extras = ["mailgun"], version = "^10.0"}
 django-polymorphic = "^3.1.0"
 django-jazzmin = "^2.6.0"
 django-cacheops = "^6.1"
 django-extra-settings = "^0.9.1"
 psycopg2-binary = "^2.9.5"
 django-cms = "^3.11.1"
-django-sekizai = "^4.0.0"
+django-sekizai = "^4.1.0"
 amzqr = "^0.0.1"
 django-active-link = "^0.1.8"
 channels = {extras = ["daphne"], version = "^4.0.0"}
