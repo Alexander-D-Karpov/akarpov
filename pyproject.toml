@@ -64,7 +64,7 @@ django-cacheops = "^6.1"
 django-extra-settings = "^0.9.1"
 psycopg2-binary = "^2.9.5"
 django-cms = "^3.11.1"
-django-sekizai = "^4.0.0"
+django-sekizai = "^4.1.0"
 amzqr = "^0.0.1"
 django-active-link = "^0.1.8"
 channels = {extras = ["daphne"], version = "^4.0.0"}
