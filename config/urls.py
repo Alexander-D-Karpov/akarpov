@@ -25,7 +25,6 @@ urlpatterns = [
         name="django.contrib.sitemaps.views.sitemap",
     ),
     path("health/", include("health_check.urls")),
-    path("cms/", include("cms.urls")),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management

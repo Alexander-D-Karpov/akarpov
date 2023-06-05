@@ -78,7 +78,6 @@ class PlaylistSong(models.Model):
 
 
 class SongInQue(models.Model):
-    """It is very important for pk of SongInQue and Song to be the same"""
-
+    song = models.OneToOneField("Song", related_name="que", on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=250)
     error = models.BooleanField(default=False)

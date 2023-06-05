@@ -90,7 +90,6 @@ DJANGO_APPS = [
     "django.contrib.humanize",  # Handy template tags
     # required for jazzmin to work
     "jazzmin",
-    "djangocms_admin_style",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -118,11 +117,6 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "django_tables2",
     "location_field",
-    # django-cms
-    "cms",
-    "menus",
-    "treebeard",
-    "sekizai",
 ]
 
 HEALTH_CHECKS = [
@@ -217,10 +211,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "cms.middleware.language.LanguageCookieMiddleware",
-    "cms.middleware.user.CurrentUserMiddleware",
-    "cms.middleware.page.CurrentPageMiddleware",
-    "cms.middleware.toolbar.ToolbarMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
 ]
 
@@ -536,14 +526,14 @@ ACTIVE_LINK_CSS_CLASS = "nav-active"
 # ------------------------------------------------------------------------------
 # MPD
 MUSIC_MPD_HOST = env("MPD_HOST", default="")
-MUSIC_MPD_PASSWORD = env("MPD_HOST", default="")
+MUSIC_MPD_PASSWORD = env("MPD_PASSWORD", default="")
 
 # SPOTIFY
-MUSIC_SPOTIFY_ID = env("MPD_HOST", default="")
-MUSIC_SPOTIFY_SECRET = env("MPD_HOST", default="")
+MUSIC_SPOTIFY_ID = env("SPOTIFY_ID", default="")
+MUSIC_SPOTIFY_SECRET = env("SPOTIFY_SECRET", default="")
 
 # YANDEX_MUSIC
-MUSIC_YANDEX_TOKEN = env("MPD_HOST", default="")
+MUSIC_YANDEX_TOKEN = env("YANDEX_TOKEN", default="")
 
 # ROBOTS
 # ------------------------------------------------------------------------------
