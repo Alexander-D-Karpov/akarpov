@@ -1350,13 +1350,13 @@ packaging = "*"
 
 [[package]]
 name = "django-colorfield"
-version = "0.8.0"
-description = "simple color field for your models with a nice color-picker in the admin-interface."
+version = "0.9.0"
+description = "color field for django models with a nice color-picker in the admin."
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-colorfield-0.8.0.tar.gz", hash = "sha256:e50423af639858d01c39980eed9970f7ae475610bf0709b81f6b21a3dc9c3f92"},
-    {file = "django_colorfield-0.8.0-py3-none-any.whl", hash = "sha256:b7a25e2c430f4e80726ab171805d0d76d1f82cc7ff3799d60c2682f50d2ca03c"},
+    {file = "django-colorfield-0.9.0.tar.gz", hash = "sha256:208e04dae669ed95f18c4aef02865e9c785873521ffbe5b46fb6ea7a1500c979"},
+    {file = "django_colorfield-0.9.0-py3-none-any.whl", hash = "sha256:7df5486de759dce70e54a1854f69bafd0a1e1bf98b66b09661d4d84342f447fc"},
 ]
 
 [package.dependencies]
@@ -5460,4 +5460,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "db5ceae9b4407b1f6ca85c307ee7d9d6e49ead343cb88ee162ea3486243c0d6b"
+content-hash = "19f7a8db5fbf6bea0b127b4549111448ec2d114fc4cf28fdc63b5e9b99148b66"
