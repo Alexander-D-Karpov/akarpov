@@ -1267,19 +1267,18 @@ postal = ["cryptography"]
 
 [[package]]
 name = "django-cacheops"
-version = "6.2"
+version = "7.0.1"
 description = "A slick ORM cache with automatic granular event-driven invalidation for Django."
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 files = [
-    {file = "django-cacheops-6.2.tar.gz", hash = "sha256:cc73fd0a1c14799253ff20a8a45791a3c8d2802217b301e70cfa08ae819e438f"},
+    {file = "django-cacheops-7.0.1.tar.gz", hash = "sha256:11ddea87dd039568978a4083d89c89dfb866ea55a7a48fb685a68fc198a8b650"},
 ]
 
 [package.dependencies]
-django = ">=2.1"
+django = ">=3.2"
 funcy = ">=1.8,<2.0"
 redis = ">=3.0.0"
-six = ">=1.4.0"
 
 [[package]]
 name = "django-celery-beat"
@@ -3404,13 +3403,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "3.3.1"
+version = "3.3.3"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pre_commit-3.3.1-py2.py3-none-any.whl", hash = "sha256:218e9e3f7f7f3271ebc355a15598a4d3893ad9fc7b57fe446db75644543323b9"},
-    {file = "pre_commit-3.3.1.tar.gz", hash = "sha256:733f78c9a056cdd169baa6cd4272d51ecfda95346ef8a89bf93712706021b907"},
+    {file = "pre_commit-3.3.3-py2.py3-none-any.whl", hash = "sha256:10badb65d6a38caff29703362271d7dca483d01da88f9d7e05d0b97171c136cb"},
+    {file = "pre_commit-3.3.3.tar.gz", hash = "sha256:a2256f489cd913d575c145132ae196fe335da32d91a8294b7afe6622335dd023"},
 ]
 
 [package.dependencies]
@@ -4258,13 +4257,13 @@ rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "1.21.1"
+version = "1.25.1"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = "*"
 files = [
-    {file = "sentry-sdk-1.21.1.tar.gz", hash = "sha256:99c15556a23621be9f18c2955f7ce63321713bf1c0ad396b27b61399bac5f458"},
-    {file = "sentry_sdk-1.21.1-py2.py3-none-any.whl", hash = "sha256:092888f3abf7a2ea78f0bfcefc3e0465caee2b6f0efb26f538ccc60f95dca179"},
+    {file = "sentry-sdk-1.25.1.tar.gz", hash = "sha256:aa796423eb6a2f4a8cd7a5b02ba6558cb10aab4ccdc0537f63a47b038c520c38"},
+    {file = "sentry_sdk-1.25.1-py2.py3-none-any.whl", hash = "sha256:79afb7c896014038e358401ad1d36889f97a129dfa8031c49b3f238cd1aa3935"},
 ]
 
 [package.dependencies]
@@ -4281,10 +4280,11 @@ chalice = ["chalice (>=1.16.0)"]
 django = ["django (>=1.8)"]
 falcon = ["falcon (>=1.4)"]
 fastapi = ["fastapi (>=0.79.0)"]
-flask = ["blinker (>=1.1)", "flask (>=0.11)"]
+flask = ["blinker (>=1.1)", "flask (>=0.11)", "markupsafe"]
 grpcio = ["grpcio (>=1.21.1)"]
 httpx = ["httpx (>=0.16.0)"]
 huey = ["huey (>=2)"]
+loguru = ["loguru (>=0.5)"]
 opentelemetry = ["opentelemetry-distro (>=0.35b0)"]
 pure-eval = ["asttokens", "executing", "pure-eval"]
 pymongo = ["pymongo (>=3.1)"]
