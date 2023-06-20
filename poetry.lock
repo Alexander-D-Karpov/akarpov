@@ -1258,19 +1258,18 @@ postal = ["cryptography"]
 
 [[package]]
 name = "django-cacheops"
-version = "6.2"
+version = "7.0.1"
 description = "A slick ORM cache with automatic granular event-driven invalidation for Django."
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
 files = [
-    {file = "django-cacheops-6.2.tar.gz", hash = "sha256:cc73fd0a1c14799253ff20a8a45791a3c8d2802217b301e70cfa08ae819e438f"},
+    {file = "django-cacheops-7.0.1.tar.gz", hash = "sha256:11ddea87dd039568978a4083d89c89dfb866ea55a7a48fb685a68fc198a8b650"},
 ]
 
 [package.dependencies]
-django = ">=2.1"
+django = ">=3.2"
 funcy = ">=1.8,<2.0"
 redis = ">=3.0.0"
-six = ">=1.4.0"
 
 [[package]]
 name = "django-celery-beat"
@@ -5452,4 +5451,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4f9a5fb305b0dee033cc69af60979a5f380440d705ca6b876ff14abd18e3b190"
+content-hash = "a1327f2a6963796135a5da7500050779fd54b8d7477d60566311481a3b2d3f6c"
