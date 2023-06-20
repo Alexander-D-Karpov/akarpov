@@ -12,7 +12,7 @@ psutil = "^5.9.5"
 python-slugify = "^7.0.0"
 pillow = "^9.5.0"
 argon2-cffi = "^21.3.0"
-whitenoise = "^6.3.0"
+whitenoise = "^6.5.0"
 redis = "^4.4.0"
 hiredis = "^2.2.3"
 celery = {extras = ["redis"], version = "^5.3.1"}
