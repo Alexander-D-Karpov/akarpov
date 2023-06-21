@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+  {% if message %}
+  {% if status %}
+  <div class="alert alert-dismissible alert-success">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% else %}
+  <div class="alert alert-dismissible alert-error">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+  {% endif %}
+<form class="pt-2" enctype="multipart/form-data" method="POST" id="designer-form">
+    {% csrf_token %}
+    {{ form.media }}
+    {% for field in form %}
+        {{ field|as_crispy_field }}
+    {% endfor %}
+    <div class="mt-4 flex justify-end space-x-4">
+        <button class="btn btn-secondary" type="submit" id="submit">
+            Activate
+        </button>
+    </div>
+</form>
+{% endblock %}

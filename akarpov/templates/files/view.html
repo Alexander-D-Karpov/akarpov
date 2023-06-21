@@ -58,7 +58,7 @@
     {% endif %}
     <a class="text-danger mt-2" style="text-decoration: none" href="{% url 'files:file_report' slug=file.slug %}"><i class="bi bi-flag-fill"></i>report file</a>
     <div class="mt-4 text-center justify-content-sm-evenly justify-content-md-start gap-3 align-items-md-start align-items-sm-center d-flex">
-      <a class="btn btn-success fs-6" href="{{ file.file.url }}" download><i class="bi bi-download"></i> Download</a>
+      <a class="btn btn-success fs-6" href="{% url 'files:file_download' slug=file.slug %}" download><i class="bi bi-download"></i> Download</a>
       {% if has_perm %}
       <a class="btn btn-danger fs-6" href="{% url 'files:delete' slug=file.slug %}"><i class="bi bi-trash"></i> Delete</a>
       {% endif %}

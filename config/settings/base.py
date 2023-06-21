@@ -149,6 +149,7 @@ LOCAL_APPS = [
     "akarpov.test_platform",
     "akarpov.tools.shortener",
     "akarpov.tools.qr",
+    "akarpov.tools.promocodes",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = (
@@ -441,7 +442,6 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # django-rest-framework
 # -------------------------------------------------------------------------------
-# django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
@@ -450,12 +450,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-
-# django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
 
-# By Default swagger ui is available only to admin user(s). You can change permission classes to change that
-# See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "akarpov API",
     "SCHEMA_PATH_PREFIX": "/api/v[0-9]",
@@ -467,6 +463,7 @@ SPECTACULAR_SETTINGS = {
         {"url": "https://akarpov.ru", "description": "Production server"},
     ],
 }
+
 # CKEDITOR
 # ------------------------------------------------------------------------------
 CKEDITOR_UPLOAD_PATH = "uploads/"
@@ -546,3 +543,23 @@ LOCATION_FIELD = {
     "map.provider": "openstreetmap",
     "search.provider": "nominatim",
 }
+
+# SENTRY
+# ------------------------------------------------------------------------------
+dsn = env("SENTRY_DSN", default="")
+if dsn:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=dsn,
+        traces_sample_rate=1.0,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=True,
+                cache_spans=True,
+            ),
+        ],
+    )

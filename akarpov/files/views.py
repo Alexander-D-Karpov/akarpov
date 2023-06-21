@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.views import View
 from django.views.generic import (
     CreateView,
     DetailView,
@@ -342,3 +343,14 @@ class DeleteFolderView(LoginRequiredMixin, RedirectView):
 
 
 delete_folder_view = DeleteFolderView.as_view()
+
+
+class FileDownloadView(View):
+    def get(self, request, slug):
+        file = get_object_or_404(File, slug=slug)
+        file.downloads += 1
+        file.save(update_fields=["downloads"])
+        return HttpResponseRedirect(file.file.url)
+
+
+file_download_view = FileDownloadView.as_view()

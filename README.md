@@ -7,6 +7,15 @@ Writen in Python 3.11 and Django 4.2
 ### local run via docker
 
 ```shell
+$ python3 manage.py migrate
+$ python3 manage.py runserver
+$ celery -A config.celery_app worker --loglevel=info
+```
+
+
+### local run via docker
+
+```shell
 $ docker-compose -f local.yml up
 ```
 - server - http://127.0.0.1:8000

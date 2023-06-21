@@ -84,6 +84,7 @@
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                             <li><a class="dropdown-item {% active_link 'users:update' %}" href="{% url 'users:update'  %}">Settings</a></li>
                             <li><a class="dropdown-item {% active_link 'users:detail' request.user.username %}" href="{% url 'users:detail' request.user.username  %}">Profile</a></li>
+                            <li><a class="dropdown-item {% active_link 'tools:qr:create' %}" href="{% url 'tools:promocodes:activate' %}">Activate promocode</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
