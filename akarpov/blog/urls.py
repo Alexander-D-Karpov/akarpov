@@ -13,7 +13,7 @@ from akarpov.blog.views import (
 app_name = "blog"
 urlpatterns = [
     path("", post_list_view, name="post_list"),
-    path("<str:slug>", post_detail_view, name="post"),
+    path("p/<str:slug>", post_detail_view, name="post"),
     path("create/", post_create_view, name="post_create"),
     path("<str:slug>/edit", post_update_view, name="post_edit"),
     path("<str:slug>/comment", comment, name="comment"),

@@ -39,7 +39,7 @@ urlpatterns = [
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("akarpov.blog.urls", namespace="blog")),
-    path("s/<str:slug>", redirect_view, name="short_url"),
+    path("<str:slug>", redirect_view, name="short_url"),
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
