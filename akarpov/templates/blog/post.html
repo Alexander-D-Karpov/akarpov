@@ -83,6 +83,7 @@
     {% for comment in post.get_comments %}
       <div class="col mb-5">
         <div class="d-flex flex-start">
+        <a href="#{{ comment.id }}"></a>
           {% if comment.author.image_cropped %}
           <img class="rounded-circle shadow-1-strong me-3"
             src="{{ comment.author.image_cropped.url }}" alt="avatar" width="65"
@@ -109,7 +110,6 @@
 
   <script>
     function addComment(){
-      console.log("aaaaa")
     }
   </script>
 {% endblock %}

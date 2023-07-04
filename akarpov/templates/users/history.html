@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <a href="{% url 'users:history_delete' %}" class="btn btn-danger ms-4 mt-3 mb-3">Delete all history</a>
+  <ul style="list-style: none;">
+  {% for record in userhistory_list %}
+    <li class="mt-1 card border-0">
+    <a href="{{ record.get_link }}" class="stretched-link"></a>
+    {% if record.type == 'note' %}
+      <h4 class="me-5"><i class="bi bi-dot fs-6"></i> {{ record.name }}</h4>
+    {% elif record.type == 'create' %}
+      <h4 class="me-5"><i class="bi bi-plus fs-6"></i> {{ record.name }}</h4>
+    {% elif record.type == 'update' %}
+      <h4 class="me-5"><i class="bi bi-pencil fs-6"></i> {{ record.name }}</h4>
+    {% elif record.type == 'delete' %}
+      <h4 class="me-5"><i class="bi bi-trash3 fs-6"></i> {{ record.name }}</h4>
+    {% elif record.type == 'warning' %}
+      <h4 class="text-bg-warning me-5"><i class="bi bi-exclamation-triangle fs-6"></i> {{ record.name }}</h4>
+    {% endif %}
+      <div class="row">
+        <div class="col-12">{{ record.description }}</div>
+        <div class="col-auto">{{ record.created | time:"H:i"}} {{ record.created | date:"d.m.Y"}}</div>
+      </div>
+    <hr class="ms-1 me-5">
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

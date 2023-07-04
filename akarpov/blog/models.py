@@ -5,12 +5,13 @@ from django.db.models import Count
 from django.urls import reverse
 
 from akarpov.common.models import BaseImageModel
-from akarpov.tools.shortener.models import ShortLink
+from akarpov.tools.shortener.models import ShortLinkModel
 from akarpov.users.models import User
+from akarpov.users.services.history import UserHistoryModel
 from akarpov.utils.string import cleanhtml
 
 
-class Post(BaseImageModel, ShortLink):
+class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
     title = models.CharField(max_length=100, blank=False)
     body = RichTextUploadingField(blank=False)
 
@@ -64,27 +65,37 @@ class Post(BaseImageModel, ShortLink):
         return reverse("blog:post", kwargs={"slug": self.slug})
 
     class Meta:
+        verbose_name = "Post"
         ordering = ["-created"]
 
     class SlugMeta:
         slug_length = 3
 
 
-class Tag(models.Model):
+class Tag(UserHistoryModel):
     name = models.CharField(max_length=20, unique=True)
     color = ColorField(blank=True, default="#FF0000")
 
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("blog:post_list") + f"?tag={self.name}"
 
-class PostRating(models.Model):
+    class Meta:
+        verbose_name = "Tag"
+
+
+class PostRating(UserHistoryModel):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="post_ratings"
     )
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="ratings")
 
     vote_up = models.BooleanField(blank=False)
+
+    def get_absolute_url(self):
+        return self.post.get_absolute_url()
 
     def __str__(self):
         return (
@@ -94,10 +105,11 @@ class PostRating(models.Model):
         )
 
     class Meta:
+        verbose_name = "Post rating"
         unique_together = ["user", "post"]
 
 
-class Comment(models.Model):
+class Comment(UserHistoryModel):
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
@@ -107,14 +119,18 @@ class Comment(models.Model):
 
     rating = models.IntegerField(default=0)
 
+    def get_absolute_url(self):
+        return self.post.get_absolute_url() + f"#{self.id}"
+
     def __str__(self):
         return f"{self.author.username}'s comment on {self.post.title}"
 
     class Meta:
+        verbose_name = "Comment"
         ordering = ["-rating", "-created"]
 
 
-class CommentRating(models.Model):
+class CommentRating(UserHistoryModel):
     comment = models.ForeignKey(
         Comment, on_delete=models.CASCADE, related_name="ratings"
     )
@@ -127,5 +143,9 @@ class CommentRating(models.Model):
     def __str__(self):
         return f"{self.user}'s vote up" if self.vote_up else f"{self.user}'s vote down"
 
+    def get_absolute_url(self):
+        return self.comment.get_absolute_url()
+
     class Meta:
+        verbose_name = "Comment rating"
         unique_together = ["comment", "user"]

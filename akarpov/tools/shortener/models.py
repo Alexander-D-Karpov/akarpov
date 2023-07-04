@@ -9,7 +9,7 @@ from akarpov.common.models import SlugModel
 
 class Link(TimeStampedModel):
     source = models.URLField(blank=False)
-    slug = models.SlugField()
+    slug = models.SlugField(db_index=True)
     creator = models.ForeignKey(
         "users.User", related_name="links", null=True, on_delete=models.SET_NULL
     )
@@ -99,7 +99,7 @@ def update_model_link(sender, instance, **kwargs):
                         instance.short_link = None
 
 
-class ShortLink(SlugModel):
+class ShortLinkModel(SlugModel):
     short_link: Link | None = models.ForeignKey(
         "shortener.Link", blank=True, null=True, on_delete=models.SET_NULL
     )

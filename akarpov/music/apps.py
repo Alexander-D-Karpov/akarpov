@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class MusicConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
+    verbose_name = "Music"
     name = "akarpov.music"
 
     def ready(self):

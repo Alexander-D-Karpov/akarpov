@@ -19,7 +19,8 @@ from model_utils.models import TimeStampedModel
 from polymorphic.models import PolymorphicModel
 
 from akarpov.files.services.files import trash_file_upload, user_unique_file_upload
-from akarpov.tools.shortener.models import ShortLink
+from akarpov.tools.shortener.models import ShortLinkModel
+from akarpov.users.services.history import UserHistoryModel
 
 
 class BaseFileItem(PolymorphicModel):
@@ -59,7 +60,7 @@ class BaseFileItem(PolymorphicModel):
         super().save(*args, **kwargs)
 
 
-class File(BaseFileItem, TimeStampedModel, ShortLink):
+class File(BaseFileItem, TimeStampedModel, ShortLinkModel, UserHistoryModel):
     """model to store user's files"""
 
     private = BooleanField(default=True)
@@ -102,8 +103,11 @@ class File(BaseFileItem, TimeStampedModel, ShortLink):
     def __str__(self):
         return f"file: {self.name}"
 
+    class Meta:
+        verbose_name = "File"
 
-class Folder(BaseFileItem, ShortLink):
+
+class Folder(BaseFileItem, ShortLinkModel, UserHistoryModel):
     name = CharField(max_length=100)
     slug = SlugField(max_length=20, blank=True)
     private = BooleanField(default=True)
@@ -118,6 +122,9 @@ class Folder(BaseFileItem, ShortLink):
     def __str__(self):
         return f"folder: {self.name}"
 
+    class Meta:
+        verbose_name = "Folder"
+
 
 class FileInTrash(TimeStampedModel):
     name = CharField(max_length=200, blank=True)
@@ -131,6 +138,12 @@ class FileInTrash(TimeStampedModel):
 class FileReport(Model):
     created = DateTimeField(auto_now_add=True)
     file = ForeignKey("files.File", related_name="reports", on_delete=CASCADE)
+
+    class Meta:
+        verbose_name = "File report"
+
+    def get_absolute_url(self):
+        return self.file.get_absolute_url()
 
     def __str__(self):
         return f"report on {self.file}"

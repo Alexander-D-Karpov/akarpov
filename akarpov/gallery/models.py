@@ -4,11 +4,12 @@ from django_extensions.db.models import TimeStampedModel
 from location_field.models.plain import PlainLocationField
 
 from akarpov.common.models import BaseImageModel
-from akarpov.tools.shortener.models import ShortLink
+from akarpov.tools.shortener.models import ShortLinkModel
+from akarpov.users.services.history import UserHistoryModel
 from akarpov.utils.files import user_file_upload_mixin
 
 
-class Collection(TimeStampedModel, ShortLink):
+class Collection(TimeStampedModel, ShortLinkModel, UserHistoryModel):
     name = models.CharField(max_length=250, blank=True)
     description = models.TextField()
     public = models.BooleanField(default=False)
@@ -22,8 +23,11 @@ class Collection(TimeStampedModel, ShortLink):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Collection"
 
-class Image(TimeStampedModel, ShortLink, BaseImageModel):
+
+class Image(TimeStampedModel, ShortLinkModel, BaseImageModel, UserHistoryModel):
     collection = models.ForeignKey(
         "Collection", related_name="images", on_delete=models.CASCADE
     )
@@ -46,8 +50,11 @@ class Image(TimeStampedModel, ShortLink, BaseImageModel):
     def __str__(self):
         return self.image.name
 
+    class Meta:
+        verbose_name = "Image"
 
-class Tag(ShortLink):
+
+class Tag(ShortLinkModel):
     name = models.CharField(max_length=255, null=True, blank=True)
 
     def get_absolute_url(self):

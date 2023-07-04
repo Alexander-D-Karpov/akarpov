@@ -2,10 +2,11 @@ from django.db import models
 from django.urls import reverse
 
 from akarpov.common.models import BaseImageModel
-from akarpov.tools.shortener.models import ShortLink
+from akarpov.tools.shortener.models import ShortLinkModel
+from akarpov.users.services.history import UserHistoryModel
 
 
-class Author(BaseImageModel, ShortLink):
+class Author(BaseImageModel, ShortLinkModel):
     name = models.CharField(max_length=200)
     link = models.URLField(blank=True)
 
@@ -16,7 +17,7 @@ class Author(BaseImageModel, ShortLink):
         return self.name
 
 
-class Album(BaseImageModel, ShortLink):
+class Album(BaseImageModel, ShortLinkModel):
     name = models.CharField(max_length=200)
     link = models.URLField(blank=True)
 
@@ -27,7 +28,7 @@ class Album(BaseImageModel, ShortLink):
         return self.name
 
 
-class Song(BaseImageModel, ShortLink):
+class Song(BaseImageModel, ShortLinkModel):
     link = models.URLField(blank=True)
     length = models.IntegerField(null=True)
     played = models.IntegerField(default=0)
@@ -50,7 +51,7 @@ class Song(BaseImageModel, ShortLink):
         slug_length = 10
 
 
-class Playlist(ShortLink):
+class Playlist(ShortLinkModel, UserHistoryModel):
     name = models.CharField(max_length=200)
     private = models.BooleanField(default=False)
     creator = models.ForeignKey(
@@ -63,6 +64,9 @@ class Playlist(ShortLink):
 
     def get_songs(self):
         return self.songs.all().values("song")
+
+    class Meta:
+        verbose_name = "Playlist"
 
 
 class PlaylistSong(models.Model):

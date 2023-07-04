@@ -8,12 +8,13 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.models import PolymorphicModel
 
 from akarpov.common.models import BaseImageModel
-from akarpov.tools.shortener.models import ShortLink
+from akarpov.tools.shortener.models import ShortLinkModel
 from akarpov.users.models import User
+from akarpov.users.services.history import UserHistoryModel
 from akarpov.utils.base import SubclassesMixin
 
 
-class Form(BaseImageModel, ShortLink):
+class Form(BaseImageModel, ShortLinkModel, UserHistoryModel):
     name = models.CharField(max_length=200, blank=False)
     description = models.TextField(blank=True)
 
@@ -44,6 +45,9 @@ class Form(BaseImageModel, ShortLink):
 
     def __str__(self):
         return f"form: {self.name}"
+
+    class Meta:
+        verbose_name = "Form"
 
 
 class BaseQuestion(PolymorphicModel, SubclassesMixin):
