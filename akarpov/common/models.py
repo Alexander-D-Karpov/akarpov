@@ -65,7 +65,7 @@ class SlugModel(models.Model):
     for custom slug length use: slug_length, private_slug_length Meta options
     """
 
-    slug = models.SlugField(max_length=20, blank=True, unique=True)
+    slug = models.SlugField(max_length=20, blank=True, unique=True, db_index=True)
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -73,6 +73,7 @@ class SlugModel(models.Model):
         models.signals.pre_save.connect(create_model_slug, sender=cls)
 
     class Meta:
+        indexes = ["slug"]
         abstract = True
 
     class SlugMeta:
