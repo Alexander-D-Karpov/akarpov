@@ -44,6 +44,15 @@ class ProviderBlock(BaseBlock):
         abstract = True
 
 
+class EndBlock(BaseBlock):
+    TYPE = "End"
+    parent = BaseBlock
+    children: None
+
+    class Meta:
+        abstract = True
+
+
 class BaseStorage(PolymorphicModel):
     id: uuid.UUID = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False

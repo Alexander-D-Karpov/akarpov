@@ -2,12 +2,12 @@ from celery import shared_task
 from pytube import Channel, Playlist
 
 from akarpov.music.services import yandex, youtube
-from akarpov.music.services.file import load_dir
+from akarpov.music.services.file import load_dir, load_file
 
 
 @shared_task
 def list_tracks(url):
-    if "yandex" in url:
+    if "music.yandex.ru" in url:
         yandex.load_playlist(url)
     elif "channel" in url or "/c/" in url:
         p = Channel(url)
@@ -17,7 +17,6 @@ def list_tracks(url):
         p = Playlist(url)
         for video in p.video_urls:
             process_yb.apply_async(kwargs={"url": video})
-
     else:
         process_yb.apply_async(kwargs={"url": url})
 
@@ -33,6 +32,12 @@ def process_yb(url):
 @shared_task
 def process_dir(path):
     load_dir(path)
+    return path
+
+
+@shared_task
+def process_file(path):
+    load_file(path)
     return path
 
 

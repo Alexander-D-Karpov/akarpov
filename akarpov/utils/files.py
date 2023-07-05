@@ -61,10 +61,10 @@ def user_file_upload_mixin(instance, filename):
     """stores user uploaded files at their folder in media dir"""
     username = ""
     if isinstance(instance, get_user_model()):
-        username = instance.username
+        username = instance.username + "/"
     elif hasattr(instance, "user"):
-        username = instance.user.username
+        username = instance.user.username + "/"
     elif hasattr(instance, "creator"):
-        username = instance.creator.username
+        username = instance.creator.username + "/"
 
-    return os.path.join(f"uploads/{username}/", filename)
+    return os.path.join(f"uploads/{username}", filename)

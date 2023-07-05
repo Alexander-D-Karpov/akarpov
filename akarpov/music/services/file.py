@@ -14,6 +14,11 @@ def load_dir(path: str):
             process_mp3_file(File(file, name=str(f).split("/")[-1]), str(f))
 
 
+def load_file(path: str):
+    with open(path, "rb") as file:
+        process_mp3_file(File(file, name=path.split("/")[-1]), path)
+
+
 def process_mp3_file(file: File, path: str) -> None:
     que = SongInQue.objects.create()
     try:

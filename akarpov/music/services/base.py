@@ -1,4 +1,4 @@
-from akarpov.music.tasks import list_tracks, process_dir
+from akarpov.music.tasks import list_tracks, process_dir, process_file
 
 
 def load_tracks(address: str):
@@ -8,4 +8,4 @@ def load_tracks(address: str):
 
 
 def load_track_file(file):
-    ...
+    process_file.apply_async(kwargs={"path": file})

@@ -34,9 +34,7 @@ class Song(BaseImageModel, ShortLinkModel):
     played = models.IntegerField(default=0)
     name = models.CharField(max_length=200)
     file = models.FileField(upload_to="music")
-    author = models.ForeignKey(
-        Author, null=True, related_name="songs", on_delete=models.SET_NULL
-    )
+    authors = models.ManyToManyField("Author", related_name="songs")
     album = models.ForeignKey(
         Album, null=True, related_name="songs", on_delete=models.SET_NULL
     )
@@ -82,6 +80,6 @@ class PlaylistSong(models.Model):
 
 
 class SongInQue(models.Model):
-    song = models.OneToOneField("Song", related_name="que", on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=250)
+    status = models.CharField(null=True, blank=True, max_length=250)
     error = models.BooleanField(default=False)

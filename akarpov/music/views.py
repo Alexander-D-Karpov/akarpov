@@ -69,7 +69,9 @@ class LoadTrackFileView(SuperUserRequiredMixin, generic.FormView):
         return ""
 
     def form_valid(self, form):
-        load_track_file(form.files)
+        for path in [x.path for x in form.cleaned_data["file"]]:
+            load_track_file(path)
+
         return super().form_valid(form)
 
 
