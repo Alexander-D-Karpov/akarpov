@@ -1,8 +1,13 @@
+from asgiref.sync import async_to_sync
 from celery import shared_task
+from channels.layers import get_channel_layer
 from pytube import Channel, Playlist
 
+from akarpov.music.api.serializers import SongSerializer
+from akarpov.music.models import RadioSong, Song
 from akarpov.music.services import yandex, youtube
 from akarpov.music.services.file import load_dir, load_file
+from akarpov.utils.celery import get_scheduled_tasks_name
 
 
 @shared_task
@@ -44,3 +49,39 @@ def process_file(path):
 @shared_task
 def load_ym_file_meta(track):
     return yandex.load_file_meta(track)
+
+
+@shared_task()
+def start_next_song(previous_ids: list):
+    f = Song.objects.filter(length__isnull=False).exclude(id__in=previous_ids)
+    if not f:
+        previous_ids = []
+        f = Song.objects.filter(length__isnull=False)
+    if not f:
+        if "akarpov.music.tasks.start_next_song" not in get_scheduled_tasks_name():
+            start_next_song.apply_async(
+                kwargs={"previous_ids": []},
+                countdown=60,
+            )
+    else:
+        song = f.order_by("?").first()
+        data = SongSerializer(context={"request": None}).to_representation(song)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "radio_main", {"type": "song", "data": data}
+        )
+        song.played += 1
+        song.save(update_fields=["played"])
+        if RadioSong.objects.filter(slug="").exists():
+            r = RadioSong.objects.get(slug="")
+            r.song = song
+            r.save()
+        else:
+            RadioSong.objects.create(song=song, slug="")
+        previous_ids.append(song.id)
+        if "akarpov.music.tasks.start_next_song" not in get_scheduled_tasks_name():
+            start_next_song.apply_async(
+                kwargs={"previous_ids": previous_ids},
+                countdown=song.length,
+            )
+    return

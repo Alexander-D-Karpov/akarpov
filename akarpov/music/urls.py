@@ -11,4 +11,5 @@ urlpatterns = [
     path("album/<str:slug>", views.album_view, name="album"),
     path("author/<str:slug>", views.author_view, name="author"),
     path("playlist/<str:slug>", views.playlist_view, name="playlist"),
+    path("radio/", views.radio_main_view, name="radio"),
 ]

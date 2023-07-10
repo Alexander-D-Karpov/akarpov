@@ -83,3 +83,9 @@ class SongInQue(models.Model):
     name = models.CharField(blank=True, max_length=250)
     status = models.CharField(null=True, blank=True, max_length=250)
     error = models.BooleanField(default=False)
+
+
+class RadioSong(models.Model):
+    start = models.DateTimeField(auto_now=True)
+    slug = models.SlugField(unique=True)
+    song = models.ForeignKey("Song", related_name="radio", on_delete=models.CASCADE)

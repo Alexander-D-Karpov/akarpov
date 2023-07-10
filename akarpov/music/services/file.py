@@ -1,49 +1,60 @@
+import os
+from io import BytesIO
 from pathlib import Path
+from random import randint
 
 import mutagen
-from django.core.files import File
+from mutagen.id3 import ID3
+from PIL import Image, UnidentifiedImageError
 
-from akarpov.music.models import Album, Author, Song, SongInQue
+from akarpov.music.models import Song
+from akarpov.music.services.db import load_track
 
 
 def load_dir(path: str):
     path = Path(path)
 
     for f in list(path.glob("**/*.mp3")):
-        with f.open("rb") as file:
-            process_mp3_file(File(file, name=str(f).split("/")[-1]), str(f))
+        process_mp3_file(str(f))
 
 
 def load_file(path: str):
-    with open(path, "rb") as file:
-        process_mp3_file(File(file, name=path.split("/")[-1]), path)
+    process_mp3_file(path)
 
 
-def process_mp3_file(file: File, path: str) -> None:
-    que = SongInQue.objects.create()
-    try:
-        tag = mutagen.File(path, easy=True)
-        que.name = tag["title"][0] if "title" in tag else path.split("/")[-1]
-        que.save()
-        if "artist" in tag:
-            author = Author.objects.get_or_create(name=tag["artist"][0])[0]
-        else:
-            author = None
+def process_mp3_file(path: str) -> None:
+    tag = mutagen.File(path, easy=True)
+    if "artist" in tag:
+        author = tag["artist"]
+    else:
+        author = None
 
-        if "album" in tag:
-            album = Album.objects.get_or_create(name=tag["album"][0])[0]
-        else:
-            album = None
+    if "album" in tag:
+        album = tag["album"]
+    else:
+        album = None
+    name = tag["title"][0] if "title" in tag else path.split("/")[-1]
+    f = Song.objects.filter(name=name)
+    if author:
+        f.filter(authors__name__in=author)
+    if album:
+        f.filter(album__name=album)
+    if f.exists():
+        return
 
-        song, created = Song.objects.get_or_create(
-            name=tag["title"][0] if "title" in tag else path.split("/")[-1],
-            author=author,
-            album=album,
-        )
-        song.file = file
-        song.save(update_fields=["file"])
-        que.delete()
-    except Exception as e:
-        que.name = e
-        que.error = True
-        que.save()
+    tags = ID3(path)
+    pict = [x for x in tags.getall("APIC") if x]
+    image_pth = None
+    if pict:
+        try:
+            pict = pict[0].data
+            im = Image.open(BytesIO(pict))
+            image_pth = f"/tmp/{randint(1, 1000000)}.png"
+            if os.path.exists(image_pth):
+                image_pth = f"/tmp/{randint(1, 1000000)}.png"
+            im.save(image_pth)
+        except UnidentifiedImageError:
+            pass
+    load_track(path, image_pth, author, album, name)
+    if image_pth and os.path.exists(image_pth):
+        os.remove(image_pth)

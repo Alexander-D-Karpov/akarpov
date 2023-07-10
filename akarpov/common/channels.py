@@ -1,4 +1,5 @@
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
 
 from akarpov.common.jwt import read_jwt
 
@@ -29,3 +30,13 @@ class HeaderAuthMiddleware:
         scope["user"] = await get_user(dict(scope["headers"]))
 
         return await self.app(scope, receive, send)
+
+
+class BaseConsumer(AsyncJsonWebsocketConsumer):
+    async def send_error(self, msg):
+        await self.send_json({"type": "error", "data": {"msg": msg}})
+
+
+class SyncBaseConsumer(JsonWebsocketConsumer):
+    def send_error(self, msg):
+        self.send_json({"type": "error", "data": {"msg": msg}})
