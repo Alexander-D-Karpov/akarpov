@@ -61,7 +61,7 @@ django-anymail = {extras = ["mailgun"], version = "^10.0"}
 django-polymorphic = "^3.1.0"
 django-jazzmin = "^2.6.0"
 django-cacheops = "^7.0"
-django-extra-settings = "^0.9.1"
+django-extra-settings = "^0.10.0"
 psycopg2-binary = "^2.9.5"
 django-sekizai = "^4.1.0"
 amzqr = "^0.0.1"
