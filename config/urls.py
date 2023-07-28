@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path, re_path
 from django.views import defaults as default_views
+from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -16,7 +17,11 @@ from akarpov.tools.shortener.views import redirect_view
 from config.sitemaps import sitemaps
 
 urlpatterns = [
-    path("home", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path(
+        "home",
+        cache_page(600)(TemplateView.as_view(template_name="pages/home.html")),
+        name="home",
+    ),
     re_path(r"^robots\.txt", include("robots.urls")),
     path(
         "sitemap.xml",
@@ -29,7 +34,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
-    path("about", about_view),
+    path("about", cache_page(600)(about_view)),
     path("about/", include("akarpov.about.urls", namespace="about")),
     path("files/", include("akarpov.files.urls", namespace="files")),
     path("music/", include("akarpov.music.urls", namespace="music")),

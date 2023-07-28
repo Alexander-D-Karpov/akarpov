@@ -54,17 +54,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CACHES
 # ------------------------------------------------------------------------------
-CACHE_TTL = 60 * 1500
-
-CACHES = {"default": env.cache("REDIS_CACHE")}
+CACHES = {"default": env.cache_url("REDIS_CACHE")}
+CACHE_MIDDLEWARE_KEY_PREFIX = "cache_middleware"
+CACHE_MIDDLEWARE_SECONDS = 0
+CACHE_TTL = 60 * 10
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
-CACHEOPS_DEFAULTS = {"timeout": 60 * 60}
 CACHEOPS = {
     "auth.user": {"ops": "get", "timeout": 60 * 15},
-    "auth.*": {"ops": ("fetch", "get")},
-    "auth.permission": {"ops": "all"},
-    "*.*": {},
+    "auth.*": {"ops": ("fetch", "get"), "timeout": 60 * 2},
+    "blog.*": {"ops": ("fetch", "get"), "timeout": 15},
+    "auth.permission": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
 
@@ -271,7 +271,6 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "akarpov.users.context_processors.allauth_settings",
-                "sekizai.context_processors.sekizai",
             ],
         },
     }
