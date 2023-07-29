@@ -63,7 +63,7 @@ SESSION_CACHE_ALIAS = "default"
 CACHEOPS = {
     "auth.user": {"ops": "get", "timeout": 60 * 15},
     "auth.*": {"ops": ("fetch", "get"), "timeout": 60 * 2},
-    "blog.*": {"ops": ("fetch", "get"), "timeout": 15},
+    "blog.post": {"ops": ("fetch", "get"), "timeout": 15},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
