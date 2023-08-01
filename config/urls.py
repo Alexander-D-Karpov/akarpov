@@ -12,7 +12,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from akarpov.about.views import about_view
+from akarpov.about.views import about_view, list_faq
 from akarpov.tools.shortener.views import redirect_view
 from config.sitemaps import sitemaps
 
@@ -34,7 +34,8 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("akarpov.users.urls", namespace="users")),
-    path("about", cache_page(600)(about_view)),
+    path("about", cache_page(600)(about_view), name="about"),
+    path("faq/", list_faq, name="faq"),
     path("about/", include("akarpov.about.urls", namespace="about")),
     path("files/", include("akarpov.files.urls", namespace="files")),
     path("music/", include("akarpov.music.urls", namespace="music")),
@@ -51,7 +52,7 @@ urlpatterns = [
 # API URLS
 urlpatterns += [
     # API base url
-    path("api/", include("config.api_router")),
+    path("api/", include("config.api_router", namespace="api")),
     # DRF auth token
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-redoc-schema"),

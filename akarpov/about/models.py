@@ -33,3 +33,16 @@ class ProjectChange(models.Model):
 
     class Meta:
         ordering = ("-created",)
+
+
+class FAQ(models.Model):
+    ordering = models.IntegerField(default=0)
+    question = models.CharField(max_length=250)
+    link = models.URLField(null=True, blank=True)
+    answer = models.TextField()
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        ordering = ["-ordering"]

@@ -1,6 +1,6 @@
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
 
-from akarpov.about.models import Project
+from akarpov.about.models import FAQ, Project
 
 
 class AboutView(TemplateView):
@@ -24,3 +24,11 @@ class ProjectView(DetailView):
 
 
 project_view = ProjectView.as_view()
+
+
+class ListFAQView(ListView):
+    model = FAQ
+    template_name = "about/faq.html"
+
+
+list_faq = ListFAQView.as_view()
