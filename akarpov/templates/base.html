@@ -55,7 +55,7 @@
                         </li>
                         {% endif %}
                         <li>
-                            <a href="{% url 'about:about' %}" class="{% active_link 'about' %} text-muted nav-link px-sm-0 px-2">
+                            <a href="{% url 'about' %}" class="{% active_link 'about' %} text-muted nav-link px-sm-0 px-2">
                                 <i class="fs-5 bi-person"></i><span class="ms-1 d-none d-sm-inline">About me</span></a>
                         </li>
                         {% if request.user.is_authenticated %}
@@ -72,6 +72,10 @@
                                 <li><a class="dropdown-item {% active_link 'tools:qr:create' %}" href="{% url 'tools:qr:create' %}">QR generator</a></li>
                                 <li><a class="dropdown-item {% active_link 'tools:shortener:create' %}" href="{% url 'tools:shortener:create' %}">URL shortcuter</a></li>
                             </ul>
+                        </li>
+                        <li>
+                            <a href="{% url 'faq' %}" class="{% active_link 'faq' %} text-muted nav-link px-sm-0 px-2">
+                                <i class="fs-5 bi-question"></i><span class="ms-1 d-none d-sm-inline">FAQ</span></a>
                         </li>
                     </ul>
 
