@@ -7,6 +7,9 @@ from .views import (
     UserRetrieveViewSet,
 )
 
+app_name = "users_api"
+
+
 urlpatterns = [
     path("", UserListViewSet.as_view(), name="user_list_api"),
     path(

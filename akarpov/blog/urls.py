@@ -2,6 +2,7 @@ from django.urls import path
 
 from akarpov.blog.views import (
     comment,
+    main_post_list_view,
     post_create_view,
     post_detail_view,
     post_list_view,
@@ -12,7 +13,8 @@ from akarpov.blog.views import (
 
 app_name = "blog"
 urlpatterns = [
-    path("", post_list_view, name="post_list"),
+    path("", main_post_list_view, name="post_list"),
+    path("all", post_list_view, name="all_posts_list"),
     path("p/<str:slug>", post_detail_view, name="post"),
     path("create/", post_create_view, name="post_create"),
     path("<str:slug>/edit", post_update_view, name="post_edit"),

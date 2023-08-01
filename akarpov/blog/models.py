@@ -3,6 +3,8 @@ from colorfield.fields import ColorField
 from django.db import models
 from django.db.models import Count
 from django.urls import reverse
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
 
 from akarpov.common.models import BaseImageModel
 from akarpov.tools.shortener.models import ShortLinkModel
@@ -41,9 +43,8 @@ class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
     def h_tags(self):
         # TODO: add caching here
         tags = (
-            Tag.objects.all()
+            Tag.objects.filter(posts__id=self.id)
             .annotate(num_posts=Count("posts"))
-            .filter(posts__id=self.id)
             .order_by("-num_posts")
         )
         return tags
@@ -57,6 +58,7 @@ class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
         return cleanhtml(self.body)
 
     @property
+    @extend_schema_field(serializers.CharField)
     def summary(self):
         body = self.text
         return body[:100] + "..." if len(body) > 100 else ""

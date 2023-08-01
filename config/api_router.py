@@ -3,6 +3,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from akarpov.users.api.views import UserRegisterViewSet
 
+app_name = "api"
+
 urlpatterns_v1 = [
     path(
         "auth/",
@@ -17,11 +19,18 @@ urlpatterns_v1 = [
     ),
     path(
         "users/",
-        include("akarpov.users.api.urls"),
+        include("akarpov.users.api.urls", namespace="users"),
+    ),
+    path(
+        "blog/",
+        include("akarpov.blog.api.urls", namespace="blog"),
     ),
     path(
         "tools/",
-        include([path("qr/", include("akarpov.tools.qr.api.urls"))]),
+        include(
+            "akarpov.tools.api.urls",
+            namespace="tools",
+        ),
     ),
 ]
 

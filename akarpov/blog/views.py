@@ -7,7 +7,7 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from akarpov.blog.forms import PostForm
 from akarpov.blog.models import Comment, Post, PostRating
-from akarpov.blog.services import get_rating_bar
+from akarpov.blog.services import get_main_rating_posts, get_rating_bar
 
 
 class PostDetailView(DetailView):
@@ -32,6 +32,34 @@ class PostDetailView(DetailView):
 
 
 post_detail_view = PostDetailView.as_view()
+
+
+class MainPostListView(ListView):
+    model = Post
+    template_name = "blog/list.html"
+
+    def get_queryset(self):
+        try:
+            if (
+                self.request.user.is_authenticated
+                and not self.request.user.is_superuser
+            ):
+                posts = get_main_rating_posts() | Post.objects.filter(
+                    creator=self.request.user
+                )
+            else:
+                posts = get_main_rating_posts()
+
+            params = self.request.GET
+            if "tag" in params:
+                posts = posts.filter(tags__name=params["tag"])
+            return posts
+
+        except Post.DoesNotExist:
+            return Post.objects.none()
+
+
+main_post_list_view = MainPostListView.as_view()
 
 
 class PostListView(ListView):

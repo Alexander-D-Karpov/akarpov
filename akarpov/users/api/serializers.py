@@ -25,7 +25,7 @@ class UserEmailVerification(serializers.Serializer):
 
 class UserPublicInfoSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="user_retrieve_username_api", lookup_field="username"
+        view_name="api:users:user_retrieve_username_api", lookup_field="username"
     )
 
     class Meta:

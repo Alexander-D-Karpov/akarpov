@@ -1,6 +1,7 @@
 from django.urls import reverse
 
 from akarpov.blog import models
+from akarpov.blog.models import Post
 from akarpov.users.models import User
 
 
@@ -52,3 +53,7 @@ def get_rating_bar(user: User, post):
             + f"""<form method="post" action="{url_down}" class="col-auto align-self-center"><button class="btn border-0
             btn-small"><i style="font-size: 1rem;" class="bi bi-arrow-down-circle"></i></button></form></div>"""
         )
+
+
+def get_main_rating_posts() -> [Post]:
+    return Post.objects.filter(creator__is_superuser=True)
