@@ -124,6 +124,15 @@
         {% else %}
         <div class="card-body d-flex flex-column">
           <h5 class="card-title">{{ file.name }}</h5>
+          <div class="flex-column position-absolute ml-2 top-50 start-50 translate-middle">
+            <div class="align-items-center justify-content-center row position-relative mb-5 g-3">
+            {% for child_file in file.get_last_preview_files %}
+              <div class="col-6">
+                <img class="img-fluid" src="{{ child_file.preview.url }}" alt="">
+              </div>
+            {% endfor %}
+            </div>
+          </div>
           <p class="card-text mb-4"><small class="text-muted">{{ file.size | filesizeformat }}, {{ file.amount }} {% if file.amount == 1 %} item {% else %} items {% endif %}</small></p>
           <div class="align-self-stretch align-items-center justify-content-center d-flex flex-column fill-height controlsdiv">
             <img src="{% static 'images/files/folder.jpg' %}" class="img-fluid" alt="">

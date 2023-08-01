@@ -10,6 +10,7 @@ from django.db.models import (
     ForeignKey,
     IntegerField,
     Model,
+    Q,
     SlugField,
     TextField,
 )
@@ -115,6 +116,9 @@ class Folder(BaseFileItem, ShortLinkModel, UserHistoryModel):
     # meta
     size = IntegerField(default=0)
     amount = IntegerField(default=0)
+
+    def get_last_preview_files(self, cut=4):
+        return self.children.filter(~Q(File___preview=""))[:cut]
 
     def get_absolute_url(self):
         return reverse("files:folder", kwargs={"slug": self.slug})
