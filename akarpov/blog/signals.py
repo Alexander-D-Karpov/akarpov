@@ -1,7 +1,8 @@
 from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 
-from akarpov.blog.models import PostRating, Tag
+from akarpov.blog.models import Post, PostRating, Tag
+from akarpov.utils.cache import clear_model_cache
 from akarpov.utils.generators import generate_hex_color
 
 
@@ -36,6 +37,16 @@ def post_rating(sender, instance: PostRating, **kwargs):
                 post.rating_up += 1
                 post.rating_down -= 1
     post.save()
+
+
+@receiver(pre_save, sender=Post)
+def post_update(sender, instance: Post, **kwargs):
+    if instance.id:
+        if "update_fields" in kwargs:
+            for field in kwargs["update_fields"]:
+                clear_model_cache(instance, field)
+        else:
+            clear_model_cache(instance)
 
 
 @receiver(pre_delete, sender=PostRating)

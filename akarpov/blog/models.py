@@ -10,6 +10,7 @@ from akarpov.common.models import BaseImageModel
 from akarpov.tools.shortener.models import ShortLinkModel
 from akarpov.users.models import User
 from akarpov.users.services.history import UserHistoryModel
+from akarpov.utils.cache import cache_model_property
 from akarpov.utils.string import cleanhtml
 
 
@@ -41,7 +42,6 @@ class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
         return self.comments.all()
 
     def h_tags(self):
-        # TODO: add caching here
         tags = (
             Tag.objects.filter(posts__id=self.id)
             .annotate(num_posts=Count("posts"))
@@ -49,18 +49,20 @@ class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
         )
         return tags
 
-    def h_tag(self):
+    def _h_tag(self):
         return self.h_tags().first()
+
+    def h_tag(self):
+        return cache_model_property(self, "_h_tag")
 
     @property
     def text(self):
-        # TODO: add caching here
         return cleanhtml(self.body)
 
     @property
     @extend_schema_field(serializers.CharField)
     def summary(self):
-        body = self.text
+        body = cache_model_property(self, "text")
         return body[:100] + "..." if len(body) > 100 else ""
 
     def get_absolute_url(self):
@@ -77,6 +79,7 @@ class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
 class Tag(UserHistoryModel):
     name = models.CharField(max_length=20, unique=True)
     color = ColorField(blank=True, default="#FF0000")
+    seo_tags = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
