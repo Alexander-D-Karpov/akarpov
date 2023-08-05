@@ -42,7 +42,7 @@ def post_rating(sender, instance: PostRating, **kwargs):
 @receiver(pre_save, sender=Post)
 def post_update(sender, instance: Post, **kwargs):
     if instance.id:
-        if "update_fields" in kwargs:
+        if "update_fields" in kwargs and kwargs["update_fields"]:
             for field in kwargs["update_fields"]:
                 clear_model_cache(instance, field)
         else:

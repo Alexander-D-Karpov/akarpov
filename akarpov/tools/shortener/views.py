@@ -1,5 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponseNotFound, HttpResponseRedirect
+from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from ipware import get_client_ip
 
@@ -52,6 +53,16 @@ class LinkDetailView(DetailView):
 link_detail_view = LinkDetailView.as_view()
 
 
+class LinkPublicDetailView(DetailView):
+    template_name = "tools/shortener/public_view.html"
+
+    def get_object(self, *args, **kwargs):
+        return get_link_from_slug(self.kwargs["slug"])
+
+
+link_public_detail_view = LinkPublicDetailView.as_view()
+
+
 class LinkRevokedView(TemplateView):
     template_name = "tools/shortener/revoked.html"
 
@@ -60,7 +71,14 @@ link_revoked_view = LinkRevokedView.as_view()
 
 
 def redirect_view(request, slug):
-    # TODO: move to faster framework, like FastAPI
+    # TODO: move to faster framework, like FastAPI, save token to celery to get user_id
+    # TODO: add meta proxy
+    if "+" in slug:
+        return HttpResponseRedirect(
+            reverse(
+                "tools:shortener:public_view", kwargs={"slug": slug.replace("+", "")}
+            )
+        )
     link, pk = get_cached_link_source(slug)
     if not link:
         return HttpResponseNotFound("such link doesn't exist or has been revoked")

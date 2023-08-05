@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from akarpov.utils.consts import URL_BASE
 from akarpov.utils.nums import to_base
 
-URL_CHARACTERS = string.ascii_letters + string.digits + ";,:@&+-_.!~*'()#"
+URL_CHARACTERS = string.ascii_letters + string.digits + ";,:@&-_.!~*'()#"
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -21,16 +21,20 @@ def generate_charset(length: int) -> str:
     return "".join(random.choice(string.ascii_letters) for _ in range(length))
 
 
+url_list = list(URL_CHARACTERS)
+url_len = len(url_list)
+
+
 def get_str_uuid(pk: int) -> str:
-    return to_base(pk, list(URL_CHARACTERS))
+    return to_base(pk, url_list)
 
 
 def get_pk_from_uuid(slug: str) -> int:
     res = 0
     for i, el in enumerate(slug[::-1]):
         if el not in URL_BASE:
-            raise ValueError
-        res += URL_BASE[el] * 78**i
+            return 0
+        res += URL_BASE[el] * url_len**i
     return res
 
 

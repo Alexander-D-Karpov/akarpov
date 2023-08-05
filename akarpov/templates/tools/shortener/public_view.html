@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load users_extras %}
+{% load static %}
+
+{% block content %}
+  <div class="m-2">
+  <h4>Link to: <a class="fs-4" href="{{ link.source }}">{{ link.full_source }}</a></h4>
+  <p>Issued by: {% user_badge link.creator %}</p>
+  <p>{{ request.get_host }}{% url 'short_url' slug=link.slug %} <button class="btn" data-clipboard-text="{{ request.get_host }}{% url 'short_url' slug=link.slug %}">
+      <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
+    </button></p>
+  </div>
+
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
+  <script>
+  new ClipboardJS('.btn');
+  </script>
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load users_extras %}
 {% load humanize %}
 {% load static %}
 
@@ -14,9 +15,7 @@
     </h1>
     <div class="row g-2 ms-1">
       <div class="col-md-auto">
-        By: <a href="{% url 'users:detail' post.creator.username %}">
-        {% if post.creator.image_cropped %}<img class="rounded" width="20" src="{{ post.creator.image_cropped.url }}" alt=""> {% endif %}
-        {{ post.creator.username }}</a>
+        By: {% user_badge post.creator %}
       </div>
       <div class="col-md-auto fw-light">
         Created {{ post.created | naturalday }},

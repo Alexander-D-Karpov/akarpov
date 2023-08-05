@@ -1,0 +1,3 @@
+<a href="{% url 'users:detail' user.username %}">
+{% if user.image_cropped %}<img class="rounded" width="20" src="{{ user.image_cropped.url }}" alt=""> {% endif %}
+{{ user.username }}</a>

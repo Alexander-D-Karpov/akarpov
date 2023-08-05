@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load users_extras %}
 {% load static %}
 
 {% block meta %}
@@ -35,9 +36,7 @@
   </h1>
   <div class="col-md-4 col-sm-6 col-xs-auto mb-5">
     {% if not has_perm %}
-        <p>Uploaded by: <a href="{% url 'users:detail' file.user.username %}">
-        {% if file.user.image_cropped %}<img class="rounded" width="20" src="{{ file.user.image_cropped.url }}" alt=""> {% endif %}
-          {{ file.user.username }}</a></p>
+        <p>Uploaded by: {% user_badge file.creator %}</p>
     {% endif %}
     <p class="mt-2">Last updated: {{ file.modified|date:"d.m.Y" }} {{ file.modified|time:"H:i" }}</p>
     <p>File size: {{ file.file_size | filesizeformat }}</p>
