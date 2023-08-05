@@ -1,3 +1,4 @@
+from functools import lru_cache
 from secrets import compare_digest
 
 from django.conf import settings
@@ -28,3 +29,12 @@ def get_link_from_slug(slug: str, check_whole=True) -> Link | bool:
         return link
     except Link.DoesNotExist:
         return False
+
+
+@lru_cache
+def get_cached_link_source(slug: str) -> tuple[bool, bool] | tuple[str, int]:
+    # TODO: add TTL here or update cache on link update
+    link = get_link_from_slug(slug)
+    if link:
+        return link.source, link.pk
+    return False, False

@@ -1,6 +1,39 @@
 {% extends "base.html" %}
+{% load static %}
 
 
 {% block content %}
-{{ link }}
+  <div class="m-2">
+  <h4>Link to: <a class="fs-4" href="{{ link.source }}">{{ link.full_source }}</a></h4>
+  <p>{{ request.get_host }}{% url 'short_url' slug=link.slug %} <button class="btn" data-clipboard-text="{{ request.get_host }}{% url 'short_url' slug=link.slug %}">
+      <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
+    </button></p>
+  <p>Viewed: {{ link.viewed }} times</p>
+  <p>Recent views:</p>
+  <table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">IP</th>
+      <th scope="col">User Agent</th>
+      <th scope="col">Time</th>
+      <th scope="col">User</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for view in views %}
+    <tr>
+      <td>{{ view.ip }}</td>
+      <td>{{ view.user_agent }}</td>
+      <td>{{ view.viewed | time:"H:i:s"}} {{ view.viewed | date:"d.m.Y"}}</td>
+      <td>{% if view.user %}<a href="{{ view.user.get_absolute_url }}">{{ view.user.username }}</a>{% else %} - {% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+  </div>
+
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
+  <script>
+  new ClipboardJS('.btn');
+  </script>
 {% endblock %}

@@ -93,6 +93,7 @@ tablib = "^3.4.0"
 django-location-field = "^2.7.0"
 pydantic = "^2.0.2"
 channels-redis = "^4.1.0"
+django-ipware = "^5.0.0"
 
 
 [build-system]

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block meta %}
 {% autoescape off %}
@@ -51,7 +52,7 @@
     <p>File is private</p>
     {% else %}
     <p>File is public{% if file.short_link %},
-    <a href="{{ file.short_link.get_absolute_url }}">short link</a><button class="btn" data-clipboard-text="{{ request.get_host }}{{ file.short_link.get_absolute_url }}">
+    <a href="{{ file.get_short_link }}">short link</a><button class="btn" data-clipboard-text="{{ request.get_host }}{{ file.get_short_link }}">
       <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
     </button>
     {% endif %}</p>
@@ -68,7 +69,7 @@
   {{ preview_content }}
   {% endautoescape %}
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.10/clipboard.min.js"></script>
+<script src="{% static 'js/clipboard.min.js' %}"></script>
 <script>
 new ClipboardJS('.btn');
 </script>

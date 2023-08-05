@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <form class="form-horizontal" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-success">Create</button>
+      </div>
+    </div>
+  </form>
+  <div class="row m-2 gap-5">
+  {% for link in object_list %}
+  <div class="col-auto card text-center {% if card.enabled == False %} opacity-25 {% endif %}">
+    <div class="m-3">
+    <h5 class="card-title">{{ link.full_source }}</h5>
+
+    <p class="mb-5">Viewed: {{ link.viewed }}</p>
+
+    <p>Created: {{ link.created | time:"H:i"}} {{ link.created | date:"d.m.Y"}}</p>
+    <p>Updated: {{ link.modified | time:"H:i"}} {{ link.modified | date:"d.m.Y"}}</p>
+    <a href="{{ link.get_absolute_url }}" class="stretched-link"></a>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if page_obj.has_other_pages %}
+<div class="btn-group" role="group" aria-label="Item pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-warning">&laquo;</a>
+    {% endif %}
+
+    {% for page_number in page_obj.paginator.page_range %}
+        {% if page_obj.number == page_number %}
+            <button class="btn btn-outline-warning active">
+                <span>{{ page_number }} <span class="sr-only">(current)</span></span>
+            </button>
+        {% else %}
+            <a href="?page={{ page_number }}" class="btn btn-outline-warning">
+                {{ page_number }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-warning">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+  </div>
+{% endblock %}

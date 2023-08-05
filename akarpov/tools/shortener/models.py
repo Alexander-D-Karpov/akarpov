@@ -9,7 +9,7 @@ from akarpov.common.models import SlugModel
 
 class Link(TimeStampedModel):
     source = models.URLField(blank=False)
-    slug = models.SlugField(db_index=True)
+    slug = models.SlugField(db_index=True, unique=False)
     creator = models.ForeignKey(
         "users.User", related_name="links", null=True, on_delete=models.SET_NULL
     )
@@ -17,11 +17,22 @@ class Link(TimeStampedModel):
 
     viewed = models.IntegerField(default=0)
 
+    @property
+    def full_source(self):
+        return (
+            "https://akarpov.ru" + self.source
+            if self.source.startswith("/")
+            else self.source
+        )
+
     def get_absolute_url(self):
-        return reverse("short_url", kwargs={"slug": self.slug})
+        return reverse("tools:shortener:view", kwargs={"slug": self.slug})
 
     def __str__(self):
         return f"link to {self.source}"
+
+    class Meta:
+        ordering = ["-modified"]
 
 
 class LinkViewMeta(models.Model):
@@ -31,6 +42,12 @@ class LinkViewMeta(models.Model):
     viewed = models.DateTimeField(auto_now_add=True)
     ip = models.GenericIPAddressField()
     user_agent = models.CharField(max_length=200)
+    user = models.ForeignKey(
+        "users.User", related_name="link_views", null=True, on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        ordering = ["-viewed"]
 
     def __str__(self):
         return f"view on {self.link.source}"
@@ -38,6 +55,7 @@ class LinkViewMeta(models.Model):
 
 def create_model_link(sender, instance, created, **kwargs):
     # had to move to models due to circular import
+    # TODO: add link create to celery
     if created:
         link = Link(source=instance.get_absolute_url())
         if hasattr(instance, "private"):
@@ -112,7 +130,7 @@ class ShortLinkModel(SlugModel):
 
     @abstractmethod
     def get_absolute_url(self):
-        ...
+        raise NotImplementedError
 
     @property
     def get_short_link(self) -> str:
