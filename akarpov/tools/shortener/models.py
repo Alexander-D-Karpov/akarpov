@@ -33,6 +33,7 @@ class Link(TimeStampedModel):
 
     class Meta:
         ordering = ["-modified"]
+        db_table = "short_link"
 
 
 class LinkViewMeta(models.Model):
