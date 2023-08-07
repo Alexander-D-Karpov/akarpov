@@ -14,7 +14,7 @@ django.setup()
 app = FastAPI()
 
 
-from akarpov.tools.shortener.tasks import save_view_meta
+from akarpov.tools.shortener.tasks import save_view_meta # noqa: This has to be imported strictly AFTER django setup
 
 
 @app.get("/{slug}")
