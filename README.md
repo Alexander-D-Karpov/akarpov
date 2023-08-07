@@ -4,10 +4,16 @@ My collection of apps and tools
 
 Writen in Python 3.11 and Django 4.2
 
-### local run via docker
+## Start up
 
+### installation
 ```shell
+$ poetry install & poetry shell
 $ python3 manage.py migrate
+```
+
+### local run
+```shell
 $ python3 manage.py runserver
 $ celery -A config.celery_app worker --loglevel=info
 ```
@@ -24,6 +30,7 @@ $ docker-compose -f local.yml up
 
 ### refactoring code
 ```shell
+$ pre-commit install
 $ black akarpov
 $ no_implicit_optional akarpov
 $ mypy --config-file setup.cfg akarpov
