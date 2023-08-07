@@ -1,3 +1,4 @@
+import os
 from typing import Annotated
 
 import django
@@ -10,6 +11,7 @@ from redirect.db.curd import get_link_by_slug, LinkNotFoundException
 from redirect.db.dependency import get_db
 
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
 app = FastAPI()
 
