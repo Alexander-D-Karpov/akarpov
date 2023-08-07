@@ -9,7 +9,7 @@ from starlette.requests import Request
 
 from redirect.db.curd import get_link_by_slug, LinkNotFoundException
 from redirect.db.dependency import get_db
-
+from redirect.settings import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
@@ -57,15 +57,15 @@ def redirect(
     if '+' in slug:
         return RedirectResponse(url=f'/tools/shortener/p/{slug.replace("+", "")}')
 
-    link = get_link_by_slug(db, slug)
+    link_id, link_target = get_link_by_slug(db, slug)
 
     save_view_meta.apply_async(
         kwargs={
-            "pk": link[0],
+            "pk": link_id,
             "ip": request.client.host,
             "user_agent": user_agent,
             "token": sessionid,
         },
     )
 
-    return RedirectResponse(url=link[1])
+    return RedirectResponse(url=(settings.relative_base + link_target) if link_target.startswith('/') else link_target)

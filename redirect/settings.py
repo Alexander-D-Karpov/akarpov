@@ -6,10 +6,7 @@ class AppSettings(BaseSettings):
 
     redirect_slug_cutoff: int = 3
 
-    redirect_host: str = "localhost"
-    redirect_port: int = 8000
-    redirect_reload: bool = False
-
+    relative_base: str = "http://127.0.0.1:8000"
     database_url: str = "postgresql://postgres:postgres@127.0.0.1:5432/akarpov"
 
     class Config:
