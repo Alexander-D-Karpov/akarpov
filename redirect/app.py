@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import django
-from fastapi import FastAPI, Depends, Header
+from fastapi import FastAPI, Depends, Header, Cookie
 from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from starlette.requests import Request
@@ -44,7 +44,13 @@ async def unicorn_exception_handler(request: Request, exc: LinkNotFoundException
 
 
 @app.get("/{slug}")
-def redirect(slug: str, request: Request, db: Session = Depends(get_db), user_agent: Annotated[str | None, Header()] = None) -> RedirectResponse:
+def redirect(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    user_agent: Annotated[str | None, Header()] = None,
+    sessionid: Annotated[str | None, Cookie()] = None
+) -> RedirectResponse:
     """Main route that redirects to a page based on the slug."""
     if '+' in slug:
         return RedirectResponse(url=f'/tools/shortener/p/{slug.replace("+", "")}')
@@ -56,7 +62,7 @@ def redirect(slug: str, request: Request, db: Session = Depends(get_db), user_ag
             "pk": link[0],
             "ip": request.client.host,
             "user_agent": user_agent,
-            "user_id": 0,
+            "token": sessionid,
         },
     )
 
