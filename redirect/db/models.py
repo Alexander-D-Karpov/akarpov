@@ -1,10 +1,11 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
 from redirect.db import Base
 
 
 class Link(Base):
     """Model of a short link that defines slug and target of a redirect."""
+
     __tablename__ = "short_link"
 
     id = Column(Integer, primary_key=True, index=True)

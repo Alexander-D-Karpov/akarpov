@@ -10,7 +10,7 @@ def slug_to_link_id(slug: str) -> int:
     """Converts given slug to an id of a link."""
     link_id = 0
     try:
-        for i, ch in enumerate(slug[:SLUG_CUTOFF - 1:-1]):
+        for i, ch in enumerate(slug[:SLUG_CUTOFF - 1:-1]):  # fmt: skip
             value = URL_CHARACTERS.index(ch)
             link_id += value * len(URL_CHARACTERS) ** i
     except ValueError:

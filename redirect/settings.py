@@ -10,10 +10,10 @@ class AppSettings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@127.0.0.1:5432/akarpov"
 
     class Config:
-        env_prefix = ''
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
-        extra = 'allow'
+        env_prefix = ""
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        extra = "allow"
 
 
 settings = AppSettings()
