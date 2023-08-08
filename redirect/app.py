@@ -2,12 +2,12 @@ import os
 from typing import Annotated
 
 import django
-from fastapi import FastAPI, Depends, Header, Cookie
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi import Cookie, Depends, FastAPI, Header
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
-from redirect.db.curd import get_link_by_slug, LinkNotFoundException
+from redirect.db.curd import LinkNotFoundException, get_link_by_slug
 from redirect.db.dependency import get_db
 from redirect.settings import settings
 
@@ -16,7 +16,9 @@ django.setup()
 app = FastAPI()
 
 
-from akarpov.tools.shortener.tasks import save_view_meta # noqa: This has to be imported strictly AFTER django setup
+from akarpov.tools.shortener.tasks import (  # noqa: This has to be imported strictly AFTER django setup
+    save_view_meta,
+)
 
 
 @app.exception_handler(LinkNotFoundException)
@@ -51,10 +53,10 @@ def redirect(
     request: Request,
     db: Session = Depends(get_db),
     user_agent: Annotated[str | None, Header()] = None,
-    sessionid: Annotated[str | None, Cookie()] = None
+    sessionid: Annotated[str | None, Cookie()] = None,
 ) -> RedirectResponse:
     """Main route that redirects to a page based on the slug."""
-    if '+' in slug:
+    if "+" in slug:
         return RedirectResponse(url=f'/tools/shortener/p/{slug.replace("+", "")}')
 
     link_id, link_target = get_link_by_slug(db, slug)
@@ -64,8 +66,12 @@ def redirect(
             "pk": link_id,
             "ip": request.client.host,
             "user_agent": user_agent,
-            "token": sessionid,
+            "user_id": sessionid,
         },
     )
 
-    return RedirectResponse(url=(settings.relative_base + link_target) if link_target.startswith('/') else link_target)
+    return RedirectResponse(
+        url=(settings.relative_base + link_target)
+        if link_target.startswith("/")
+        else link_target
+    )
