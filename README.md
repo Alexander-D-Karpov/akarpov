@@ -16,6 +16,7 @@ $ python3 manage.py migrate
 ```shell
 $ python3 manage.py runserver
 $ celery -A config.celery_app worker --loglevel=info
+$ uvicorn redirect.app:app --reload
 ```
 
 
