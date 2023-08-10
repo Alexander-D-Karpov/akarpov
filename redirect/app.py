@@ -2,6 +2,7 @@ import os
 from typing import Annotated
 
 import django
+from django.conf import settings as django_settings
 from fastapi import Cookie, Depends, FastAPI, Header
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -19,6 +20,8 @@ app = FastAPI()
 from akarpov.tools.shortener.tasks import (  # noqa: This has to be imported strictly AFTER django setup
     save_view_meta,
 )
+
+settings.relative_base = django_settings.SHORTENER_REDIRECT_TO
 
 
 @app.exception_handler(LinkNotFoundException)

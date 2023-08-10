@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
@@ -18,9 +19,13 @@ class Link(TimeStampedModel):
     viewed = models.IntegerField(default=0)
 
     @property
+    def outer_host_link(self):
+        return settings.SHORTENER_HOST + "/" + self.slug
+
+    @property
     def full_source(self):
         return (
-            "https://akarpov.ru" + self.source
+            settings.SHORTENER_REDIRECT_TO + self.source
             if self.source.startswith("/")
             else self.source
         )
@@ -136,7 +141,7 @@ class ShortLinkModel(SlugModel):
     @property
     def get_short_link(self) -> str:
         if self.short_link:
-            return reverse("short_url", kwargs={"slug": self.short_link.slug})
+            return self.short_link.outer_host_link
         return reverse("tools:shortener:revoked")
 
     class Meta:

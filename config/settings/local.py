@@ -55,5 +55,9 @@ INSTALLED_APPS += ["django_extensions"]  # noqa F405
 
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-eager-propagates
 CELERY_TASK_EAGER_PROPAGATES = True
-# Your stuff...
+
+
+# SHORTENER
 # ------------------------------------------------------------------------------
+SHORTENER_REDIRECT_TO = "http://127.0.0.1:8000"
+SHORTENER_HOST = "http://127.0.0.1:3000"

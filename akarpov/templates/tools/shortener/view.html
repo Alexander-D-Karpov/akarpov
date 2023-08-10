@@ -5,7 +5,7 @@
 {% block content %}
   <div class="m-2">
   <h4>Link to: <a class="fs-4" href="{{ link.source }}">{{ link.full_source }}</a></h4>
-  <p>{{ request.get_host }}{% url 'short_url' slug=link.slug %} <button class="btn" data-clipboard-text="{{ request.get_host }}{% url 'short_url' slug=link.slug %}">
+  <p>{{ link.outer_host_link }} <button class="btn" data-clipboard-text="{{ link.outer_host_link }}">
       <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
     </button></p>
   <p>Viewed: {{ link.viewed }} times</p>

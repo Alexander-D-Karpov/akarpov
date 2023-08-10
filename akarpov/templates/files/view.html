@@ -51,7 +51,7 @@
     <p>File is private</p>
     {% else %}
     <p>File is public{% if file.short_link %},
-    <a href="{{ file.get_short_link }}">short link</a><button class="btn" data-clipboard-text="{{ request.get_host }}{{ file.get_short_link }}">
+    <a href="{{ file.get_short_link }}">short link</a><button class="btn" data-clipboard-text="{{ file.get_short_link }}">
       <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
     </button>
     {% endif %}</p>

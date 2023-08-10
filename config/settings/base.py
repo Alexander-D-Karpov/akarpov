@@ -524,6 +524,9 @@ DRF_CHUNKED_UPLOAD_PATH = "uploads/chucked/"
 # ------------------------------------------------------------------------------
 SHORTENER_ADD_SLUG = True
 SHORTENER_SLUG_LENGTH = 3
+# let nginx do some magic here
+SHORTENER_REDIRECT_TO = "https://akarpov.ru"
+SHORTENER_HOST = "https://akarpov.ru"
 
 
 # ACTIVE_LINK
