@@ -66,3 +66,8 @@ class UserHistory(models.Model):
 
     def __str__(self):
         return self
+
+
+class UserNotification:
+    # TODO: add notification system
+    ...

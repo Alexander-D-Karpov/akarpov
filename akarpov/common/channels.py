@@ -28,8 +28,10 @@ class HeaderAuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         scope["user"] = await get_user(dict(scope["headers"]))
-
-        return await self.app(scope, receive, send)
+        try:
+            return await self.app(scope, receive, send)
+        except ValueError:
+            return
 
 
 class BaseConsumer(AsyncJsonWebsocketConsumer):

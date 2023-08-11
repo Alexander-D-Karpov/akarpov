@@ -16,9 +16,9 @@ from akarpov.music.models import Album, Author, Song, SongInQue
 
 
 def login() -> Client:
-    if not settings.YANDEX_TOKEN:
+    if not settings.MUSIC_YANDEX_TOKEN:
         raise ConnectionError("No yandex credentials provided")
-    return Client(settings.YANDEX_TOKEN).init()
+    return Client(settings.MUSIC_YANDEX_TOKEN).init()
 
 
 def search_ym(name: str):

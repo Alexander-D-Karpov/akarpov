@@ -6,11 +6,12 @@ from akarpov.music.services.yandex import search_ym
 
 
 def login() -> spotipy.Spotify:
-    if not settings.SPOTIFY_ID or not settings.SPOTIFY_SECRET:
+    if not settings.MUSIC_SPOTIFY_ID or not settings.MUSIC_SPOTIFY_SECRET:
         raise ConnectionError("No spotify credentials provided")
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
-            client_id=settings.SPOTIFY_ID, client_secret=settings.SPOTIFY_SECRET
+            client_id=settings.MUSIC_SPOTIFY_ID,
+            client_secret=settings.MUSIC_SPOTIFY_SECRET,
         )
     )
 
