@@ -85,6 +85,10 @@ class SongInQue(models.Model):
     error = models.BooleanField(default=False)
 
 
+class TempFileUpload(models.Model):
+    file = models.FileField(upload_to="music_tmp")
+
+
 class RadioSong(models.Model):
     start = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True)

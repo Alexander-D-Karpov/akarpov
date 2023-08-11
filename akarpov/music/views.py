@@ -2,7 +2,7 @@ from django.views import generic
 
 from akarpov.common.views import SuperUserRequiredMixin
 from akarpov.music.forms import FileUploadForm, TracksLoadForm
-from akarpov.music.models import Album, Author, Playlist, Song
+from akarpov.music.models import Album, Author, Playlist, Song, TempFileUpload
 from akarpov.music.services.base import load_track_file, load_tracks
 
 
@@ -64,14 +64,16 @@ load_track_view = LoadTrackView.as_view()
 
 class LoadTrackFileView(SuperUserRequiredMixin, generic.FormView):
     form_class = FileUploadForm
+    template_name = "music/upload.html"
 
     def get_success_url(self):
         # TODO: add room to see tracks load
         return ""
 
     def form_valid(self, form):
-        for path in [x.path for x in form.cleaned_data["file"]]:
-            load_track_file(path)
+        for file in form.cleaned_data["file"]:
+            t = TempFileUpload.objects.create(file=file)
+            load_track_file(t.file.path)
 
         return super().form_valid(form)
 
