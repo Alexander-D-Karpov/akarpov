@@ -25,6 +25,26 @@ services:
       - "8000:8000"
     command: /start
 
+  redirect:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: akarpov_local_redirect
+    container_name: akarpov_local_redirect
+    platform: linux/x86_64
+    depends_on:
+      - postgres
+      - redis
+      - mailhog
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "3000:3000"
+    command: /start_redirect
+
   postgres:
     build:
       context: .
