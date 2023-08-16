@@ -9,6 +9,7 @@ Writen in Python 3.11 and Django 4.2
 ### installation
 ```shell
 $ poetry install & poetry shell
+$ ./spacy_setup.sh
 $ python3 manage.py migrate
 ```
 
@@ -24,6 +25,10 @@ $ uvicorn redirect.app:app --reload
 
 ```shell
 $ docker-compose -f local.yml up
+```
+Install file preview dependencies
+```shell
+$ docker-compose -f local.yml exec django /install_preview_dependencies
 ```
 - server - http://127.0.0.1:8000
 - mail - http://127.0.0.1:8025
@@ -44,3 +49,4 @@ $ mypy --config-file setup.cfg akarpov
 - test platform
 - short link generator
 - about me app
+- gallery

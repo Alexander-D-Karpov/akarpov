@@ -50,6 +50,10 @@ COPY ./compose/local/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
+COPY ./compose/local/django/spacy_setup /spacy_setup
+RUN sed -i 's/\r$//g' /spacy_setup
+RUN chmod +x /spacy_setup
+
 COPY ./compose/local/django/install_preview_dependencies /install_preview_dependencies
 RUN sed -i 's/\r$//g' /install_preview_dependencies
 RUN chmod +x /install_preview_dependencies
