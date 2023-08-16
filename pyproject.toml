@@ -17,7 +17,7 @@ redis = "^4.6.0"
 hiredis = "^2.2.3"
 celery = {extras = ["redis"], version = "^5.3.1"}
 django-celery-beat = "^2.5.0"
-flower = "^1.2.0"
+flower = "^2.0.1"
 django = "^4.2"
 django-health-check = "^3.17.0"
 django-structlog = "^5.1.0"
