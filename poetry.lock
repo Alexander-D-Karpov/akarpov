@@ -1778,12 +1778,12 @@ tests = ["coverage"]
 
 [[package]]
 name = "django-location-field"
-version = "2.7.1"
+version = "2.7.2"
 description = "Location field for Django"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django_location_field-2.7.1-py2.py3-none-any.whl", hash = "sha256:358c6b5ccbf80f46ae558d2da6401c468ffe57a1379dfd47192970e20cc81dd5"},
+    {file = "django_location_field-2.7.2-py2.py3-none-any.whl", hash = "sha256:cdbb4b7d9f6ba9fb31e3bc2ec59492c77533f4fb5f3eeb7efd01eb3d4dbcf3b7"},
 ]
 
 [[package]]
@@ -7703,4 +7703,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4669e363277a8ec883d4942297bdfaac3410cc0ef06ca6c16103d19fddd81bfe"
+content-hash = "0a04784523eae6d77e05bb72b97ad90a714d5f029574b442b4d5b0b7590912c1"
