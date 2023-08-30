@@ -24,6 +24,28 @@ services:
       - ./.envs/.production/.postgres
     command: /start
 
+
+  redirect:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: akarpov_production_redirect
+    container_name: akarpov_production_redirect
+    platform: linux/x86_64
+    depends_on:
+      - postgres
+      - redis
+      - mailhog
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    ports:
+      - "3000:3000"
+    command: /start-redirect
+
+
   postgres:
     build:
       context: .

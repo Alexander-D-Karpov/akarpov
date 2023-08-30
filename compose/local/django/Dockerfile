@@ -41,7 +41,6 @@ COPY ./pyproject.toml ./poetry.lock /app/
 RUN poetry install --no-root --only main
 RUN preview --check-dependencies
 
-
 COPY ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
@@ -53,6 +52,10 @@ RUN chmod +x /start
 COPY ./compose/local/django/spacy_setup /spacy_setup
 RUN sed -i 's/\r$//g' /spacy_setup
 RUN chmod +x /spacy_setup
+
+COPY ./compose/local/django/start-redirect /start-redirect
+RUN sed -i 's/\r$//g' /start-redirect
+RUN chmod +x /start-redirect
 
 COPY ./compose/local/django/install_preview_dependencies /install_preview_dependencies
 RUN sed -i 's/\r$//g' /install_preview_dependencies
