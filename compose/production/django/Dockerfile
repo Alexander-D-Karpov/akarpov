@@ -44,14 +44,14 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && rm -rf /var/lib/apt/lists/*
 
 
-RUN pip install poetry
+RUN pip install "poetry==$POETRY_VERSION"
+RUN python -m venv /venv
 
-# Configuring poetry
-RUN poetry config virtualenvs.create false
-COPY pyproject.toml poetry.lock /
+COPY pyproject.toml poetry.lock /app/
+RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
 
-# Installing requirements
-RUN poetry install
+COPY . .
+RUN poetry build && /venv/bin/pip install dist/*.whl
 
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
