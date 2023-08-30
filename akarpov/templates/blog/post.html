@@ -106,8 +106,11 @@
     {% endfor %}
     </div>
   </div>
-  {# TODO: add SEO tags here #}
-
+  <div style="display:none;">
+  {% for tag in post.tags.all %}
+    tag.seo_tags
+  {% endfor %}
+  </div>
   <script>
     function addComment(){
     }
