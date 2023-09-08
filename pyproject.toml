@@ -101,7 +101,7 @@ urllib3 = ">=1.26"
 requests = ">=2.25"
 spacy = {extras = ["lookups"], version = "^3.6.1"}
 spacy-transformers = "^1.2.5"
-extract-msg = "0.29"
+extract-msg = "0.28.7"
 
 
 [build-system]
