@@ -73,7 +73,6 @@ pydotplus = "^2.0.2"
 preview-generator = "^0.29"
 uuid = "^1.30"
 mutagen = "^1.46.0"
-ytmusicapi = "^1.0.2"
 pydub = "^0.25.1"
 python-mpd2 = "^3.0.5"
 yandex-music = "^2.1.1"
@@ -102,6 +101,7 @@ urllib3 = ">=1.26"
 requests = ">=2.25"
 spacy = {extras = ["lookups"], version = "^3.6.1"}
 spacy-transformers = "^1.2.5"
+extract-msg = "0.29"
 
 
 [build-system]

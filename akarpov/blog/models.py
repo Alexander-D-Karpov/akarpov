@@ -115,7 +115,9 @@ class PostRating(UserHistoryModel):
 
 
 class Comment(UserHistoryModel):
-    parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        "self", blank=True, null=True, related_name="children", on_delete=models.CASCADE
+    )
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
 

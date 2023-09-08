@@ -47,4 +47,8 @@ class ListCommentsSerializer(generics.ListAPIView):
 
     def get_queryset(self):
         post = get_object_or_404(Post, slug=self.kwargs["slug"])
-        return post.comments.filter(parent__isnull=True)
+        return (
+            post.comments.filter(parent__isnull=True)
+            .prefetch_related("author")
+            .prefetch_related("children")
+        )

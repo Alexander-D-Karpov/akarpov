@@ -18,6 +18,7 @@ class PostSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="api:blog:post", lookup_field="slug"
     )
+    short_link = serializers.URLField(source="get_short_link")
 
     @extend_schema_field(TagSerializer)
     def get_h_tag(self, obj):
@@ -51,6 +52,7 @@ class FullPostSerializer(PostSerializer):
     comments = serializers.HyperlinkedIdentityField(
         view_name="api:blog:post_comments", lookup_field="slug"
     )
+    short_link = serializers.URLField(source="get_short_link")
 
     class Meta:
         model = Post
@@ -83,4 +85,4 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["author", "body", "created", "rating"]
+        fields = ["author", "body", "created", "rating", "children"]
