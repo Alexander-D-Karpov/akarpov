@@ -10,6 +10,7 @@ from django.contrib.auth import user_logged_out
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+from akarpov.files.consts import USER_INITIAL_FILE_UPLOAD
 from akarpov.users.models import User
 from akarpov.users.services.history import (
     create_history_note,
@@ -21,7 +22,7 @@ from akarpov.users.services.history import (
 def user_create(sender, instance: User, **kwargs):
     if instance.id is None:
         # give user some space on file share on register
-        instance.left_file_upload += 100 * 1024 * 1024
+        instance.left_file_upload += USER_INITIAL_FILE_UPLOAD
 
 
 @receiver(user_logged_in)

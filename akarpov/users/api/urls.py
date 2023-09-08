@@ -11,20 +11,20 @@ app_name = "users_api"
 
 
 urlpatterns = [
-    path("", UserListViewSet.as_view(), name="user_list_api"),
+    path("", UserListViewSet.as_view(), name="list"),
     path(
         "self/",
         UserRetireUpdateSelfViewSet.as_view(),
-        name="user_get_update_delete_self_api",
+        name="self",
     ),
     path(
         "id/<int:pk>",
         UserRetrieveIdViewSet.as_view(),
-        name="user_retrieve_id_api",
+        name="get_by_id",
     ),
     path(
         "<str:username>",
         UserRetrieveViewSet.as_view(),
-        name="user_retrieve_username_api",
+        name="get",
     ),
 ]
