@@ -1,45 +1,20 @@
-from collections.abc import Sequence
-from typing import Any
-
-from django.contrib.auth import get_user_model
-from factory import Faker, post_generation
+import factory.fuzzy
 from factory.django import DjangoModelFactory
 
-from akarpov.utils.faker import django_image
+from akarpov.utils.pytest_factoryboy import global_register
 
 
+@global_register
 class UserFactory(DjangoModelFactory):
-    username = Faker("user_name")
-    email = Faker("email")
-    name = Faker("name")
-    about = Faker("text")
-
-    @post_generation
-    def password(self, create: bool, extracted: Sequence[Any], **kwargs):
-        password = (
-            extracted
-            if extracted
-            else Faker(
-                "password",
-                length=42,
-                special_chars=True,
-                digits=True,
-                upper_case=True,
-                lower_case=True,
-            ).evaluate(None, None, extra={"locale": None})
-        )
-        self.set_password(password)
-
-    @post_generation
-    def image(self, create, extracted, **kwargs):
-        if extracted:
-            image_name, image = extracted
-        else:
-            image_name = "test.jpg"
-            image = django_image(image_name, **kwargs)
-        self.image.save(image_name, image)
+    email = factory.Sequence(lambda i: f"user_{i}@akarpov.ru")
+    username = factory.Faker("word")
+    image = factory.fuzzy.FuzzyText(prefix="https://img")
+    password = "P@ssw0rd"
 
     class Meta:
-        model = get_user_model()
-        skip_postgeneration_save = False
-        django_get_or_create = ["username"]
+        model = "users.User"
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_user(*args, **kwargs)

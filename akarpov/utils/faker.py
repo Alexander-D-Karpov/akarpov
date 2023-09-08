@@ -15,9 +15,9 @@ additional_providers = [MoneyProvider]
 
 
 def configure_factory_faker(factory_faker):
-    factory_faker._DEFAULT_LOCALE = "ru_RU"
+    factory_faker._DEFAULT_LOCALE = "en"
     for provider in additional_providers:
-        factory_faker.add_provider(provider, locale="ru_RU")
+        factory_faker.add_provider(provider, locale="en")
 
 
 def configure_faker(faker):
