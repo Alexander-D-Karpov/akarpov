@@ -57,3 +57,24 @@ class UserFullSerializer(serializers.ModelSerializer):
             "is_staff": {"read_only": True},
             "is_superuser": {"read_only": True},
         }
+
+
+class UserUpdatePassword(serializers.ModelSerializer):
+    old_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ("old_password", "password")
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
+
+    def validate_old_password(self, password: str):
+        if not self.instance.check_password(password):
+            raise serializers.ValidationError("Old password is incorrect")
+        return password
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data["password"])
+        instance.save(update_fields=["password"])
+        return instance

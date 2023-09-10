@@ -9,11 +9,12 @@ from akarpov.users.api.serializers import (
     UserFullSerializer,
     UserPublicInfoSerializer,
     UserRegisterSerializer,
+    UserUpdatePassword,
 )
 from akarpov.users.models import User
 
 
-class UserRegisterViewSet(generics.CreateAPIView):
+class UserRegisterAPIViewSet(generics.CreateAPIView):
     """Creates new user and sends verification email"""
 
     serializer_class = UserRegisterSerializer
@@ -26,7 +27,7 @@ class UserRegisterViewSet(generics.CreateAPIView):
         return self.create(request, *args, **kwargs)
 
 
-class UserEmailValidationViewSet(views.APIView):
+class UserEmailValidationAPIViewSet(views.APIView):
     """Receives token from email and activates user"""
 
     permission_classes = [permissions.AllowAny]
@@ -43,7 +44,7 @@ class UserEmailValidationViewSet(views.APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class UserListViewSet(generics.ListAPIView):
+class UserListAPIViewSet(generics.ListAPIView):
     serializer_class = UserPublicInfoSerializer
     pagination_class = SmallResultsSetPagination
 
@@ -54,7 +55,7 @@ class UserListViewSet(generics.ListAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class UserRetrieveViewSet(generics.RetrieveAPIView):
+class UserRetrieveAPIViewSet(generics.RetrieveAPIView):
     """Returns user's instance on username"""
 
     serializer_class = UserFullPublicInfoSerializer
@@ -70,7 +71,7 @@ class UserRetrieveViewSet(generics.RetrieveAPIView):
         return super().get(request, *args, **kwargs)
 
 
-class UserRetrieveIdViewSet(UserRetrieveViewSet):
+class UserRetrieveIdAPIAPIView(UserRetrieveAPIViewSet):
     """Returns user's instance on user's id"""
 
     lookup_field = "pk"
@@ -82,8 +83,15 @@ class UserRetrieveIdViewSet(UserRetrieveViewSet):
         return self.retrieve(request, *args, **kwargs)
 
 
-class UserRetireUpdateSelfViewSet(generics.RetrieveUpdateDestroyAPIView):
+class UserRetireUpdateSelfAPIViewSet(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserFullSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class UserUpdatePasswordAPIView(generics.UpdateAPIView):
+    serializer_class = UserUpdatePassword
 
     def get_object(self):
         return self.request.user

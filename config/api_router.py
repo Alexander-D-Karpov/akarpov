@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 
-from akarpov.users.api.views import UserRegisterViewSet
+from akarpov.users.api.views import UserRegisterAPIViewSet
 
 app_name = "api"
 
@@ -11,7 +11,9 @@ urlpatterns_v1 = [
         include(
             [
                 path(
-                    "register/", UserRegisterViewSet.as_view(), name="user_register_api"
+                    "register/",
+                    UserRegisterAPIViewSet.as_view(),
+                    name="user_register_api",
                 ),
                 path("token/", obtain_auth_token),
             ]
