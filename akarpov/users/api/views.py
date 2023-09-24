@@ -1,8 +1,10 @@
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
 from akarpov.common.api import SmallResultsSetPagination
+from akarpov.common.jwt import sign_jwt
 from akarpov.users.api.serializers import (
     UserEmailVerification,
     UserFullPublicInfoSerializer,
@@ -25,6 +27,14 @@ class UserRegisterAPIViewSet(generics.CreateAPIView):
     )
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+
+
+class GenerateUserJWTTokenAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(responses={200: OpenApiTypes.STR})
+    def get(self, request, *args, **kwargs):
+        return Response(data=sign_jwt(data={"id": self.request.user.id}))
 
 
 class UserEmailValidationAPIViewSet(views.APIView):

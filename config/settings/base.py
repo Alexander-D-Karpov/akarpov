@@ -155,10 +155,11 @@ LOCAL_APPS = [
     "akarpov.files",
     "akarpov.music",
     "akarpov.gallery",
+    "akarpov.tools.qr",
     "akarpov.pipeliner",
+    "akarpov.notifications",
     "akarpov.test_platform",
     "akarpov.tools.shortener",
-    "akarpov.tools.qr",
     "akarpov.tools.promocodes",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

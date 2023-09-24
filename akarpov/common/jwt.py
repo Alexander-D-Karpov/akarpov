@@ -3,7 +3,7 @@ from datetime import datetime
 import jwt
 import pytz
 from django.conf import settings
-from jwt import ExpiredSignatureError, InvalidSignatureError
+from jwt import DecodeError, ExpiredSignatureError, InvalidSignatureError
 
 TIMEZONE = pytz.timezone("Europe/Moscow")
 
@@ -24,7 +24,10 @@ def sign_jwt(data: dict, t_life: None | int = None) -> str:
 
 def read_jwt(token: str) -> dict | bool:
     """reads jwt, validates it and return payload if correct"""
-    header_data = jwt.get_unverified_header(token)
+    try:
+        header_data = jwt.get_unverified_header(token)
+    except DecodeError:
+        return False
     secret = settings.SECRET_KEY
     try:
         payload = jwt.decode(token, key=secret, algorithms=[header_data["alg"]])

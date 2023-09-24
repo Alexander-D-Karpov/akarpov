@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 
-from akarpov.users.api.views import UserRegisterAPIViewSet
+from akarpov.users.api.views import GenerateUserJWTTokenAPIView, UserRegisterAPIViewSet
 
 app_name = "api"
 
@@ -16,12 +16,17 @@ urlpatterns_v1 = [
                     name="user_register_api",
                 ),
                 path("token/", obtain_auth_token),
+                path("jwt/", GenerateUserJWTTokenAPIView.as_view()),
             ]
         ),
     ),
     path(
         "users/",
         include("akarpov.users.api.urls", namespace="users"),
+    ),
+    path(
+        "notifications/",
+        include("akarpov.notifications.providers.urls", namespace="notifications"),
     ),
     path(
         "blog/",

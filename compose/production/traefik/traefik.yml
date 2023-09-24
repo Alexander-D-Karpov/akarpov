@@ -63,6 +63,11 @@ http:
         servers:
           - url: http://django:5000
 
+    redirect:
+      loadBalancer:
+        servers:
+          - url: http://redirect:3000
+
     flower:
       loadBalancer:
         servers:

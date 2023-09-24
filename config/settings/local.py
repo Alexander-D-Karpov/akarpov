@@ -10,6 +10,7 @@ SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="Lm4alUqtub6qQT4MnV4NmtXQP02RCBtmGj1bJhyDho07Bkjk9WFZxGtwpnLNQGJQ",
 )
+TOKEN_EXP = 24 * 60 * 60
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "https://*.akarpov.ru"]
@@ -20,6 +21,7 @@ CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "https://*.akarpov.ru"]
 EMAIL_HOST = env("EMAIL_HOST", default="mailhog")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
 EMAIL_PORT = env("EMAIL_PORT", default="1025")
+EMAIL_FROM = env("EMAIL_FROM", default="noreply@akarpov.ru")
 
 # WhiteNoise
 # ------------------------------------------------------------------------------

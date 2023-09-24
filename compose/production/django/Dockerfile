@@ -26,6 +26,7 @@ ARG APP_HOME=/app
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
+ENV POETRY_VERSION 1.4.2
 
 WORKDIR ${APP_HOME}
 
@@ -34,14 +35,12 @@ RUN addgroup --system django \
 
 
 # Install required system dependencies
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # psycopg2 dependencies
-  libpq-dev \
-  # Translations dependencies
-  gettext \
-  # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev && \
+    # Dependencies for file preview generation
+    apt-get install -y webp libimage-exiftool-perl libmagickwand-dev ffmpeg libgdal-dev && \
+    apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
 
 
 RUN pip install "poetry==$POETRY_VERSION"

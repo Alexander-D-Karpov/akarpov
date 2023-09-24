@@ -24,7 +24,6 @@ services:
       - ./.envs/.production/.postgres
     command: /start
 
-
   redirect:
     build:
       context: .
@@ -35,16 +34,30 @@ services:
     depends_on:
       - postgres
       - redis
-      - mailhog
     volumes:
-      - .:/app:z
+      - type: bind
+        source: /var/www/media/
+        target: /app/akarpov/media/
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
-    ports:
-      - "3000:3000"
     command: /start-redirect
 
+  traefik:
+    build:
+      context: .
+      dockerfile: ./compose/production/traefik/Dockerfile
+    image: akarpov_production_traefik
+    depends_on:
+      - django
+      - redirect
+    volumes:
+      - production_traefik:/etc/traefik/acme
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:3000:3000"
+      - "0.0.0.0:5555:5555"
 
   postgres:
     build:
