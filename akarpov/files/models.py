@@ -26,6 +26,7 @@ from akarpov.users.services.history import UserHistoryModel
 
 class BaseFileItem(PolymorphicModel):
     parent = ForeignKey(
+        verbose_name="Folder",
         to="files.Folder",
         null=True,
         blank=True,
@@ -73,6 +74,11 @@ class File(BaseFileItem, TimeStampedModel, ShortLinkModel, UserHistoryModel):
     name = CharField(max_length=255, null=True, blank=True)
     description = TextField(blank=True, null=True)
     file_type = CharField(max_length=255, null=True, blank=True)
+
+    # extra settings
+    notify_user_on_view = BooleanField(
+        "Receive notifications on file view", default=False
+    )
 
     @property
     def file_name(self):

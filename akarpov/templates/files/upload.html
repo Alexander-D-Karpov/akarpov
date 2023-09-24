@@ -26,11 +26,11 @@
 
 {% block inline_javascript %}
   <script type="text/javascript">
-    var md5 = "",
+    let md5 = "",
         csrf = $("input[name='csrfmiddlewaretoken']")[0].value,
         form_data = [{"name": "csrfmiddlewaretoken", "value": csrf}];
     function calculate_md5(file, chunk_size) {
-      var slice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+      let slice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
           chunks = chunks = Math.ceil(file.size / chunk_size),
           current_chunk = 0,
           spark = new SparkMD5.ArrayBuffer();
@@ -44,9 +44,9 @@
         }
       };
       function read_next_chunk() {
-        var reader = new FileReader();
+        let reader = new FileReader();
         reader.onload = onload;
-        var start = current_chunk * chunk_size,
+        let start = current_chunk * chunk_size,
             end = Math.min(start + chunk_size, file.size);
         reader.readAsArrayBuffer(slice.call(file, start, end));
       };
@@ -71,7 +71,7 @@
             {"name": "upload_id", "value": data.result.upload_id}
           );
         }
-        var progress = parseInt(data.loaded / data.total * 100.0, 10);
+        let progress = parseInt(data.loaded / data.total * 100.0, 10);
         $("#progress").text(Array(progress).join("=") + "> " + progress + "%");
       },
       done: function (e, data) { // Called when the file has completely uploaded

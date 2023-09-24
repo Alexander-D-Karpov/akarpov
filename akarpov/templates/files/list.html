@@ -56,7 +56,7 @@
     </nav>
     {% endif %}
   {% endif %}
-  {% if request.user.is_authenticated and is_folder_owner %}
+  {% if request.user.is_authenticated and is_folder_owner and not folder_slug %}
   <div class="d-flex justify-content-end me-5 col">
     <a class="me-5" href="{% url 'files:table' %}">table view</a>
   </div>

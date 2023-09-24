@@ -34,6 +34,7 @@ from akarpov.files.previews import extensions, meta, meta_extensions, previews
 from akarpov.files.services.folders import delete_folder
 from akarpov.files.services.preview import get_base_meta
 from akarpov.files.tables import FileTable
+from akarpov.notifications.services import send_notification
 
 logger = structlog.get_logger(__name__)
 
@@ -148,6 +149,16 @@ class FileView(DetailView):
         if "bot" in useragent:
             if file.file_type and file.file_type.split("/")[0] == "image":
                 return HttpResponseRedirect(file.file.url)
+        else:
+            if file.notify_user_on_view:
+                if self.request.user != file.user:
+                    send_notification(
+                        "File view",
+                        f"File {file.name} was opened",
+                        "site",
+                        user_id=file.user.id,
+                        conformation=True,
+                    )
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

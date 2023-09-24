@@ -140,5 +140,42 @@
 
     {% block inline_javascript %}
     {% endblock inline_javascript %}
+    {% if request.user.is_authenticated %}
+    <script>
+      {# TODO: add automatic socket host retrieve  #}
+      let socket = new WebSocket(`ws://127.0.0.1:8000/ws/notifications/`);
+
+      function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      let fn = async function(event) {
+        let data = JSON.parse(event.data)
+        console.log(data)
+        alert(data.body)
+        {# TODO add pretty pop up #}
+      }
+
+      socket.onmessage = fn
+      socket.onclose = async function(event) {
+        console.log("Notifications socket disconnected, reconnecting...")
+        let socketClosed = true;
+        await sleep(5000)
+        while (socketClosed) {
+          {# TODO: reconnect socket here #}
+          try {
+            let cl = socket.onclose
+            socket = new WebSocket(`ws://127.0.0.1:8000/ws/notifications/`);
+            socket.onmessage = fn
+            socket.onclose = cl
+            socketClosed = false
+          } catch (e) {
+            console.log("Can't connect to socket, reconnecting...")
+            await sleep(1000)
+          }
+          }
+      }
+    </script>
+    {% endif %}
   </body>
 </html>

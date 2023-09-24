@@ -6,7 +6,7 @@ from akarpov.files.models import File, Folder
 class FileForm(forms.ModelForm):
     class Meta:
         model = File
-        fields = ["name", "private", "description"]
+        fields = ["name", "private", "notify_user_on_view", "description"]
 
 
 class FolderForm(forms.ModelForm):
