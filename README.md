@@ -4,6 +4,9 @@ My collection of apps and tools
 
 Writen in Python 3.11 and Django 4.2
 
+Local upstream mirror:
+https://git.akarpov.ru/sanspie/akarpov
+
 ## Start up
 
 ### installation
