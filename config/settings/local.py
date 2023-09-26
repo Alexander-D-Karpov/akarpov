@@ -61,5 +61,5 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 # SHORTENER
 # ------------------------------------------------------------------------------
-SHORTENER_REDIRECT_TO = "http://127.0.0.1:8000"
-SHORTENER_HOST = "http://127.0.0.1:3000"
+SHORTENER_REDIRECT_TO = "https://dev2.akarpov.ru"
+SHORTENER_HOST = "https://dev.akarpov.ru"

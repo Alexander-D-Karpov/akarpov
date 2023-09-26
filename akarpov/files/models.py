@@ -17,6 +17,7 @@ from django.db.models import (
 from django.urls import reverse
 from model_utils.fields import AutoCreatedField, AutoLastModifiedField
 from model_utils.models import TimeStampedModel
+from pgvector.django import VectorField
 from polymorphic.models import PolymorphicModel
 
 from akarpov.files.services.files import trash_file_upload, user_unique_file_upload
@@ -69,6 +70,9 @@ class File(BaseFileItem, TimeStampedModel, ShortLinkModel, UserHistoryModel):
 
     preview = FileField(blank=True, upload_to="file/previews/")
     file_obj = FileField(blank=False, upload_to=user_unique_file_upload)
+    embeddings = VectorField(dimensions=768, null=True)
+    content = TextField(max_length=10000)
+    lang = CharField(max_length=2, choices=[("ru", "ru"), ("en", "en")])
 
     # meta
     name = CharField(max_length=255, null=True, blank=True)

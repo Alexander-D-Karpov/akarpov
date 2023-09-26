@@ -132,6 +132,10 @@
                 <footer class="row bg-light py-1 mt-auto text-center">
                     <div class="col"> Writen by <a href="/about">sanspie</a>, find source code <a href="https://github.com/Alexander-D-Karpov/akarpov">here</a> </div>
                 </footer>
+            <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3">
+
+            </div>
+
             </div>
         </div>
     </div>
@@ -142,18 +146,63 @@
     {% endblock inline_javascript %}
     {% if request.user.is_authenticated %}
     <script>
-      {# TODO: add automatic socket host retrieve  #}
-      let socket = new WebSocket(`ws://127.0.0.1:8000/ws/notifications/`);
+      {% if request.is_secure %}
+      let socket = new WebSocket(`wss://{{ request.get_host }}/ws/notifications/`);
+      {% else %}
+      let socket = new WebSocket(`ws://{{ request.get_host }}/ws/notifications/`);
+      {% endif %}
 
       function sleep(ms) {
           return new Promise(resolve => setTimeout(resolve, ms));
       }
 
+      function timeSince(date) {
+            let seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) {
+              return Math.floor(interval) + " years";
+            }
+            interval = seconds / 2592000;
+            if (interval > 1) {
+              return Math.floor(interval) + " months";
+            }
+            interval = seconds / 86400;
+            if (interval > 1) {
+              return Math.floor(interval) + " days";
+            }
+            interval = seconds / 3600;
+            if (interval > 1) {
+              return Math.floor(interval) + " hours";
+            }
+            interval = seconds / 60;
+            if (interval > 1) {
+              return Math.floor(interval) + " minutes";
+            }
+            return Math.floor(seconds) + " seconds";
+      }
+
+      const toastContainer = document.getElementById('toastContainer')
+
+
       let fn = async function(event) {
         let data = JSON.parse(event.data)
-        console.log(data)
-        alert(data.body)
-        {# TODO add pretty pop up #}
+        const toast = document.createElement("div")
+        toast.id = "liveToast"
+        toast.className = "toast mb-4 ml-2"
+        toast.setAttribute("role", "alert")
+        toast.setAttribute("aria-live", "assertive")
+        toast.setAttribute("aria-atomic", "true")
+        toast.innerHTML = `<div class="toast-header">
+                    <strong class="me-auto">${data.title}</strong>
+                    <small>${timeSince(Date.parse(data.created))} ago</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+                  <div class="toast-body">
+                    ${data.body}
+                  </div>`
+        toastContainer.appendChild(toast)
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
+        toastBootstrap.show()
       }
 
       socket.onmessage = fn
