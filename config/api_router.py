@@ -33,6 +33,10 @@ urlpatterns_v1 = [
         include("akarpov.blog.api.urls", namespace="blog"),
     ),
     path(
+        "music/",
+        include("akarpov.music.api.urls", namespace="music"),
+    ),
+    path(
         "tools/",
         include(
             "akarpov.tools.api.urls",

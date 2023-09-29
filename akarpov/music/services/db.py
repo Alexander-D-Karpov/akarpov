@@ -13,6 +13,7 @@ from akarpov.music.models import Album, Author, Song
 def load_track(
     path: str,
     image_path: str | None = None,
+    user_id: int | None = None,
     authors: list[str] | str | None = None,
     album: str | None = None,
     name: str | None = None,
@@ -20,12 +21,19 @@ def load_track(
     **kwargs,
 ) -> Song:
     p_name = path.split("/")[-1]
+
+    if album and type(album) is str and album.startswith("['"):
+        album = album.replace("['", "").replace("']", "")
+
     if authors:
         authors = [Author.objects.get_or_create(name=x)[0] for x in authors if authors]
     else:
         authors = []
     if album:
-        album = Album.objects.get_or_create(name=album)[0]
+        if type(album) is str:
+            album = Album.objects.get_or_create(name=album)[0]
+        elif type(album) is list:
+            album = Album.objects.get_or_create(name=album[0])[0]
     else:
         album = None
 
@@ -45,9 +53,11 @@ def load_track(
     tag = MP3(path, ID3=ID3)
     if image_path:
         if not image_path.endswith(".png"):
+            nm = image_path
             im = Image.open(image_path)
             image_path = image_path.replace(image_path.split(".")[-1], "png")
             im.save(image_path)
+            os.remove(nm)
 
     song = Song(
         link=link if link else "",
@@ -55,6 +65,12 @@ def load_track(
         name=name if name else p_name,
         album=album,
     )
+
+    if user_id:
+        song.user_id = user_id
+
+    if kwargs:
+        song.meta = kwargs
 
     if image_path:
         with open(path, "rb") as file, open(image_path, "rb") as image:
@@ -95,5 +111,11 @@ def load_track(
     if "genre" in kwargs:
         tag.tags.add(TCON(text=kwargs["genre"]))
     tag.save()
+
+    if os.path.exists(path):
+        os.remove(path)
+
+    if os.path.exists(image_path):
+        os.remove(image_path)
 
     return song

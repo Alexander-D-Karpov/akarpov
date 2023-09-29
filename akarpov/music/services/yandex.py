@@ -1,18 +1,13 @@
 import os
-from pathlib import Path
 from random import randint
 
 from django.conf import settings
-from django.core.files import File
 from django.utils.text import slugify
-from mutagen.easyid3 import EasyID3
-from mutagen.id3 import APIC, ID3, TCON, TORY
-from mutagen.mp3 import MP3
-from pydub import AudioSegment
 from yandex_music import Client, Playlist, Search, Track
 
 from akarpov.music import tasks
-from akarpov.music.models import Album, Author, Song, SongInQue
+from akarpov.music.models import Song, SongInQue
+from akarpov.music.services.db import load_track
 
 
 def login() -> Client:
@@ -48,88 +43,56 @@ def search_ym(name: str):
     return info
 
 
-def load_file_meta(track: int):
+def load_file_meta(track: int, user_id: int):
     que = SongInQue.objects.create()
+    client = login()
+    track = client.tracks(track)[0]  # type: Track
+    que.name = track.title
+    que.save()
+
     try:
-        client = login()
-        track = client.tracks(track)[0]  # type: Track
-        que.name = track.title
-        que.save()
-
-        try:
-            if sng := Song.objects.filter(
-                name=track.title, album__name=track.albums[0].title
-            ):
-                que.delete()
-                return sng.first()
-        except IndexError:
+        if sng := Song.objects.filter(
+            name=track.title, album__name=track.albums[0].title
+        ):
             que.delete()
-            return
-
-        filename = slugify(f"{track.artists[0].name} - {track.title}")
-        orig_path = f"{settings.MEDIA_ROOT}/{filename}"
-
-        track.download(filename=orig_path, codec="mp3")
-
-        path = orig_path + ".mp3"
-        AudioSegment.from_file(orig_path).export(path)
-        os.remove(orig_path)
-
-        # load album image
-        img_pth = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
-
-        track.download_cover(filename=img_pth)
-
-        album = track.albums[0]
-
-        # set music meta
-        tag = MP3(path, ID3=ID3)
-        tag.tags.add(
-            APIC(
-                encoding=3,  # 3 is for utf-8
-                mime="image/png",  # image/jpeg or image/png
-                type=3,  # 3 is for the cover image
-                desc="Cover",
-                data=open(img_pth, "rb").read(),
-            )
-        )
-        tag.tags.add(TORY(text=str(album.year)))
-        tag.tags.add(TCON(text=album.genre))
-        tag.save()
-
-        os.remove(img_pth)
-        tag = EasyID3(path)
-
-        tag["title"] = track.title
-        tag["album"] = album.title
-        tag["artist"] = track.artists[0].name
-
-        tag.save()
-
-        # save track
-        ms_path = Path(path)
-        song = Song(
-            name=track.title,
-            author=Author.objects.get_or_create(name=track.artists[0].name)[0],
-            album=Album.objects.get_or_create(name=album.title)[0],
-        )
-        with ms_path.open(mode="rb") as f:
-            song.file = File(f, name=ms_path.name)
-            song.save()
-        os.remove(path)
+            return sng.first()
+    except IndexError:
         que.delete()
-        return song
-    except Exception as e:
-        que.name = e
-        que.error = True
-        que.save()
+        return
+
+    filename = slugify(f"{track.artists[0].name} - {track.title}")
+    orig_path = f"{settings.MEDIA_ROOT}/{filename}.mp3"
+    album = track.albums[0]
+
+    track.download(filename=orig_path, codec="mp3")
+    img_pth = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
+
+    track.download_cover(filename=img_pth)
+    song = load_track(
+        orig_path,
+        img_pth,
+        user_id,
+        [x.name for x in track.artists],
+        album.title,
+        track.title,
+        release=album.release_date,
+        genre=album.genre,
+    )
+    if os.path.exists(orig_path):
+        os.remove(orig_path)
+    if os.path.exists(img_pth):
+        os.remove(img_pth)
+
+    return str(song)
 
 
-def load_playlist(link: str):
+def load_playlist(link: str, user_id: int):
     author = link.split("/")[4]
     playlist_id = link.split("/")[-1]
 
     client = login()
     playlist = client.users_playlists(int(playlist_id), author)  # type: Playlist
     for track in playlist.fetch_tracks():
-        tasks.load_ym_file_meta.apply_async(kwargs={"track": track.track.id})
+        tasks.load_ym_file_meta.apply_async(
+            kwargs={"track": track.track.id, "user_id": user_id}
+        )

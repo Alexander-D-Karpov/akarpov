@@ -11,18 +11,18 @@ from akarpov.music.models import Song
 from akarpov.music.services.db import load_track
 
 
-def load_dir(path: str):
+def load_dir(path: str, user_id: int):
     path = Path(path)
 
     for f in list(path.glob("**/*.mp3")):
-        process_mp3_file(str(f))
+        process_mp3_file(str(f), user_id=user_id)
 
 
-def load_file(path: str):
-    process_mp3_file(path)
+def load_file(path: str, user_id: int):
+    process_mp3_file(path, user_id)
 
 
-def process_mp3_file(path: str) -> None:
+def process_mp3_file(path: str, user_id: int) -> None:
     tag = mutagen.File(path, easy=True)
     if "artist" in tag:
         author = tag["artist"]
@@ -55,6 +55,6 @@ def process_mp3_file(path: str) -> None:
             im.save(image_pth)
         except UnidentifiedImageError:
             pass
-    load_track(path, image_pth, author, album, name)
+    load_track(path, image_pth, user_id, author, album, name)
     if image_pth and os.path.exists(image_pth):
         os.remove(image_pth)

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'css/music-player.css' %}">
+    {% endblock %}
+  {% block content %}
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="simple-audio-player flex-column" id="simp" data-config='{"shide_top":false,"shide_btm":false,"auto_load":false}'>
+          <div class="simp-playlist">
+            <ul>
+              {% for song in song_list %}
+            <li><span class="simp-source" {% if song.image %}data-cover="{{ song.image.url }}"{% endif %} data-src="{{ song.file.url }}">{{ song.name }}</span><span class="simp-desc">{{ song.full_props }}</span></li>
+              {% endfor %}
+            </ul>
+          </div>
+      </div>
+    </div>
+    <script src="{% static 'js/music-player.js' %}"></script>
+{% endblock content %}

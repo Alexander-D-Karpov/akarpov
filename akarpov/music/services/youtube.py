@@ -64,7 +64,7 @@ def parse_description(description: str) -> list:
     return list_of_chapters
 
 
-def download_from_youtube_link(link: str) -> Song:
+def download_from_youtube_link(link: str, user_id: int) -> Song:
     song = None
 
     with YoutubeDL(ydl_opts) as ydl:
@@ -118,6 +118,7 @@ def download_from_youtube_link(link: str) -> Song:
                 song = load_track(
                     chapter_path,
                     f"{img_pth}.png",
+                    user_id,
                     info["artists"],
                     info["album_name"],
                     chapters[i][2],
@@ -127,6 +128,7 @@ def download_from_youtube_link(link: str) -> Song:
                 song = load_track(
                     chapter_path,
                     f"{img_pth}.png",
+                    user_id,
                     info["artists"],
                     info["album_name"],
                     chapters[i][2],
@@ -152,6 +154,7 @@ def download_from_youtube_link(link: str) -> Song:
             song = load_track(
                 path,
                 f"{img_pth}.png",
+                user_id,
                 info["artists"],
                 info["album_name"],
                 title,
@@ -161,6 +164,7 @@ def download_from_youtube_link(link: str) -> Song:
             song = load_track(
                 path,
                 f"{img_pth}.png",
+                user_id,
                 info["artists"],
                 info["album_name"],
                 title,

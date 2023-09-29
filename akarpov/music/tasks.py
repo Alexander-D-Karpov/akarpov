@@ -11,44 +11,44 @@ from akarpov.utils.celery import get_scheduled_tasks_name
 
 
 @shared_task
-def list_tracks(url):
+def list_tracks(url, user_id):
     if "music.yandex.ru" in url:
-        yandex.load_playlist(url)
+        yandex.load_playlist(url, user_id)
     elif "channel" in url or "/c/" in url:
         p = Channel(url)
         for video in p.video_urls:
-            process_yb.apply_async(kwargs={"url": video})
+            process_yb.apply_async(kwargs={"url": video, "user_id": user_id})
     elif "playlist" in url or "&list=" in url:
         p = Playlist(url)
         for video in p.video_urls:
-            process_yb.apply_async(kwargs={"url": video})
+            process_yb.apply_async(kwargs={"url": video, "user_id": user_id})
     else:
-        process_yb.apply_async(kwargs={"url": url})
+        process_yb.apply_async(kwargs={"url": url, "user_id": user_id})
 
     return url
 
 
 @shared_task(max_retries=5)
-def process_yb(url):
-    youtube.download_from_youtube_link(url)
+def process_yb(url, user_id):
+    youtube.download_from_youtube_link(url, user_id)
     return url
 
 
 @shared_task
-def process_dir(path):
-    load_dir(path)
+def process_dir(path, user_id):
+    load_dir(path, user_id)
     return path
 
 
 @shared_task
-def process_file(path):
-    load_file(path)
+def process_file(path, user_id):
+    load_file(path, user_id)
     return path
 
 
 @shared_task
-def load_ym_file_meta(track):
-    return yandex.load_file_meta(track)
+def load_ym_file_meta(track, user_id):
+    return yandex.load_file_meta(track, user_id)
 
 
 @shared_task()

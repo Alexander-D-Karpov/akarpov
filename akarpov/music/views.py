@@ -55,7 +55,7 @@ class LoadTrackView(SuperUserRequiredMixin, generic.FormView):
         return ""
 
     def form_valid(self, form):
-        load_tracks(form.data["address"])
+        load_tracks(form.data["address"], user_id=self.request.user.id)
         return super().form_valid(form)
 
 
@@ -73,7 +73,7 @@ class LoadTrackFileView(SuperUserRequiredMixin, generic.FormView):
     def form_valid(self, form):
         for file in form.cleaned_data["file"]:
             t = TempFileUpload.objects.create(file=file)
-            load_track_file(t.file.path)
+            load_track_file(t.file.path, user_id=self.request.user.id)
 
         return super().form_valid(form)
 
@@ -86,3 +86,14 @@ class MainRadioView(generic.TemplateView):
 
 
 radio_main_view = MainRadioView.as_view()
+
+
+class MusicPlayerView(generic.ListView):
+    template_name = "music/player.html"
+    model = Song
+
+    def get_queryset(self):
+        return Song.objects.all()
+
+
+music_player_view = MusicPlayerView.as_view()

@@ -38,9 +38,25 @@ class Song(BaseImageModel, ShortLinkModel):
     album = models.ForeignKey(
         Album, null=True, related_name="songs", on_delete=models.SET_NULL
     )
+    creator = models.ForeignKey(
+        "users.User", related_name="songs", on_delete=models.SET_NULL, null=True
+    )
+    meta = models.JSONField(blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("music:song", kwargs={"slug": self.slug})
+
+    @property
+    def full_props(self) -> str:
+        if self.album and self.authors:
+            return f"{self.album.name} - " + ", ".join(
+                self.authors.values_list("name", flat=True)
+            )
+        elif self.album:
+            return f"{self.album.name}"
+        elif self.album:
+            return ", ".join(self.authors.values_list("name", flat=True))
+        return ""
 
     def __str__(self):
         return self.name
@@ -80,8 +96,8 @@ class PlaylistSong(models.Model):
 
 
 class SongInQue(models.Model):
-    name = models.CharField(blank=True, max_length=250)
-    status = models.CharField(null=True, blank=True, max_length=250)
+    name = models.CharField(blank=True, max_length=500)
+    status = models.CharField(null=True, blank=True, max_length=500)
     error = models.BooleanField(default=False)
 
 

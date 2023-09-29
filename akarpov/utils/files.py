@@ -60,11 +60,14 @@ def crop_image(image_path: str, length: int = 500):
 def user_file_upload_mixin(instance, filename):
     """stores user uploaded files at their folder in media dir"""
     username = ""
-    if isinstance(instance, get_user_model()):
-        username = instance.username + "/"
-    elif hasattr(instance, "user"):
-        username = instance.user.username + "/"
-    elif hasattr(instance, "creator"):
-        username = instance.creator.username + "/"
+    try:
+        if isinstance(instance, get_user_model()):
+            username = instance.username + "/"
+        elif hasattr(instance, "user"):
+            username = instance.user.username + "/"
+        elif hasattr(instance, "creator"):
+            username = instance.creator.username + "/"
+    except AttributeError:
+        username = "__all"
 
     return os.path.join(f"uploads/{username}", filename)
