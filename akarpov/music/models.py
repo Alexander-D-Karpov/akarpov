@@ -4,6 +4,7 @@ from django.urls import reverse
 from akarpov.common.models import BaseImageModel
 from akarpov.tools.shortener.models import ShortLinkModel
 from akarpov.users.services.history import UserHistoryModel
+from akarpov.utils.cache import cache_model_property
 
 
 class Author(BaseImageModel, ShortLinkModel):
@@ -47,16 +48,34 @@ class Song(BaseImageModel, ShortLinkModel):
         return reverse("music:song", kwargs={"slug": self.slug})
 
     @property
-    def full_props(self) -> str:
-        if self.album and self.authors:
-            return f"{self.album.name} - " + ", ".join(
-                self.authors.values_list("name", flat=True)
-            )
-        elif self.album:
-            return f"{self.album.name}"
-        elif self.album:
+    def full_props(self):
+        if self.album_name and self.artists_names:
+            return f"{self.album_name} - {self.artists_names}"
+        elif self.album_name:
+            return self.album_name
+        elif self.artists_names:
+            return self.artists_names
+        return ""
+
+    @property
+    def _album_name(self):
+        if self.album and self.album.name:
+            return self.album.name
+        return ""
+
+    @property
+    def _authors_names(self):
+        if self.authors:
             return ", ".join(self.authors.values_list("name", flat=True))
         return ""
+
+    @property
+    def album_name(self):
+        return cache_model_property(self, "_album_name")
+
+    @property
+    def artists_names(self):
+        return cache_model_property(self, "_authors_names")
 
     def __str__(self):
         return self.name

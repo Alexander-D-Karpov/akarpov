@@ -1,6 +1,6 @@
 function addEventListener_multi(element, eventNames, handler) {
-  var events = eventNames.split(' ');
-  events.forEach(e => element.addEventListener(e, handler, false));
+    const events = eventNames.split(' ');
+    events.forEach(e => element.addEventListener(e, handler, false));
 }
 
 // Random numbers in a specific range
@@ -12,11 +12,11 @@ function getRandom(min, max) {
 
 // Position element inside element
 function getRelativePos(elm) {
-  var pPos = elm.parentNode.getBoundingClientRect(); // parent pos
-  var cPos = elm.getBoundingClientRect(); // target pos
-  var pos = {};
+    const pPos = elm.parentNode.getBoundingClientRect(); // parent pos
+    const cPos = elm.getBoundingClientRect(); // target pos
+    const pos = {};
 
-  pos.top    = cPos.top    - pPos.top + elm.parentNode.scrollTop,
+    pos.top    = cPos.top    - pPos.top + elm.parentNode.scrollTop,
   pos.right  = cPos.right  - pPos.right,
   pos.bottom = cPos.bottom - pPos.bottom,
   pos.left   = cPos.left   - pPos.left;
@@ -25,8 +25,8 @@ function getRelativePos(elm) {
 }
 
 function formatTime(val) {
-  var h = 0, m = 0, s;
-  val = parseInt(val, 10);
+    let h = 0, m = 0, s;
+    val = parseInt(val, 10);
   if (val > 60 * 60) {
    h = parseInt(val / (60 * 60), 10);
    val -= h * 60 * 60;
@@ -56,8 +56,8 @@ function simp_initTime() {
     simp_audio.removeEventListener('timeupdate', simp_initTime);
 
     if (simp_isNext) { //auto load next audio
-      var elem;
-      simp_a_index++;
+        let elem;
+        simp_a_index++;
       if (simp_a_index == simp_a_url.length) { //repeat all audio
         simp_a_index = 0;
         elem = simp_a_url[0];
@@ -132,7 +132,7 @@ function simp_setAlbum(index) {
 }
 
 function simp_changeAudio(elem) {
-	simp_isLoaded = false;
+  simp_isLoaded = false;
   simp_controls.querySelector('.simp-prev').disabled = simp_a_index == 0 ? true : false;
   simp_controls.querySelector('.simp-plause').disabled = simp_auto_load ? true : false;
   simp_controls.querySelector('.simp-next').disabled = simp_a_index == simp_a_url.length-1 ? true : false;
@@ -144,7 +144,7 @@ function simp_changeAudio(elem) {
   elem = simp_isRandom && simp_isNext ? simp_a_url[getRandom(0, simp_a_url.length-1)] : elem;
 
   // playlist, audio is running
-  for (var i = 0; i < simp_a_url.length; i++) {
+  for (let i = 0; i < simp_a_url.length; i++) {
     simp_a_url[i].parentNode.classList.remove('simp-active');
     if (simp_a_url[i] == elem) {
       simp_a_index = i;
@@ -153,8 +153,8 @@ function simp_changeAudio(elem) {
   }
 
   // scrolling to element inside element
-  var simp_active = getRelativePos(simp_source[simp_a_index]);
-  simp_source[simp_a_index].parentNode.scrollTop = simp_active.top;
+    const simp_active = getRelativePos(simp_source[simp_a_index]);
+    simp_source[simp_a_index].parentNode.scrollTop = simp_active.top;
 
   if (simp_auto_load || simp_isPlaying) simp_loadAudio(elem);
 
@@ -162,6 +162,95 @@ function simp_changeAudio(elem) {
     simp_controls.querySelector('.simp-plause').classList.remove('fa-play');
     simp_controls.querySelector('.simp-plause').classList.add('fa-pause');
   }
+  // set native audio properties
+  if('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: elem.textContent,
+        artist: elem.dataset.artists,
+        album: elem.dataset.album,
+        artwork: [
+            { src: elem.dataset.cover, sizes: '96x96', type: 'image/png' },
+            { src: elem.dataset.cover, sizes: '128x128', type: 'image/png' },
+            { src: elem.dataset.cover, sizes: '192x192', type: 'image/png' },
+            { src: elem.dataset.cover, sizes: '256x256', type: 'image/png' },
+            { src: elem.dataset.cover, sizes: '384x384', type: 'image/png' },
+            { src: elem.dataset.cover, sizes: '512x512', type: 'image/png' }
+        ]
+    });
+    navigator.mediaSession.setActionHandler('play', () => {
+    let eles = document.getElementById("simp-plause").classList
+      if (simp_audio.paused) {
+        if (!simp_isLoaded) simp_loadAudio(simp_a_url[simp_a_index]);
+        simp_audio.play();
+        simp_isPlaying = true;
+        eles.remove('fa-play');
+        eles.add('fa-pause');
+      } else {
+        simp_audio.pause();
+        simp_isPlaying = false;
+        eles.remove('fa-pause');
+        eles.add('fa-play');
+      }
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+    let eles = document.getElementById("simp-plause").classList
+      if (simp_audio.paused) {
+        if (!simp_isLoaded) simp_loadAudio(simp_a_url[simp_a_index]);
+        simp_audio.play();
+        simp_isPlaying = true;
+        eles.remove('fa-play');
+        eles.add('fa-pause');
+      } else {
+        simp_audio.pause();
+        simp_isPlaying = false;
+        eles.remove('fa-pause');
+        eles.add('fa-play');
+      }
+    });
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      let eles = document.getElementById("simp-previoustrack")
+      if (simp_a_index !== 0) {
+        simp_a_index = simp_a_index-1;
+        eles.disabled = simp_a_index == 0 ? true : false;
+      }
+      simp_audio.removeEventListener('timeupdate', simp_initTime);
+      simp_changeAudio(simp_a_url[simp_a_index]);
+      simp_setAlbum(simp_a_index);
+    });
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      let eles = document.getElementById("simp-nexttrack")
+      if (simp_a_index !== simp_a_url.length-1) {
+        simp_a_index = simp_a_index+1;
+        eles.disabled = simp_a_index == simp_a_url.length-1 ? true : false;
+      }
+      simp_audio.removeEventListener('timeupdate', simp_initTime);
+      simp_changeAudio(simp_a_url[simp_a_index]);
+      simp_setAlbum(simp_a_index);
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        simp_audio.currentTime = simp_audio.currentTime - (details.seekOffset || 10);
+    });
+    navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        simp_audio.currentTime = simp_audio.currentTime + (details.seekOffset || 10);
+    });
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.fastSeek && 'fastSeek' in simp_audio) {
+          simp_audio.fastSeek(details.seekTime);
+          return;
+        }
+        simp_audio.currentTime = details.seekTime;
+    });
+    navigator.mediaSession.setActionHandler('stop', () => {
+        let eles = document.getElementById("simp-plause").classList
+        simp_audio.currentTime = 0;
+        simp_controls.querySelector('.start-time').innerHTML = '00:00';
+        if (!simp_isLoaded) simp_loadAudio(simp_a_url[simp_a_index]);
+        simp_audio.play();
+        simp_isPlaying = true;
+        eles.remove('fa-play');
+        eles.add('fa-pause');
+    });
+}
 }
 
 function simp_startScript() {
@@ -210,8 +299,8 @@ function simp_startScript() {
 
   // Controls listeners
   simp_controls.querySelector('.simp-plauseward').addEventListener('click', function(e) {
-    var eles = e.target.classList;
-    if (eles.contains('simp-plause')) {
+      const eles = e.target.classList;
+      if (eles.contains('simp-plause')) {
       if (simp_audio.paused) {
         if (!simp_isLoaded) simp_loadAudio(simp_a_url[simp_a_index]);
         simp_audio.play();
@@ -240,8 +329,8 @@ function simp_startScript() {
 
   // Audio volume
   simp_volume.addEventListener('click', function(e) {
-    var eles = e.target.classList;
-    if (eles.contains('simp-mute')) {
+      const eles = e.target.classList;
+      if (eles.contains('simp-mute')) {
       if (eles.contains('fa-volume-up')) {
         eles.remove('fa-volume-up');
         eles.add('fa-volume-off');
@@ -263,8 +352,8 @@ function simp_startScript() {
 
   // Others
   simp_others.addEventListener('click', function(e) {
-    var eles = e.target.classList;
-    if (eles.contains('simp-plext')) {
+      const eles = e.target.classList;
+      if (eles.contains('simp-plext')) {
       simp_isNext = simp_isNext && !simp_isRandom ? false : true;
       if (!simp_isRandom) simp_isRanext = simp_isRanext ? false : true;
       eles.contains('simp-active') && !simp_isRandom ? eles.remove('simp-active') : eles.add('simp-active');
@@ -296,7 +385,7 @@ if (document.querySelector('#simp')) {
   var simp_a_url = simp_playlist.querySelectorAll('[data-src]');
   var simp_a_index = 0;
   var simp_isPlaying = false;
-  var simp_isNext = false; //auto play
+  var simp_isNext = true; //auto play
   var simp_isRandom = false; //play random
   var simp_isRanext = false; //check if before random starts, simp_isNext value is true
   var simp_isStream = false; //radio streaming
@@ -307,19 +396,19 @@ if (document.querySelector('#simp')) {
     auto_load: false //auto load audio file
   };
 
-  var simp_elem = '';
-  simp_elem += '<audio id="audio" preload><source src="" type="audio/mpeg"></audio>';
+    let simp_elem = '';
+    simp_elem += '<audio id="audio" preload><source src="" type="audio/mpeg"></audio>';
   simp_elem += '<div class="simp-display"><div class="simp-album w-full flex-wrap"><div class="simp-cover"><i class="fa fa-music fa-5x"></i></div><div class="simp-info"><div class="simp-title">Title</div><div class="simp-artist">Artist</div></div></div></div>';
   simp_elem += '<div class="simp-controls flex-wrap flex-align">';
-  simp_elem += '<div class="simp-plauseward flex flex-align"><button type="button" class="simp-prev fa fa-backward" disabled></button><button type="button" class="simp-plause fa fa-play" disabled></button><button type="button" class="simp-next fa fa-forward" disabled></button></div>';
+  simp_elem += '<div class="simp-plauseward flex flex-align"><button type="button" class="simp-prev fa fa-backward" id="simp-previoustrack" disabled></button><button id="simp-plause" type="button" class="simp-plause fa fa-play" disabled></button><button id="simp-nexttrack" type="button" class="simp-next fa fa-forward" disabled></button></div>';
   simp_elem += '<div class="simp-tracker simp-load"><input class="simp-progress" type="range" min="0" max="100" value="0" disabled/><div class="simp-buffer"></div></div>';
   simp_elem += '<div class="simp-time flex flex-align"><span class="start-time">00:00</span><span class="simp-slash">&#160;/&#160;</span><span class="end-time">00:00</span></div>';
   simp_elem += '<div class="simp-volume flex flex-align"><button type="button" class="simp-mute fa fa-volume-up"></button><input class="simp-v-slider" type="range" min="0" max="100" value="100"/></div>';
-  simp_elem += '<div class="simp-others flex flex-align"><button type="button" class="simp-plext fa fa-play-circle" title="Auto Play"></button><button type="button" class="simp-random fa fa-random" title="Random"></button><div class="simp-shide"><button type="button" class="simp-shide-top fa fa-caret-up" title="Show/Hide Album"></button><button type="button" class="simp-shide-bottom fa fa-caret-down" title="Show/Hide Playlist"></button></div></div>';
+  simp_elem += '<div class="simp-others flex flex-align"><button type="button"  class="simp-plext fa fa-play-circle simp-active" title="Auto Play" ></button><button type="button" class="simp-random fa fa-random" title="Random"></button><div class="simp-shide"><button type="button" class="simp-shide-top fa fa-caret-up" title="Show/Hide Album"></button><button type="button" class="simp-shide-bottom fa fa-caret-down" title="Show/Hide Playlist"></button></div></div>';
   simp_elem += '</div>'; //simp-controls
 
-  var simp_player = document.createElement('div');
-  simp_player.classList.add('simp-player');
+    const simp_player = document.createElement('div');
+    simp_player.classList.add('simp-player');
   simp_player.innerHTML = simp_elem;
   ap_simp.insertBefore(simp_player, simp_playlist);
   simp_startScript();

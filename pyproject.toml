@@ -82,7 +82,6 @@ xvfbwrapper = "^0.2.9"
 vtk = "^9.2.6"
 ffmpeg-python = "^0.2.0"
 cairosvg = "^2.7.0"
-textract = "^1.6.5"
 spotipy = "2.16.1"
 django-robots = "^5.0"
 django-tables2 = "^2.5.3"
@@ -109,6 +108,7 @@ pytest-asyncio = "^0.21.1"
 pytest-lambda = "^2.2.0"
 pgvector = "^0.2.2"
 pycld2 = "^0.41"
+textract = "^1.6.5"
 
 
 [build-system]

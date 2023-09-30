@@ -5,11 +5,11 @@
     {% endblock %}
   {% block content %}
     <div class="d-flex align-items-center justify-content-center">
-        <div class="simple-audio-player flex-column" id="simp" data-config='{"shide_top":false,"shide_btm":false,"auto_load":false}'>
+        <div class="simple-audio-player flex-column" id="simp" data-config='{"shide_top":false,"shide_btm":false,"auto_load":true}'>
           <div class="simp-playlist">
             <ul>
               {% for song in song_list %}
-            <li><span class="simp-source" {% if song.image %}data-cover="{{ song.image.url }}"{% endif %} data-src="{{ song.file.url }}">{{ song.name }}</span><span class="simp-desc">{{ song.full_props }}</span></li>
+            <li><span class="simp-source" {% if song.image %}data-cover="{{ song.image.url }}"{% endif %} data-artists="{{ song.artists_names }}" data-albumn="{{ song.album_name }}" data-src="{{ song.file.url }}">{{ song.name }}</span><span class="simp-desc">{{ song.full_props }}</span></li>
               {% endfor %}
             </ul>
           </div>
