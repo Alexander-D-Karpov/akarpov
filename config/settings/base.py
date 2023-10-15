@@ -307,6 +307,18 @@ EMAIL_BACKEND = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+EMAIL_HOST_PASSWORD = env(
+    "EMAIL_PASSWORD",
+    default="",
+)
+EMAIL_HOST_USER = env(
+    "EMAIL_USER",
+    default="",
+)
+EMAIL_USE_SSL = env(
+    "EMAIL_USE_SSL",
+    default=False,
+)
 
 # ADMIN
 # ------------------------------------------------------------------------------

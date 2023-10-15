@@ -11,10 +11,6 @@ entryPoints:
         entryPoint:
           to: web-secure
 
-  web-secure:
-    # https
-    address: ":443"
-
   flower:
     address: ":5555"
 
@@ -29,27 +25,6 @@ certificatesResolvers:
         entryPoint: web
 
 http:
-  routers:
-    web-secure-router:
-      rule: "Host(`akarpov.ru`) || Host(`www.akarpov.ru`)"
-      entryPoints:
-        - web-secure
-      middlewares:
-        - csrf
-      service: django
-      tls:
-        # https://docs.traefik.io/master/routing/routers/#certresolver
-        certResolver: letsencrypt
-
-    flower-secure-router:
-      rule: "Host(`akarpov.ru`)"
-      entryPoints:
-        - flower
-      service: flower
-      tls:
-        # https://docs.traefik.io/master/routing/routers/#certresolver
-        certResolver: letsencrypt
-
   middlewares:
     csrf:
       # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
