@@ -53,3 +53,4 @@ $ mypy --config-file setup.cfg akarpov
 - short link generator
 - about me app
 - gallery
+- notifications
