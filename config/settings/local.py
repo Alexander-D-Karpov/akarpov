@@ -52,14 +52,9 @@ if env("USE_DOCKER") == "yes":
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]  # noqa F405
-# Celery
-# ------------------------------------------------------------------------------
-
-# https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-eager-propagates
-CELERY_TASK_EAGER_PROPAGATES = True
 
 
 # SHORTENER
 # ------------------------------------------------------------------------------
-SHORTENER_REDIRECT_TO = "https://dev2.akarpov.ru"
-SHORTENER_HOST = "https://dev.akarpov.ru"
+SHORTENER_REDIRECT_TO = env("SHORTENER_REDIRECT_TO", default="http://127.0.0.1:8000")
+SHORTENER_HOST = env("SHORTENER_HOST", default="http://127.0.0.1:8000")

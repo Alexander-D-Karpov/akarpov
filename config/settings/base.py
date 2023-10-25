@@ -5,6 +5,7 @@ from pathlib import Path
 
 import environ
 import structlog
+from sentry_sdk.integrations.celery import CeleryIntegration
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # akarpov/
@@ -483,7 +484,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SERVERS": [
         {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
-        {"url": "https://akarpov.ru", "description": "Production server"},
+        {"url": "https://new.akarpov.ru", "description": "Production server"},
     ],
 }
 
@@ -587,5 +588,6 @@ if dsn:
                 signals_spans=True,
                 cache_spans=True,
             ),
+            CeleryIntegration(monitor_beat_tasks=True, propagate_traces=True),
         ],
     )
