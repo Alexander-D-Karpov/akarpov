@@ -7,6 +7,7 @@ from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 
 from akarpov.users.models import UserHistory
 from akarpov.users.services.history import create_history_warning_note
+from akarpov.users.themes.models import Theme
 
 User = get_user_model()
 
@@ -26,10 +27,23 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Information successfully updated")
 
     def get_success_url(self):
-        assert (
-            self.request.user.is_authenticated
-        )  # for mypy to know that the user is authenticated
         return self.request.user.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        kwargs["themes"] = Theme.objects.all()
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        data = self.request.POST
+        if "theme" in data:
+            if data["theme"] == "0":
+                self.object.theme = None
+            else:
+                try:
+                    self.object.theme = Theme.objects.get(id=data["theme"])
+                except Theme.DoesNotExist:
+                    ...
+        return super().form_valid(form)
 
     def get_object(self):
         return self.request.user

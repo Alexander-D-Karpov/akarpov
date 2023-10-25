@@ -8,10 +8,34 @@
   <form class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url 'users:update' %}">
     {% csrf_token %}
     {{ form|crispy }}
+    {# Themes block #}
+    <p class="mt-3 ml-3">Theme:</p>
+    <div class="row">
+      <label class="col-6 col-sm-4 col-md-3 gl-mb-5 text-center">
+        <div style="background-color: white; height: 48px; border-radius: 4px; min-width: 112px; margin-bottom: 8px;"></div>
+        <input {% if not request.user.theme %}checked{% endif %} type="radio" value="0" name="theme" id="user_theme_id_0">
+          Default
+      </label>
+      {% for theme in themes %}
+      <label class="col-6 col-sm-4 col-md-3 gl-mb-5 text-center">
+        <div style="background-color: {{ theme.color }}; height: 48px; border-radius: 4px; min-width: 112px; margin-bottom: 8px;"></div>
+        <input {% if request.user.theme_id == theme.id %}checked{% endif %} type="radio" value="{{ theme.id }}" name="theme" id="user_theme_id_{{ theme.id }}">
+        {{ theme.name }}
+      </label>
+      {% endfor %}
+    {% if request.user.is_superuser %}
+      <label class="col-6 col-sm-4 col-md-3 gl-mb-5 text-center">
+      <div style="background-color: white; height: 48px; border-radius: 4px; min-width: 112px; margin-bottom: 8px;"></div>
+      <a href="{% url 'users:themes:create' %}">Create new</a>
+      </label>
+    {% endif %}
+    </div>
+
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </div>
+
   </form>
 {% endblock %}

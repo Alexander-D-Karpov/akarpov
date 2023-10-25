@@ -81,7 +81,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [env("REDIS_URL")],
         },
     },
 }
@@ -157,6 +157,7 @@ LOCAL_APPS = [
     "akarpov.gallery",
     "akarpov.tools.qr",
     "akarpov.pipeliner",
+    "akarpov.users.themes",
     "akarpov.notifications",
     "akarpov.test_platform",
     "akarpov.tools.shortener",

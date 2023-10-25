@@ -27,6 +27,7 @@ class User(AbstractUser, BaseImageModel, ShortLinkModel):
     left_file_upload = models.BigIntegerField(
         "Left file upload(in bites)", default=0, validators=[MinValueValidator(0)]
     )
+    theme = models.ForeignKey("themes.Theme", null=True, on_delete=models.SET_NULL)
 
     def get_absolute_url(self):
         """Get url for user's detail view.

@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from akarpov.users.views import (
     user_detail_view,
@@ -11,6 +11,7 @@ from akarpov.users.views import (
 app_name = "users"
 urlpatterns = [
     path("redirect/", view=user_redirect_view, name="redirect"),
+    path("themes/", include("akarpov.users.themes.urls", namespace="themes")),
     path("update/", view=user_update_view, name="update"),
     path("history/", view=user_history_view, name="history"),
     path("history/delete", view=user_history_delete_view, name="history_delete"),
