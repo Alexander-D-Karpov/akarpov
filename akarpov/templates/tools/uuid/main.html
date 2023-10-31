@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row align-items-center justify-content-center d-flex">
+  <div class="col-lg-12 d-flex align-items-stretch m-3">
+    <div style="width: 100%" class="card text-center">
+      <form class="card-body row justify-content-end ml-5 mr-5" method="get">
+        <div class="col-lg-11 col-sm-10">
+          <label for="uuid">Lookup uuid info</label><input {% if uuid %}value="{{ uuid }}" {% endif %}name="uuid" class="form-control" id="uuid" type="text" placeholder="insert uuid" />
+        </div>
+        <div class="col-lg-1 col-sm-2">
+          <button class="btn btn-success mt-4" type="submit"><i class="bi-search"></i></button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% if data %}
+  <div class="col-lg-10">
+    <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">name</th>
+        <th scope="col">value</th>
+      </tr>
+    </thead>
+        <tbody>
+      {% for key, val in data.items %}
+      <tr>
+        <th scope="row">{{ key }}</th>
+        <td>{{ val }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% for token, version in tokens %}
+  <div class="col-lg-5 d-flex align-items-stretch justify-content-center m-3">
+    <div class="card text-center ml-1">
+      <div class="card-header">
+        <h4 class="bg-gray-300 ">{{ token }}<button class="btn" data-clipboard-text="{{ token }}">
+      <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
+    </button></h4>
+      </div>
+      <div class="card-body">
+        Generated: {{ now }}, Version: {{ version }}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
+  <script>
+  new ClipboardJS('.btn');
+  </script>
+{% endblock %}

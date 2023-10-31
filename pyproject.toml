@@ -109,6 +109,7 @@ pytest-lambda = "^2.2.0"
 pgvector = "^0.2.2"
 pycld2 = "^0.41"
 textract = "^1.6.5"
+uuid6 = "^2023.5.2"
 
 
 [build-system]
