@@ -88,12 +88,9 @@ django-tables2 = "^2.5.3"
 django-filter = "^23.2"
 tablib = "^3.4.0"
 django-location-field = "^2.7.0"
-pydantic = "^2.0.2"
 channels-redis = "^4.1.0"
 django-ipware = "^5.0.0"
-fastapi = {extras = ["all"], version = "^0.101.0"}
 sqlalchemy = "^2.0.19"
-pydantic-settings = "^2.0.2"
 yt-dlp = "^2023.7.6"
 pytube = "^15.0.0"
 urllib3 = ">=1.26"
@@ -110,6 +107,7 @@ pgvector = "^0.2.2"
 pycld2 = "^0.41"
 textract = "^1.6.5"
 uuid6 = "^2023.5.2"
+fastapi = "0.86.0"
 
 
 [build-system]
