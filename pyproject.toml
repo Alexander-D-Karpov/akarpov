@@ -109,6 +109,7 @@ textract = "^1.6.5"
 uuid6 = "^2023.5.2"
 fastapi = "0.86.0"
 django-haystack = {extras = ["elasticsearch"], version = "^3.2.1"}
+uvicorn = "^0.24.0.post1"
 
 
 [build-system]
