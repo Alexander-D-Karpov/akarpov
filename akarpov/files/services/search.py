@@ -3,12 +3,13 @@ import re
 from typing import BinaryIO
 
 from django.conf import settings
-from django.contrib.postgres.lookups import Unaccent
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import Q, QuerySet
+from django.db.models import F, Func, Q, QuerySet
 from haystack.query import SearchQuerySet
 
 from akarpov.files.models import File
+
+from .lema import lemmatize_and_remove_stopwords
 
 
 class BaseSearch:
@@ -76,6 +77,17 @@ class ByteSearch(BaseSearch):
                 return False
 
 
+class UnaccentLower(Func):
+    function = "UNACCENT"
+
+    def as_sql(self, compiler, connection):
+        unaccented_sql, unaccented_params = compiler.compile(
+            self.get_source_expressions()[0]
+        )
+        lower_unaccented_sql = f"LOWER({unaccented_sql})"
+        return lower_unaccented_sql, unaccented_params
+
+
 class SimilaritySearch(BaseSearch):
     def __init__(self, queryset: QuerySet[File] | None = None):
         super().__init__(queryset)
@@ -84,18 +96,40 @@ class SimilaritySearch(BaseSearch):
         if self.queryset is None:
             raise ValueError("Queryset cannot be None for similarity search")
 
-        # Perform a similarity search using trigram comparison
-        return (
+        # Detect language and preprocess the query
+        language = "russian" if re.search("[а-яА-Я]", query) else "english"
+        filtered_query = lemmatize_and_remove_stopwords(query, language=language)
+
+        # Annotate the queryset with similarity scores for each field
+        queryset = (
             self.queryset.annotate(
-                name_unaccent=Unaccent("name"),
-                description_unaccent=Unaccent("description"),
-                content_unaccent=Unaccent("content"),
+                name_similarity=TrigramSimilarity(
+                    UnaccentLower("name"), filtered_query
+                ),
+                description_similarity=TrigramSimilarity(
+                    UnaccentLower("description"), filtered_query
+                ),
+                content_similarity=TrigramSimilarity(
+                    UnaccentLower("content"), filtered_query
+                ),
             )
             .annotate(
-                similarity=TrigramSimilarity("name_unaccent", query)
-                + TrigramSimilarity("description_unaccent", query)
-                + TrigramSimilarity("content_unaccent", query)
+                combined_similarity=(
+                    F("name_similarity")
+                    + F("description_similarity")
+                    + F("content_similarity")
+                )
+                / 3
             )
-            .filter(similarity__gt=0.1)
-            .order_by("-similarity")
+            .filter(combined_similarity__gt=0.1)
+            .order_by("-combined_similarity")
         )
+        print(filtered_query)
+        print(queryset.query)
+        print(
+            queryset.values(
+                "name_similarity", "description_similarity", "content_similarity"
+            )
+        )
+
+        return queryset

@@ -65,7 +65,6 @@ class FileFilterView(View):
                     queryset=File.objects.filter(user=self.request.user)
                 )
                 queryset = search_instance.search(query)
-                print(queryset, query)
         return queryset
 
 

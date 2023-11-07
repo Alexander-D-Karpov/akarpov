@@ -7,12 +7,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-farm-haystack = "^1.21.2"
 fastapi = "0.99.1"
 pydantic = "1.10.13"
-milvus-haystack = "^0.0.2"
-
+transformers = {version = "4.34.1", extras = ["torch"]}
+torch = ">=2.0.0, !=2.0.1, !=2.1.0"
+farm-haystack = {extras = ["faiss"], version = "^1.21.2"}
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

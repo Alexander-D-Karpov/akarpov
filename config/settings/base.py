@@ -107,6 +107,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "django.contrib.postgres",
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
