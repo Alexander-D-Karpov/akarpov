@@ -612,7 +612,7 @@ if dsn:
 HAYSTACK_CONNECTIONS = {
     "default": {
         "ENGINE": "haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine",
-        "URL": "http://127.0.0.1:9200/",  # Assuming Elasticsearch is running on localhost
+        "URL": env("ELASTIC_SEARCH", default="http://127.0.0.1:9200/"),
         "INDEX_NAME": "haystack",
         "TIMEOUT": 60 * 5,
         "BATCH_SIZE": 100,
