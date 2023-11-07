@@ -100,11 +100,16 @@ services:
     command: /start-flower
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3  # Use the desired version
-    container_name: akarpov_local_elasticsearch
+    image: elasticsearch:7.17.14
+    container_name: elasticsearch
     environment:
-      - discovery.type=single-node  # This avoids bootstrap checks, suitable for development.
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Set the JVM heap size
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     volumes:
       - akarpov_local_elasticsearch_data:/usr/share/elasticsearch/data
     ports:
