@@ -33,13 +33,43 @@ from akarpov.files.models import BaseFileItem, File, FileReport, Folder
 from akarpov.files.previews import extensions, meta, meta_extensions, previews
 from akarpov.files.services.folders import delete_folder
 from akarpov.files.services.preview import get_base_meta
+from akarpov.files.services.search import (
+    ByteSearch,
+    CaseSensitiveSearch,
+    NeuroSearch,
+    SimilaritySearch,
+)
 from akarpov.files.tables import FileTable
 from akarpov.notifications.services import send_notification
 
 logger = structlog.get_logger(__name__)
 
+search_classes = {
+    "neuro": NeuroSearch,
+    "case_sensitive": CaseSensitiveSearch,
+    "byte_search": ByteSearch,
+    "similarity": SimilaritySearch,
+}
 
-class TopFolderView(LoginRequiredMixin, ListView):
+
+class FileFilterView(View):
+    def filter(self, queryset):
+        if "query" in self.request.GET and "search_type" in self.request.GET:
+            query = self.request.GET["query"]
+            search_type = self.request.GET["search_type"]
+            if not query or not self.request.user.is_authenticated:
+                return queryset
+
+            if search_type in search_classes:
+                search_instance = search_classes[search_type](
+                    queryset=File.objects.filter(user=self.request.user)
+                )
+                queryset = search_instance.search(query)
+                print(queryset, query)
+        return queryset
+
+
+class TopFolderView(LoginRequiredMixin, ListView, FileFilterView):
     template_name = "files/list.html"
     paginate_by = 18
     model = BaseFileItem
@@ -55,10 +85,18 @@ class TopFolderView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        return BaseFileItem.objects.filter(user=self.request.user, parent__isnull=True)
+        if (
+            "query" in self.request.GET
+            and "search_type" in self.request.GET
+            and self.request.GET["query"]
+        ):
+            return self.filter(BaseFileItem.objects.none())
+        return self.filter(
+            BaseFileItem.objects.filter(user=self.request.user, parent__isnull=True)
+        )
 
 
-class FileFolderView(ListView):
+class FileFolderView(ListView, FileFilterView):
     template_name = "files/folder.html"
     model = BaseFileItem
     paginate_by = 38
@@ -94,6 +132,13 @@ class FileFolderView(ListView):
 
     def get_queryset(self):
         folder = self.get_object()
+
+        if (
+            "query" in self.request.GET
+            and "search_type" in self.request.GET
+            and self.request.GET["query"]
+        ):
+            return self.filter(BaseFileItem.objects.none())
         return BaseFileItem.objects.filter(parent=folder)
 
 

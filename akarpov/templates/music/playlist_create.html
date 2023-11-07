@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+
+{% block title %}creating playlist on akarpov{% endblock %}
+
+{% block content %}
+<form class="pt-2" enctype="multipart/form-data" method="POST" id="designer-form">
+    {% csrf_token %}
+    {{ form.media }}
+    {% for field in form %}
+        {{ field|as_crispy_field }}
+    {% endfor %}
+    <div class="mt-4 flex justify-end space-x-4">
+        <button class="btn btn-success" type="submit" id="submit">
+            <span class="spinner-border spinner-border-sm" id="spinner" role="status" aria-hidden="true" style="display: none"></span>
+            Create
+        </button>
+    </div>
+    <!-- TODO: add song select via API here -->
+</form>
+{% endblock %}

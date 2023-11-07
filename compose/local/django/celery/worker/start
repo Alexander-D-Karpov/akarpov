@@ -3,5 +3,6 @@
 set -o errexit
 set -o nounset
 
+/install_preview_dependencies
 
 celery -A config.celery_app worker --loglevel=info -c 5

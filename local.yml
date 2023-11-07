@@ -3,6 +3,7 @@ version: '3'
 volumes:
   akarpov_local_postgres_data: {}
   akarpov_local_postgres_data_backups: {}
+  akarpov_local_elasticsearch_data: {}
 
 services:
   django: &django
@@ -16,6 +17,7 @@ services:
       - postgres
       - redis
       - mailhog
+      - elasticsearch
     volumes:
       - .:/app:z
     env_file:
@@ -96,3 +98,15 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3  # Use the desired version
+    container_name: akarpov_local_elasticsearch
+    environment:
+      - discovery.type=single-node  # This avoids bootstrap checks, suitable for development.
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # Set the JVM heap size
+    volumes:
+      - akarpov_local_elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"

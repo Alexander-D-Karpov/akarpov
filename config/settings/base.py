@@ -5,6 +5,7 @@ from pathlib import Path
 
 import environ
 import structlog
+from celery.schedules import crontab
 from sentry_sdk.integrations.celery import CeleryIntegration
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -128,6 +129,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "django_tables2",
     "location_field",
+    "haystack",
 ]
 
 HEALTH_CHECKS = [
@@ -398,6 +400,7 @@ structlog.configure(
         structlog.processors.UnicodeDecoder(),
         structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
+    context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
     cache_logger_on_first_use=True,
 )
@@ -425,6 +428,17 @@ CELERY_TASK_TIME_LIMIT = 20 * 60
 CELERY_TASK_SOFT_TIME_LIMIT = 10 * 60
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#beat-scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "update-index-every-hour": {
+        "task": "akarpov.files.tasks.task_rebuild_index",
+        "schedule": crontab(minute="0"),
+    },
+    "rebuild-index-every-day": {
+        "task": "akarpov.files.tasks.task_rebuild_index",
+        "schedule": crontab(hour="2", minute="0", day_of_week="*"),
+    },
+}
+
 
 # django-allauth
 # ------------------------------------------------------------------------------
@@ -591,3 +605,16 @@ if dsn:
             CeleryIntegration(monitor_beat_tasks=True, propagate_traces=True),
         ],
     )
+
+
+# HAYSTACK
+# ------------------------------------------------------------------------------
+HAYSTACK_CONNECTIONS = {
+    "default": {
+        "ENGINE": "haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine",
+        "URL": "http://127.0.0.1:9200/",  # Assuming Elasticsearch is running on localhost
+        "INDEX_NAME": "haystack",
+        "TIMEOUT": 60 * 5,
+        "BATCH_SIZE": 100,
+    },
+}
