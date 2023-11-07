@@ -107,7 +107,7 @@ pgvector = "^0.2.2"
 pycld2 = "^0.41"
 textract = "^1.6.5"
 uuid6 = "^2023.5.2"
-fastapi = "0.86.0"
+fastapi = "0.104.1"
 django-haystack = {extras = ["elasticsearch"], version = "^3.2.1"}
 uvicorn = "^0.24.0.post1"
 nltk = "^3.8.1"
