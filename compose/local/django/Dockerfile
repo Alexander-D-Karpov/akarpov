@@ -38,10 +38,10 @@ RUN python -m venv /venv
 
 COPY pyproject.toml poetry.lock /app/
 RUN poetry export --without-hashes -f requirements.txt | /venv/bin/pip install -r /dev/stdin
-RUN python -m nltk.downloader punkt stopwords wordnet
 
 COPY . .
 RUN poetry build && /venv/bin/pip install dist/*.whl
+RUN /venv/bin/python -m nltk.downloader punkt stopwords wordnet
 
 
 COPY ./compose/production/django/entrypoint /entrypoint
