@@ -98,7 +98,7 @@ requests = ">=2.25"
 spacy = {extras = ["lookups"], version = "^3.6.1"}
 spacy-transformers = "^1.2.5"
 extract-msg = "0.28.7"
-pytest-factoryboy = "2.3.1"
+pytest-factoryboy = "2.6.0"
 pytest-xdist = "^3.3.1"
 pytest-mock = "^3.11.1"
 pytest-asyncio = "^0.21.1"
