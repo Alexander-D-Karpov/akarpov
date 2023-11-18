@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from akarpov.common.api import SetUserModelSerializer
+from akarpov.common.api.serializers import SetUserModelSerializer
 from akarpov.music.models import Album, Author, Playlist, Song
 from akarpov.users.api.serializers import UserPublicInfoSerializer
 

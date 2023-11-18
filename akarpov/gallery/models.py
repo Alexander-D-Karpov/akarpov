@@ -31,6 +31,7 @@ class Image(TimeStampedModel, ShortLinkModel, BaseImageModel, UserHistoryModel):
     collection = models.ForeignKey(
         "Collection", related_name="images", on_delete=models.CASCADE
     )
+    public = models.BooleanField(default=False)
     user = models.ForeignKey(
         "users.User", related_name="images", on_delete=models.CASCADE
     )

@@ -1,7 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
 from akarpov.common.views import HasPermissions
+from akarpov.gallery.forms import ImageUploadForm
 from akarpov.gallery.models import Collection, Image, Tag
 
 
@@ -46,3 +48,25 @@ class ImageView(generic.DetailView, HasPermissions):
 
 
 image_view = ImageView.as_view()
+
+
+class ImageUploadView(LoginRequiredMixin, generic.CreateView):
+    model = Image
+    form_class = ImageUploadForm
+    success_url = ""  # Replace with your success URL
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            form.save()
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+
+image_upload_view = ImageUploadView.as_view()

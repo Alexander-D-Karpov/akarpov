@@ -1,1 +1,36 @@
 {% extends 'base.html' %}
+
+{% block css %}
+<style>
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: start; /* Align items to the start of the container */
+        align-items: stretch; /* Stretch items to fill the container */
+    }
+
+    .gallery-item {
+        /* Adjust the margin as needed */
+        margin: 5px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: auto; /* Automatically adjust the basis based on the content size */
+    }
+
+    .gallery-item img {
+        width: 100%; /* Make image responsive */
+        height: auto; /* Maintain aspect ratio */
+        display: block; /* Remove bottom space under the image */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gallery">
+    {% for image in object_list %}
+    <div class="gallery-item">
+        <img src="{{ image.url }}" alt="Image">
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

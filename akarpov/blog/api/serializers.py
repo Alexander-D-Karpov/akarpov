@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from akarpov.blog.models import Comment, Post, Tag
-from akarpov.common.api import RecursiveField
+from akarpov.common.api.serializers import RecursiveField
 from akarpov.users.api.serializers import UserPublicInfoSerializer
 
 

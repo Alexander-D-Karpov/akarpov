@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 
-from akarpov.common.api import SmallResultsSetPagination
+from akarpov.common.api.pagination import SmallResultsSetPagination
 from akarpov.common.jwt import sign_jwt
 from akarpov.users.api.serializers import (
     UserEmailVerification,

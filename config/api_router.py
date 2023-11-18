@@ -25,6 +25,10 @@ urlpatterns_v1 = [
         include("akarpov.users.api.urls", namespace="users"),
     ),
     path(
+        "gallery/",
+        include("akarpov.gallery.api.urls", namespace="gallery"),
+    ),
+    path(
         "notifications/",
         include("akarpov.notifications.providers.urls", namespace="notifications"),
     ),

@@ -152,11 +152,11 @@
     {% endblock inline_javascript %}
     {% if request.user.is_authenticated %}
     <script>
-      {% if request.is_secure %}
-      let socket = new WebSocket(`wss://{{ request.get_host }}/ws/notifications/`);
-      {% else %}
-      let socket = new WebSocket(`ws://{{ request.get_host }}/ws/notifications/`);
-      {% endif %}
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host; // Assuming host includes the port if needed
+      const socketPath = `${protocol}//${host}/ws/notifications/`;
+
+      let notification_socket = new WebSocket(socketPath);
 
       function sleep(ms) {
           return new Promise(resolve => setTimeout(resolve, ms));
@@ -211,18 +211,17 @@
         toastBootstrap.show()
       }
 
-      socket.onmessage = fn
-      socket.onclose = async function(event) {
+      notification_socket.onmessage = fn
+      notification_socket.onclose = async function(event) {
         console.log("Notifications socket disconnected, reconnecting...")
         let socketClosed = true;
         await sleep(5000)
         while (socketClosed) {
-          {# TODO: reconnect socket here #}
           try {
-            let cl = socket.onclose
-            socket = new WebSocket(`ws://127.0.0.1:8000/ws/notifications/`);
-            socket.onmessage = fn
-            socket.onclose = cl
+            let cl = notification_socket.onclose
+            notification_socket = new WebSocket(socketPath);
+            notification_socket.onmessage = fn
+            notification_socket.onclose = cl
             socketClosed = false
           } catch (e) {
             console.log("Can't connect to socket, reconnecting...")

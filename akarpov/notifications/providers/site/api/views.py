@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 
-from akarpov.common.api import StandardResultsSetPagination
+from akarpov.common.api.pagination import StandardResultsSetPagination
 from akarpov.notifications.models import Notification
 from akarpov.notifications.providers.site.api.serializers import (
     SiteNotificationSerializer,

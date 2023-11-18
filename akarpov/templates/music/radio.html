@@ -1,330 +1,77 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block css %}
 <style>
 body {
-  background-color: #EDEDED;
+    background-color: #f8f9fa;
 }
 
-h1 {
-  font-family: "Open Sans", sans-serif;
-  font-size: 13pt;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: white;
-  cursor: default;
+#song-info .card {
+    margin-bottom: 30px;
 }
 
-h4 {
-  font-family: "Open Sans", sans-serif;
-  font-size: 8pt;
-  font-weight: 400;
-  cursor: default;
+#history .card {
+    margin-bottom: 15px;
 }
 
-h2 {
-  font-family: "Open Sans", sans-serif;
-  font-size: 13pt;
-  font-weight: 300;
-  color: white;
-  cursor: default;
+#admin-controls {
+    margin-bottom: 30px;
 }
 
-.player {
-  height: 190px;
-  width: 430px;
-  background-color: #1E2125;
-  position: absolute;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  -webkit-transform: translate(-50%, -50%);
-}
-.player ul {
-  list-style: none;
-}
-.player ul li {
-  display: inline-block;
+.card-img-top {
+    width: 100%;
+    height: 200px; /* You can adjust as needed */
+    object-fit: cover;
 }
 
-.cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-.cover img {
-  height: 190px;
-  width: 190px;
+.audio-player {
+    width: 100%;
+    margin-top: 10px;
 }
 
-.info h1 {
-  margin-top: 15px;
-  margin-left: 180px;
-  line-height: 0;
-}
-.info h4 {
-  margin-left: 180px;
-  line-height: 20px;
-  color: #636367;
-}
-.info h2 {
-  margin-left: 180px;
+.range-slider {
+    width: 100%;
+    margin-top: 10px;
 }
 
-.button-items {
-  margin-left: 180px;
-}
-
-#slider {
-  width: 182px;
-  height: 4px;
-  background: #151518;
-  border-radius: 2px;
-}
-#slider div {
-  width: 4px;
-  height: 4px;
-  margin-top: 1px;
-  background: #EF6DBC;
-  border-radius: 2px;
-}
-
-#timer {
-  color: #494B4E;
-  line-height: 0;
-  font-size: 9pt;
-  float: right;
-  font-family: Arial, Sans-Serif;
-}
-
-.controls {
-  margin-top: 20px;
-}
-.controls svg:nth-child(2) {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-#play {
-  padding: 0 3px;
-  width: 30px;
-  height: 30px;
-  x: 0px;
-  y: 0px;
-  enable-background: new 0 0 25 25;
-}
-#play g {
-  stroke: #FEFEFE;
-  stroke-width: 1;
-  stroke-miterlimit: 10;
-}
-#play g path {
-  fill: #FEFEFE;
-}
-
-#play:hover {
-  cursor: pointer;
-}
-#play:hover g {
-  stroke: #8F4DA9;
-  cursor: pointer;
-}
-#play:hover g path {
-  fill: #9b59b6;
-  cursor: pointer;
-}
-
-.step-backward {
-  width: 18px;
-  height: 18px;
-  x: 0px;
-  y: 0px;
-  enable-background: new 0 0 25 25;
-  margin-bottom: 5px;
-}
-.step-backward g polygon {
-  fill: #FEFEFE;
-}
-
-.step-foreward {
-  width: 18px;
-  height: 18px;
-  x: 0px;
-  y: 0px;
-  enable-background: new 0 0 25 25;
-  margin-bottom: 5px;
-}
-.step-foreward g polygon {
-  fill: #FEFEFE;
-}
-
-#pause {
-  x: 0px;
-  y: 0px;
-  enable-background: new 0 0 25 25;
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  margin-left: -38px;
-  cursor: pointer;
-}
-#pause rect {
-  fill: white;
-}
-
-#pause:hover rect {
-  fill: #8F4DA9;
-}
-
-.step-backward g polygon:hover, .step-foreward g polygon:hover {
-  fill: #EF6DBC;
-  cursor: pointer;
-}
-#skip p {
-  color: #2980b9;
-}
-#skip p:hover {
-  color: #e74c3c;
-  cursor: pointer;
-}
-
-.expend {
-  padding: 0.5px;
-  cursor: pointer;
-}
-.expend svg:hover g polygon {
-  fill: #EF6DBC;
+.range-slider input[type="range"] {
+    width: 100%;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="player">
-   <ul>
-      <li class="cover"><img id="cover" src="" alt=""/></li>
-      <li class="info">
-         <h1 id="artist"></h1>
-         <h4 id="album"></h4>
-         <h2 id="name">I Need You Back</h2>
-
-         <div class="button-items">
-            <audio id="music">
-               <source id="music-src" type="audio/mp3">
+    <div class="container mt-5 music-body">
+        <!-- Music Player and Visualization -->
+        <div class="music-player-container">
+            <canvas id="audio-visualization" width="800" height="100"></canvas>
+            <audio id="audio-player" controls>
+                <source src="" type="audio/mpeg">
+                Your browser does not support the audio element.
             </audio>
-            <div id="slider"><div id="elapsed"></div></div>
-            <p id="timer">0:00</p>
-            <div class="controls">
-               <span class="expend"><svg class="step-backward" viewBox="0 0 25 25" xml:space="preserve">
-                  <g><polygon points="4.9,4.3 9,4.3 9,11.6 21.4,4.3 21.4,20.7 9,13.4 9,20.7 4.9,20.7"/></g>
-               </svg></span>
+        </div>
 
-               <svg id="play" viewBox="0 0 25 25" xml:space="preserve">
-                   <defs><rect x="-49.5" y="-132.9" width="446.4" height="366.4"/></defs>
-                  <g><circle fill="none" cx="12.5" cy="12.5" r="10.8"/>
-                       <path fill-rule="evenodd" clip-rule="evenodd" d="M8.7,6.9V18c0,0,0.2,1.4,1.8,0l8.1-4.8c0,0,1.2-1.1-1-2L9.8,6.5 C9.8,6.5,9.1,6,8.7,6.9z"/>
-                  </g>
-               </svg>
+        <!-- Now Playing Information -->
+        <div class="now-playing">
+            <div class="track-image">
+                <img id="track-image" src="" alt="Track Image">
+            </div>
+            <div class="artist-info">
+                <!-- Dynamically populate artist info -->
+            </div>
+        </div>
 
+        <div id="admin-controls" class="mb-3" style="display: none;">
+            <!-- Admin Controls will be inserted here -->
+        </div>
 
-               <svg id="pause" viewBox="0 0 25 25" xml:space="preserve">
-                  <g>
-                     <rect x="6" y="4.6" width="3.8" height="15.7"/>
-                     <rect x="14" y="4.6" width="3.9" height="15.7"/>
-                  </g>
-               </svg>
+        <h2>History</h2>
+        <div id="history" class="mb-3">
+            <!-- Song History will be inserted here -->
+        </div>
+    </div>
 
-               <span class="expend"><svg class="step-foreward" viewBox="0 0 25 25" xml:space="preserve">
-                  <g><polygon points="20.7,4.3 16.6,4.3 16.6,11.6 4.3,4.3 4.3,20.7 16.7,13.4 16.6,20.7 20.7,20.7"/></g>
-                  </svg></span>
-              </div>
-           </div>
-        </li>
-     </ul>
-  </div>
-{% endblock %}
-
-{% block inline_javascript %}
-
-    <script>
-        const music = document.getElementById("music");
-
-        async function playAudio() {
-            try {
-              await music.play();
-              playButton.style.visibility = "hidden";
-              pause.style.visibility = "visible";
-            } catch (err) {
-              playButton.style.visibility = "visible";
-              pause.style.visibility = "hidden";
-            }
-          }
-
-        const music_src = document.getElementById("music-src")
-        const cover_src = document.getElementById("cover")
-        const name = document.getElementById("name")
-        const album = document.getElementById("album")
-        const artist = document.getElementById("artist")
-
-        const socket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/radio/'
-        );
-
-        socket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            console.log(data)
-            music_src.src = data.file
-            if (data.image !== null) {
-              cover_src.src = data.image
-            }
-            name.innerText = data.name
-            playAudio()
-        };
-
-        socket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-        const playButton = document.getElementById("play");
-        const pauseButton = document.getElementById("pause");
-        const playhead = document.getElementById("elapsed");
-        const timeline = document.getElementById("slider");
-        const timer = document.getElementById("timer");
-        let duration;
-        pauseButton.style.visibility = "hidden";
-
-        const timelineWidth = timeline.offsetWidth - playhead.offsetWidth;
-        music.addEventListener("timeupdate", timeUpdate, false);
-
-        function timeUpdate() {
-          const playPercent = timelineWidth * (music.currentTime / duration);
-          playhead.style.width = playPercent + "px";
-
-          const secondsIn = Math.floor(((music.currentTime / duration) / 3.5) * 100);
-          if (secondsIn <= 9) {
-            timer.innerHTML = "0:0" + secondsIn;
-          } else {
-            timer.innerHTML = "0:" + secondsIn;
-          }
-        }
-
-        playButton.onclick = function() {
-            playAudio()
-        }
-
-        pauseButton.onclick = function() {
-          music.pause();
-          playButton.style.visibility = "visible";
-          pause.style.visibility = "hidden";
-        }
-
-        music.addEventListener("canplaythrough", function () {
-          duration = music.duration;
-        }, false);
-    </script>
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/ws_script.js' %}"></script>
 {% endblock %}

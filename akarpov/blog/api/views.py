@@ -9,7 +9,7 @@ from akarpov.blog.api.serializers import (
 )
 from akarpov.blog.models import Post
 from akarpov.blog.services import get_main_rating_posts
-from akarpov.common.api import StandardResultsSetPagination
+from akarpov.common.api.pagination import StandardResultsSetPagination
 
 
 class ListMainPostsView(generics.ListAPIView):

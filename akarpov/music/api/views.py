@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 
-from akarpov.common.api import IsCreatorOrReadOnly
+from akarpov.common.api.permissions import IsCreatorOrReadOnly
 from akarpov.music.api.serializers import (
     FullPlaylistSerializer,
     ListSongSerializer,
