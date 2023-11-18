@@ -16,6 +16,17 @@ class ListCollectionsView(generic.ListView):
             return self.request.user.collections.all()
         return Collection.objects.filter(public=True)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["collection_previews"] = [
+            {
+                "collection": collection,
+                "preview_images": collection.get_preview_images(),
+            }
+            for collection in context["collection_list"]
+        ]
+        return context
+
 
 list_collections_view = ListCollectionsView.as_view()
 

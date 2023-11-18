@@ -20,6 +20,9 @@ class Collection(TimeStampedModel, ShortLinkModel, UserHistoryModel):
     def get_absolute_url(self):
         return reverse("gallery:collection", kwargs={"slug": self.slug})
 
+    def get_preview_images(self):
+        return self.images.cache().all()[:6]
+
     def __str__(self):
         return self.name
 

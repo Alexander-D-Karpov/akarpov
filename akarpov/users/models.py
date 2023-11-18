@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from akarpov.common.models import BaseImageModel
 from akarpov.tools.shortener.models import ShortLinkModel
+from akarpov.users.themes.models import Theme
 
 
 class User(AbstractUser, BaseImageModel, ShortLinkModel):
@@ -28,6 +29,11 @@ class User(AbstractUser, BaseImageModel, ShortLinkModel):
         "Left file upload(in bites)", default=0, validators=[MinValueValidator(0)]
     )
     theme = models.ForeignKey("themes.Theme", null=True, on_delete=models.SET_NULL)
+
+    def get_theme_url(self):
+        if self.theme_id:
+            return Theme.objects.cache().get(id=self.theme_id).file.url
+        return ""
 
     def get_absolute_url(self):
         """Get url for user's detail view.

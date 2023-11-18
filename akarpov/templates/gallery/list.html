@@ -1,36 +1,49 @@
 {% extends 'base.html' %}
 
-{% block css %}
-<style>
-    .gallery {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: start; /* Align items to the start of the container */
-        align-items: stretch; /* Stretch items to fill the container */
-    }
-
-    .gallery-item {
-        /* Adjust the margin as needed */
-        margin: 5px;
-        flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: auto; /* Automatically adjust the basis based on the content size */
-    }
-
-    .gallery-item img {
-        width: 100%; /* Make image responsive */
-        height: auto; /* Maintain aspect ratio */
-        display: block; /* Remove bottom space under the image */
-    }
-</style>
+{% block content %}
+<div class="container">
+  <div class="row">
+    {% for collection_preview in collection_previews %}
+      <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <!-- Folder Icon -->
+            <div class="folder-icon">
+              <i class="fas fa-folder" style="font-size: 6em;"></i>
+            </div>
+            <h5 class="card-title text-center">{{ collection_preview.collection.name }}</h5>
+            <!-- Image Thumbnails -->
+            <div class="folder-images d-flex flex-wrap justify-content-center">
+              {% for image in collection_preview.preview_images %}
+                <img src="{{ image.image_cropped.url }}" class="img-thumbnail m-1" alt="{{ image }}" style="width: 50px; height: 50px; object-fit: cover;">
+              {% endfor %}
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="{{ collection_preview.collection.get_absolute_url }}" class="btn btn-primary btn-block">View Collection</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No collections found.</p>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
 
-{% block content %}
-<div class="gallery">
-    {% for image in object_list %}
-    <div class="gallery-item">
-        <img src="{{ image.url }}" alt="Image">
-    </div>
-    {% endfor %}
-</div>
+{% block css %}
+<style>
+  .folder-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 120px; /* Adjust size as needed */
+  }
+  .folder-images img {
+    transition: transform 0.2s; /* Smooth transition for image hover */
+  }
+  .folder-images img:hover {
+    transform: scale(1.1); /* Slightly enlarge images on hover */
+  }
+</style>
 {% endblock %}

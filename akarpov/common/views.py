@@ -11,7 +11,7 @@ class HasPermissions(SingleObjectMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         has_perm = False
-        if self.request.user.is_authentificated:
+        if self.request.user.is_authenticated:
             has_perm = self.object.user == self.request.user
         context["has_permissions"] = has_perm
         return context

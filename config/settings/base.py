@@ -63,7 +63,10 @@ SESSION_CACHE_ALIAS = "default"
 CACHEOPS = {
     "auth.user": {"ops": "get", "timeout": 60 * 15},
     "auth.*": {"ops": ("fetch", "get"), "timeout": 60 * 2},
-    "blog.post": {"ops": ("fetch", "get"), "timeout": 15},
+    "blog.post": {"ops": ("fetch", "get"), "timeout": 20 * 15},
+    "themes.theme": {"ops": ("fetch", "get"), "timeout": 60 * 60},
+    "gallery.*": {"ops": "all", "timeout": 60 * 15},
+    "files.*": {"ops": "all", "timeout": 60 * 5},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")

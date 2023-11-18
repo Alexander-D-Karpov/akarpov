@@ -2,42 +2,149 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block javascript %}
-  <script src="{% static 'js/jquery.min.js' %}"></script>
-{% endblock %}
-
 {% block content %}
-<form method="post" action="{% url 'gallery:upload' %}" enctype="multipart/form-data">
+<form method="post" action="{% url 'api:gallery:list-create-all' %}" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.management_form }}
-      {% for field in form %}
-        {{ field | as_crispy_field }}
-      {% endfor %}
-    <button type="submit">Upload</button>
+    {% for field in form %}
+      {{ field | as_crispy_field }}
+    {% endfor %}
+      <input type="file" id="imageInput" multiple accept="image/*" class="form-control" />
+      <div class="preview mt-3" id="preview"></div>
+      <button type="submit">Upload</button>
 </form>
 
 <div id="progress-bar" style="width:0; height:20px; background:green;"></div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/jquery.min.js' %}"></script>
 <script>
-const form = document.querySelector('form');
-form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', form.action, true);
-    xhr.upload.onprogress = function(e) {
-        if (e.lengthComputable) {
-            const percentage = (e.loaded / e.total) * 100;
-            document.getElementById('progress-bar').style.width = percentage + '%';
-        }
-    };
-    xhr.onload = function() {
-        if (this.status === 200) {
-            console.log('Upload complete!');
-        } else {
-            console.error('Upload failed:', this.responseText);
-        }
-    };
-    xhr.send(formData);
+document.addEventListener('DOMContentLoaded', function () {
+    let form = document.querySelector('form');
+    let imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    let currentFiles = [];
+
+    imageInput.addEventListener('change', function () {
+        updateFiles(this.files);
+        updatePreview();
+    });
+
+    function updateFiles(newFiles) {
+        currentFiles = Array.from(newFiles);
+    }
+
+    function updatePreview() {
+        preview.innerHTML = '';
+        currentFiles.forEach((file, index) => {
+            let imgContainer = document.createElement('div');
+            imgContainer.classList.add('position-relative', 'd-inline-block', 'm-2');
+            imgContainer.setAttribute('data-index', index); // Set the data-index attribute
+
+            let img = document.createElement('img');
+            img.classList.add('img-thumbnail');
+            img.style.width = '150px';
+            img.style.height = '150px';
+            imgContainer.appendChild(img);
+
+            let deleteButton = document.createElement('span');
+            deleteButton.classList.add('material-icons', 'position-absolute', 'top-0', 'end-0', 'btn', 'btn-danger');
+            deleteButton.innerText = 'delete';
+            deleteButton.style.cursor = 'pointer';
+            deleteButton.onclick = function () {
+                currentFiles.splice(index, 1);
+                updatePreview();
+                imageInput.value = "";
+            };
+            imgContainer.appendChild(deleteButton);
+
+            let reader = new FileReader();
+            reader.onload = (function (aImg) {
+                return function (e) {
+                    aImg.src = e.target.result;
+                };
+            })(img);
+            reader.readAsDataURL(file);
+
+            preview.appendChild(imgContainer);
+        });
+    }
+
+    function createProgressBar(index) {
+        const progressBarContainer = document.createElement('div');
+        progressBarContainer.classList.add('progress', 'mb-2');
+        progressBarContainer.setAttribute('id', 'progress-container-' + index);
+
+        const progressBar = document.createElement('div');
+        progressBar.id = 'progress-bar-' + index;
+        progressBar.classList.add('progress-bar');
+        progressBar.setAttribute('role', 'progressbar');
+        progressBar.setAttribute('aria-valuenow', '0');
+        progressBar.setAttribute('aria-valuemin', '0');
+        progressBar.setAttribute('aria-valuemax', '100');
+        progressBar.style.width = '0%';
+        progressBar.style.height = '20px'; // Set the height of the progress bar
+
+        progressBarContainer.appendChild(progressBar);
+        form.appendChild(progressBarContainer); // Append the progress bar container to the form
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Get the CSRF token from the hidden input
+        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+        // Clear previous progress bars if any
+        document.querySelectorAll('.progress').forEach(function(progressBar) {
+            progressBar.remove();
+        });
+
+        // Create a new progress bar for each file
+        currentFiles.forEach((file, index) => createProgressBar(index));
+
+        // Perform the upload for each file
+        currentFiles.forEach((file, index) => {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('collection', document.querySelector('#id_collection').value);
+            formData.append('public', document.querySelector('#id_public').checked);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', form.action, true);
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const progressBar = document.getElementById('progress-bar-' + index);
+                    const percentage = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentage + '%';
+                }
+            };
+
+            xhr.onload = function () {
+                if (this.status === 200 || this.status === 201) {
+                    console.log('Upload complete for file', index);
+                    // Remove the image preview and progress bar for the uploaded file
+                    const imgPreview = preview.querySelector(`div[data-index="${index}"]`);
+                    if (imgPreview) {
+                        preview.removeChild(imgPreview);
+                    }
+                    const progressBarContainer = document.getElementById('progress-container-' + index);
+                    if (progressBarContainer) {
+                        progressBarContainer.remove();
+                    }
+                    // Remove the file from the currentFiles array
+                    currentFiles = currentFiles.filter((_, i) => i !== index);
+                } else {
+                    console.error('Upload failed for file', index, ':', this.responseText);
+                }
+            };
+
+            xhr.send(formData);
+        });
+    });
 });
 </script>
 {% endblock %}

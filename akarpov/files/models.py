@@ -126,7 +126,7 @@ class Folder(BaseFileItem, ShortLinkModel, UserHistoryModel):
     amount = IntegerField(default=0)
 
     def get_last_preview_files(self, cut=4):
-        return self.children.filter(~Q(File___preview=""))[:cut]
+        return self.children.cache().filter(~Q(File___preview=""))[:cut]
 
     def get_absolute_url(self):
         return reverse("files:folder", kwargs={"slug": self.slug})
