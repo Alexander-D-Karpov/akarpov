@@ -16,7 +16,7 @@ COMMON_MONO_FONT_FILENAMES = [
     "Consola.ttf",
 ]
 
-manager = PreviewManager(cache_path, create_folder=True)
+manager = None
 
 
 def textfile_to_image(textfile_path) -> Image:
@@ -79,7 +79,10 @@ def textfile_to_image(textfile_path) -> Image:
 
 
 def create_preview(file_path: str) -> str:
+    global manager
     # TODO: add text image generation/code image
+    if not manager:
+        manager = PreviewManager(cache_path, create_folder=True)
     if manager.has_jpeg_preview(file_path):
         return manager.get_jpeg_preview(file_path, height=500)
     return ""
@@ -91,6 +94,10 @@ def get_file_mimetype(file_path: str) -> str:
 
 
 def get_description(file_path: str) -> str:
+    global manager
+    if not manager:
+        manager = PreviewManager(cache_path, create_folder=True)
+
     if manager.has_text_preview(file_path):
         return manager.get_text_preview(file_path)
     return ""

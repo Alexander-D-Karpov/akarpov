@@ -9,7 +9,6 @@ from django.conf import settings
 from PIL import Image
 from pydub import AudioSegment
 from pytube import Search, YouTube
-from yt_dlp import YoutubeDL
 
 from akarpov.music.models import Song
 from akarpov.music.services.db import load_track
@@ -67,7 +66,7 @@ def parse_description(description: str) -> list:
 def download_from_youtube_link(link: str, user_id: int) -> Song:
     song = None
 
-    with YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(link, download=False)
         title = info_dict.get("title", None)
         description = info_dict.get("description", None)
