@@ -100,18 +100,15 @@ services:
     command: /start-flower
 
   elasticsearch:
-    image: elasticsearch:8.11.1
-    container_name: elasticsearch
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms6g -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - akarpov_local_elasticsearch_data:/usr/share/elasticsearch/data
+    image: elasticsearch:8.8.0
     ports:
       - "9200:9200"
       - "9300:9300"
+    environment:
+      - node.name=activity
+      - discovery.type=single-node
+      - cluster.name=ws-es-data-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    volumes:
+      - akarpov_local_elasticsearch_data:/usr/share/elasticsearch/data
