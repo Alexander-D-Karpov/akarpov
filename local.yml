@@ -100,12 +100,12 @@ services:
     command: /start-flower
 
   elasticsearch:
-    image: elasticsearch:7.17.14
+    image: elasticsearch:8.11.1
     container_name: elasticsearch
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms6g -Xmx512m"
     ulimits:
       memlock:
         soft: -1

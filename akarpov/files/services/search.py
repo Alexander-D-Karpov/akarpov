@@ -4,11 +4,13 @@ from typing import BinaryIO
 
 from django.conf import settings
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import F, Func, Q, QuerySet
-from haystack.query import SearchQuerySet
+from django.db.models import Case, F, FloatField, Func, Q, QuerySet, Value, When
+from django.db.models.functions import Coalesce
+from elasticsearch_dsl import Q as ES_Q
 
 from akarpov.files.models import File
 
+from ..documents import FileDocument
 from .lema import lemmatize_and_remove_stopwords
 
 
@@ -16,17 +18,55 @@ class BaseSearch:
     def __init__(self, queryset: QuerySet | None = None):
         self.queryset: QuerySet | None = queryset
 
-    def search(self, query: str) -> QuerySet | SearchQuerySet | list[File]:
+    def search(self, query: str) -> QuerySet | list[File]:
         raise NotImplementedError("Subclasses must implement this method")
 
 
 class NeuroSearch(BaseSearch):
-    def search(self, query: str) -> SearchQuerySet:
-        # Search across multiple fields
-        sqs: SearchQuerySet = SearchQuerySet().filter(content=query)
-        sqs = sqs.filter_or(name=query)
-        sqs = sqs.filter_or(description=query)
-        return sqs
+    def search(self, query: str):
+        if not self.queryset:
+            raise ValueError("Queryset cannot be None for search")
+
+        # Perform the Elasticsearch query using a combination of match, match_phrase_prefix, and wildcard queries
+        search = FileDocument.search()
+        search_query = ES_Q(
+            "bool",
+            should=[
+                ES_Q(
+                    "multi_match",
+                    query=query,
+                    fields=["name", "description", "content"],
+                    type="best_fields",
+                ),
+                ES_Q("match_phrase_prefix", name=query),
+                ES_Q("wildcard", name=f"*{query}*"),
+                ES_Q("wildcard", description=f"*{query}*"),
+                ES_Q("wildcard", content=f"*{query}*"),
+            ],
+            minimum_should_match=1,
+        )
+
+        search = search.query(search_query)
+
+        # Execute the search to get the results
+        response = search.execute()
+
+        # Check if there are hits, if not return an empty queryset
+        if not response.hits:
+            return self.queryset.none()
+
+        # Collect the IDs of the hits
+        hit_ids = [hit.meta.id for hit in response.hits]
+
+        # Use the hit IDs to filter the queryset and preserve the order
+        preserved_order = Case(
+            *[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)]
+        )
+        relevant_queryset = self.queryset.filter(pk__in=hit_ids).order_by(
+            preserved_order
+        )
+
+        return relevant_queryset
 
 
 class CaseSensitiveSearch(BaseSearch):
@@ -89,28 +129,28 @@ class UnaccentLower(Func):
 
 
 class SimilaritySearch(BaseSearch):
-    def __init__(self, queryset: QuerySet[File] | None = None):
-        super().__init__(queryset)
-
     def search(self, query: str) -> QuerySet[File]:
         if self.queryset is None:
             raise ValueError("Queryset cannot be None for similarity search")
 
-        # Detect language and preprocess the query
         language = "russian" if re.search("[а-яА-Я]", query) else "english"
         filtered_query = lemmatize_and_remove_stopwords(query, language=language)
-
-        # Annotate the queryset with similarity scores for each field
         queryset = (
             self.queryset.annotate(
-                name_similarity=TrigramSimilarity(
-                    UnaccentLower("name"), filtered_query
+                name_similarity=Coalesce(
+                    TrigramSimilarity(UnaccentLower("name"), filtered_query),
+                    Value(0),
+                    output_field=FloatField(),
                 ),
-                description_similarity=TrigramSimilarity(
-                    UnaccentLower("description"), filtered_query
+                description_similarity=Coalesce(
+                    TrigramSimilarity(UnaccentLower("description"), filtered_query),
+                    Value(0),
+                    output_field=FloatField(),
                 ),
-                content_similarity=TrigramSimilarity(
-                    UnaccentLower("content"), filtered_query
+                content_similarity=Coalesce(
+                    TrigramSimilarity(UnaccentLower("content"), filtered_query),
+                    Value(0),
+                    output_field=FloatField(),
                 ),
             )
             .annotate(
@@ -119,17 +159,9 @@ class SimilaritySearch(BaseSearch):
                     + F("description_similarity")
                     + F("content_similarity")
                 )
-                / 3
             )
             .filter(combined_similarity__gt=0.1)
             .order_by("-combined_similarity")
-        )
-        print(filtered_query)
-        print(queryset.query)
-        print(
-            queryset.values(
-                "name_similarity", "description_similarity", "content_similarity"
-            )
         )
 
         return queryset

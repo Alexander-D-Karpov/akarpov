@@ -107,13 +107,15 @@ pgvector = "^0.2.2"
 pycld2 = "^0.41"
 textract = "^1.6.5"
 uuid6 = "^2023.5.2"
-django-haystack = {extras = ["elasticsearch"], version = "^3.2.1"}
 uvicorn = "^0.24.0.post1"
 nltk = "^3.8.1"
 pymorphy3 = "^1.2.1"
 pymorphy3-dicts-ru = "^2.4.417150.4580142"
 fastapi = "^0.104.1"
 pydantic-settings = "^2.0.3"
+django-elasticsearch-dsl = "^8.0"
+elasticsearch-dsl = "^8.11.0"
+numpy = "1.25.2"
 
 
 [build-system]

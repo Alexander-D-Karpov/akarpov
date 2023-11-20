@@ -3,9 +3,8 @@ import time
 
 import structlog
 from celery import shared_task
+from django.core import management
 from django.core.files import File
-from haystack.management.commands import rebuild_index, update_index
-from haystack.query import SearchQuerySet
 
 from akarpov.files.models import File as FileModel
 from akarpov.files.services.preview import create_preview, get_file_mimetype
@@ -40,24 +39,9 @@ def process_file(pk: int):
 
 
 @shared_task
-def task_rebuild_index():
-    start_time = time.time()
-    rebuild_index.Command().handle(interactive=False)
-    end_time = time.time()
-    duration = end_time - start_time
-
-    indexed_count = SearchQuerySet().all().count()
-
-    logger.info(
-        "index_rebuild_finished", duration=duration, indexed_count=indexed_count
-    )
-
-
-@shared_task
 def update_index_task():
     start_time = time.time()
-
-    update_index.Command().handle(interactive=False)
+    management.call_command("search_index", "--rebuild", "-f")
     end_time = time.time()
     duration = end_time - start_time
     logger.info("update_index_completed", duration=duration)

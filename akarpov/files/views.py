@@ -70,7 +70,7 @@ class FileFilterView(View):
 
 class TopFolderView(LoginRequiredMixin, ListView, FileFilterView):
     template_name = "files/list.html"
-    paginate_by = 18
+    paginate_by = 38
     model = BaseFileItem
 
     def get_context_data(self, **kwargs):

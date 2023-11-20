@@ -66,7 +66,7 @@ CACHEOPS = {
     "blog.post": {"ops": ("fetch", "get"), "timeout": 20 * 15},
     "themes.theme": {"ops": ("fetch", "get"), "timeout": 60 * 60},
     "gallery.*": {"ops": "all", "timeout": 60 * 15},
-    "files.*": {"ops": "all", "timeout": 60 * 5},
+    "files.*": {"ops": ("fetch", "get"), "timeout": 60 * 5},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
@@ -133,7 +133,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "django_tables2",
     "location_field",
-    "haystack",
+    "django_elasticsearch_dsl",
 ]
 
 HEALTH_CHECKS = [
@@ -434,12 +434,8 @@ CELERY_TASK_SOFT_TIME_LIMIT = 10 * 60
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {
     "update-index-every-hour": {
-        "task": "akarpov.files.tasks.task_rebuild_index",
+        "task": "akarpov.files.tasks.update_index_task",
         "schedule": crontab(minute="0"),
-    },
-    "rebuild-index-every-day": {
-        "task": "akarpov.files.tasks.task_rebuild_index",
-        "schedule": crontab(hour="2", minute="0", day_of_week="*"),
     },
 }
 
@@ -611,14 +607,8 @@ if dsn:
     )
 
 
-# HAYSTACK
+# ELASTICSEARCH
 # ------------------------------------------------------------------------------
-HAYSTACK_CONNECTIONS = {
-    "default": {
-        "ENGINE": "haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine",
-        "URL": env("ELASTIC_SEARCH", default="http://127.0.0.1:9200/"),
-        "INDEX_NAME": "haystack",
-        "TIMEOUT": 60 * 5,
-        "BATCH_SIZE": 100,
-    },
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": env("ELASTIC_SEARCH", default="http://127.0.0.1:9200/")},
 }
