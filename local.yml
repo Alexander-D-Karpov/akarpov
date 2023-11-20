@@ -100,7 +100,7 @@ services:
     command: /start-flower
 
   elasticsearch:
-    image: elasticsearch:8.8.0
+    image: elasticsearch:8.11.1
     ports:
       - "9200:9200"
       - "9300:9300"
