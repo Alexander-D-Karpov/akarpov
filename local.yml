@@ -45,7 +45,7 @@ services:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
     ports:
-      - "3000:3000"
+      - "3025:3000"
     command: /start-redirect
 
   postgres:
