@@ -19,6 +19,7 @@ services:
       - mailhog
       - elasticsearch
     volumes:
+      - /var/www/media:/app/akarpov/media
       - .:/app:z
     env_file:
       - ./.envs/.local/.django
