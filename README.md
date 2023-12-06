@@ -12,7 +12,6 @@ https://git.akarpov.ru/sanspie/akarpov
 ### installation
 ```shell
 $ poetry install & poetry shell
-$ ./spacy_setup.sh
 $ python3 manage.py migrate
 ```
 

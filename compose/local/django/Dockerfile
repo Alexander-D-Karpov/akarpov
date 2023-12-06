@@ -52,10 +52,6 @@ COPY ./compose/local/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
-COPY ./compose/local/django/spacy_setup /spacy_setup
-RUN sed -i 's/\r$//g' /spacy_setup
-RUN chmod +x /spacy_setup
-
 COPY ./compose/local/django/start-redirect /start-redirect
 RUN sed -i 's/\r$//g' /start-redirect
 RUN chmod +x /start-redirect
