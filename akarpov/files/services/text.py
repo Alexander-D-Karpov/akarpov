@@ -10,8 +10,8 @@ def extract_file_text(file: str) -> str:
         try:
             rawdata = open(file, "rb").read()
             enc = chardet.detect(rawdata)
-            with open(file, encoding=enc["encoding"]) as file:
-                text = file.read()
+            with open(file, encoding=enc["encoding"]) as f:
+                text = f.read()
         except Exception:
             return ""
 
