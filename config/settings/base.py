@@ -54,7 +54,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CACHES
 # ------------------------------------------------------------------------------
-CACHES = {"default": env.cache_url("REDIS_CACHE")}
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_CACHE_URL", default="redis://localhost:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 CACHE_MIDDLEWARE_KEY_PREFIX = "cache_middleware"
 CACHE_MIDDLEWARE_SECONDS = 0
 CACHE_TTL = 60 * 10
@@ -308,6 +316,17 @@ X_FRAME_OPTIONS = "DENY"
 
 # EMAIL
 # ------------------------------------------------------------------------------
+"""
+    host: EMAIL_HOST
+    port: EMAIL_PORT
+    username: EMAIL_HOST_USER
+    password: EMAIL_HOST_PASSWORD
+    use_tls: EMAIL_USE_TLS
+    use_ssl: EMAIL_USE_SSL
+    timeout: EMAIL_TIMEOUT
+    ssl_keyfile: EMAIL_SSL_KEYFILE
+    ssl_certfile: EMAIL_SSL_CERTFILE
+"""
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND",
@@ -316,17 +335,22 @@ EMAIL_BACKEND = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
 EMAIL_HOST_PASSWORD = env(
-    "EMAIL_PASSWORD",
+    "EMAIL_HOST_PASSWORD",
     default="",
 )
 EMAIL_HOST_USER = env(
-    "EMAIL_USER",
+    "EMAIL_HOST_USER",
     default="",
 )
 EMAIL_USE_SSL = env(
     "EMAIL_USE_SSL",
     default=False,
 )
+
+EMAIL_HOST = env("EMAIL_HOST", default="mailhog")
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-port
+EMAIL_PORT = env("EMAIL_PORT", default="1025")
+EMAIL_FROM = env("EMAIL_FROM", default="noreply@akarpov.ru")
 
 # ADMIN
 # ------------------------------------------------------------------------------
