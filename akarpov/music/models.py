@@ -43,6 +43,7 @@ class Song(BaseImageModel, ShortLinkModel):
         "users.User", related_name="songs", on_delete=models.SET_NULL, null=True
     )
     meta = models.JSONField(blank=True, null=True)
+    likes = models.IntegerField(default=0)
 
     def get_absolute_url(self):
         return reverse("music:song", kwargs={"slug": self.slug})
@@ -128,3 +129,21 @@ class RadioSong(models.Model):
     start = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True)
     song = models.ForeignKey("Song", related_name="radio", on_delete=models.CASCADE)
+
+
+class SongUserRating(models.Model):
+    song = models.ForeignKey(
+        "Song", related_name="user_likes", on_delete=models.PROTECT
+    )
+    user = models.ForeignKey(
+        "users.User", related_name="song_likes", on_delete=models.CASCADE
+    )
+    like = models.BooleanField(default=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} {self.song} {'like' if self.like else 'dislike'}"
+
+    class Meta:
+        unique_together = ["song", "user"]
+        ordering = ["-created"]

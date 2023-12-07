@@ -76,6 +76,7 @@ CACHEOPS = {
     "gallery.*": {"ops": "all", "timeout": 60 * 15},
     "files.*": {"ops": ("fetch", "get"), "timeout": 60},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
+    "music.*": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
 
@@ -639,3 +640,6 @@ if dsn:
 ELASTICSEARCH_DSL = {
     "default": {"hosts": env("ELASTIC_SEARCH", default="http://127.0.0.1:9200/")},
 }
+
+
+USE_DEBUG_TOOLBAR = False

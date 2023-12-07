@@ -56,6 +56,10 @@ class SongSerializer(serializers.ModelSerializer):
 
 class ListSongSerializer(SetUserModelSerializer):
     album = serializers.CharField(source="album.name", read_only=True)
+    liked = serializers.SerializerMethodField(method_name="get_liked")
+
+    def get_liked(self, obj):
+        return obj.id in self.context["likes_ids"]
 
     class Meta:
         model = Song

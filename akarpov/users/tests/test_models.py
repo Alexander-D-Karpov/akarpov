@@ -1,4 +1,11 @@
 from akarpov.files.consts import USER_INITIAL_FILE_UPLOAD
+from akarpov.users.models import User
+
+
+def test_user_creation(user_factory):
+    user = user_factory(username="testuser", email="test@example.com")
+    assert isinstance(user, User)
+    assert user.__str__() == user.username
 
 
 def test_user_create(user_factory):

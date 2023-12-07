@@ -1,13 +1,28 @@
 from rest_framework import generics, permissions
 
-from akarpov.common.api.permissions import IsCreatorOrReadOnly
+from akarpov.common.api.pagination import StandardResultsSetPagination
+from akarpov.common.api.permissions import IsAdminOrReadOnly, IsCreatorOrReadOnly
 from akarpov.music.api.serializers import (
     FullPlaylistSerializer,
     ListSongSerializer,
     PlaylistSerializer,
     SongSerializer,
 )
-from akarpov.music.models import Playlist, Song
+from akarpov.music.models import Playlist, Song, SongUserRating
+
+
+class LikedSongsContextMixin(generics.GenericAPIView):
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.request.user.is_authenticated:
+            context["likes_ids"] = (
+                SongUserRating.objects.cache()
+                .filter(user=self.request.user, like=True)
+                .values_list("song_id", flat=True)
+            )
+        else:
+            context["likes_ids"] = []
+        return context
 
 
 class ListCreatePlaylistAPIView(generics.ListCreateAPIView):
@@ -18,7 +33,9 @@ class ListCreatePlaylistAPIView(generics.ListCreateAPIView):
         return Playlist.objects.filter(creator=self.request.user)
 
 
-class RetrieveUpdateDestroyPlaylistAPIView(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDestroyPlaylistAPIView(
+    LikedSongsContextMixin, generics.RetrieveUpdateDestroyAPIView
+):
     lookup_field = "slug"
     lookup_url_kwarg = "slug"
     permission_classes = [IsCreatorOrReadOnly]
@@ -34,12 +51,23 @@ class RetrieveUpdateDestroyPlaylistAPIView(generics.RetrieveUpdateDestroyAPIView
         return self.object
 
 
-class ListCreateSongAPIView(generics.ListCreateAPIView):
+class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
     serializer_class = ListSongSerializer
-    permission_classes = [IsCreatorOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        return Song.objects.all()
+        if self.request.user.is_authenticated:
+            return (
+                Song.objects.exclude(
+                    id__in=SongUserRating.objects.filter(
+                        user=self.request.user
+                    ).values_list("song_id", flat=True)
+                )
+                .prefetch_related("authors")
+                .select_related("album")
+            )
+        return Song.objects.all().prefetch_related("authors").select_related("album")
 
 
 class RetrieveUpdateDestroySongAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -56,3 +84,21 @@ class RetrieveUpdateDestroySongAPIView(generics.RetrieveUpdateDestroyAPIView):
         if not self.object:
             self.object = super().get_object()
         return self.object
+
+
+class ListLikedSongsAPIView(generics.ListAPIView):
+    serializer_class = ListSongSerializer
+    pagination_class = StandardResultsSetPagination
+    authentication_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            Song.objects.cache()
+            .filter(
+                id__in=self.request.user.song_likes.objects.cache()
+                .all()
+                .values_list("song_id", flat=True)
+            )
+            .prefetch_related("authors")
+            .select_related("album")
+        )
