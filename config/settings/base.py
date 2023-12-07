@@ -74,7 +74,7 @@ CACHEOPS = {
     "blog.post": {"ops": ("fetch", "get"), "timeout": 20 * 15},
     "themes.theme": {"ops": ("fetch", "get"), "timeout": 60 * 60},
     "gallery.*": {"ops": "all", "timeout": 60 * 15},
-    "files.*": {"ops": ("fetch", "get"), "timeout": 60 * 5},
+    "files.*": {"ops": ("fetch", "get"), "timeout": 60},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
@@ -159,8 +159,8 @@ HEALTH_CHECKS = [
 ALLAUTH_PROVIDERS = [
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.telegram",
-    "allauth.socialaccount.providers.yandex",
+    # "allauth.socialaccount.providers.telegram", TODO
+    # "allauth.socialaccount.providers.yandex", TODO
 ]
 
 LOCAL_APPS = [
