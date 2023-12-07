@@ -158,9 +158,9 @@ HEALTH_CHECKS = [
 
 ALLAUTH_PROVIDERS = [
     "allauth.socialaccount.providers.github",
-    # "allauth.socialaccount.providers.google",
-    # "allauth.socialaccount.providers.telegram",
-    # "allauth.socialaccount.providers.yandex",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.telegram",
+    "allauth.socialaccount.providers.yandex",
 ]
 
 LOCAL_APPS = [
