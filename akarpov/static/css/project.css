@@ -531,3 +531,37 @@ p {
 .nav-active {
   color: white;
 }
+
+.username {
+    max-width: 120px; /* Adjust as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.username:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Tooltip CSS */
+.username:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: black;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: smaller;
+    white-space: nowrap;
+}
+
+/* Responsive font size */
+@media (max-width: 600px) {
+    .username {
+        font-size: smaller;
+    }
+}
