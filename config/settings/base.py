@@ -503,6 +503,7 @@ SOCIALACCOUNT_PROVIDERS = {
         },
     },
 }
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = env("HTTP_PROTOCOL", default="http")
 
 # django-rest-framework
 # -------------------------------------------------------------------------------
