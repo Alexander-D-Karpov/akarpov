@@ -48,7 +48,8 @@ def process_file(path, user_id):
 
 @shared_task
 def load_ym_file_meta(track, user_id):
-    return yandex.load_file_meta(track, user_id)
+    yb = yandex.load_file_meta(track, user_id)
+    return yb
 
 
 @shared_task()

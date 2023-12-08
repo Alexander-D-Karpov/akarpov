@@ -16,13 +16,13 @@ from akarpov.users.api.serializers import UserPublicInfoSerializer
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = ["name", "slug", "link", "image_cropped"]
+        fields = ["name", "slug", "image_cropped"]
 
 
 class AlbumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
-        fields = ["name", "slug", "link", "image_cropped"]
+        fields = ["name", "slug", "image_cropped"]
 
 
 class SongSerializer(serializers.ModelSerializer):
@@ -61,7 +61,8 @@ class SongSerializer(serializers.ModelSerializer):
 
 
 class ListSongSerializer(SetUserModelSerializer):
-    album = serializers.CharField(source="album.name", read_only=True)
+    album = AlbumSerializer(read_only=True)
+    authors = AuthorSerializer(many=True, read_only=True)
     liked = serializers.SerializerMethodField(method_name="get_liked")
 
     @extend_schema_field(serializers.BooleanField)
@@ -74,7 +75,16 @@ class ListSongSerializer(SetUserModelSerializer):
 
     class Meta:
         model = Song
-        fields = ["name", "slug", "file", "image_cropped", "length", "album", "liked"]
+        fields = [
+            "name",
+            "slug",
+            "file",
+            "image_cropped",
+            "length",
+            "album",
+            "authors",
+            "liked",
+        ]
         extra_kwargs = {
             "slug": {"read_only": True},
             "image_cropped": {"read_only": True},

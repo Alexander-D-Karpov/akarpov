@@ -1,5 +1,6 @@
 import os
 
+import elastic_transport
 import structlog
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -91,7 +92,9 @@ class TopFolderView(LoginRequiredMixin, ListView, FileFilterView):
         ):
             return self.filter(BaseFileItem.objects.none())
         return self.filter(
-            BaseFileItem.objects.filter(user=self.request.user, parent__isnull=True)
+            BaseFileItem.objects.cache().filter(
+                user=self.request.user, parent__isnull=True
+            )
         )
 
 
@@ -313,18 +316,25 @@ class ChunkedUploadCompleteView(ChunkedUploadABSCompleteView):
                 }
                 prepared = False
         if prepared and uploaded_file.size <= request.user.left_file_upload:
-            f = File.objects.create(
-                user=request.user,
-                file_obj=uploaded_file,
-                name=uploaded_file.name,
-                parent=folder,
-            )
-            request.user.left_file_upload -= uploaded_file.size
-            request.user.save()
-            self.message = {
-                "message": f"File {f.file.name.split('/')[-1]} successfully uploaded",
-                "status": True,
-            }
+            try:
+                f = File.objects.create(
+                    user=request.user,
+                    file_obj=uploaded_file,
+                    name=uploaded_file.name,
+                    parent=folder,
+                )
+                request.user.left_file_upload -= uploaded_file.size
+                request.user.save()
+                self.message = {
+                    "message": f"File {f.file.name.split('/')[-1]} successfully uploaded",
+                    "status": True,
+                }
+            except elastic_transport.ConnectionError:
+                self.message = {
+                    "message": "Service is down, please try again later or contact support",
+                    "status": False,
+                }
+                logger.error("Elasticsearch is down")
         elif prepared:
             self.message = {
                 "message": "File is too large, please increase disk space",
