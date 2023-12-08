@@ -87,14 +87,14 @@ class Song(BaseImageModel, ShortLinkModel):
 
 class Playlist(ShortLinkModel, UserHistoryModel):
     name = models.CharField(max_length=200)
-    private = models.BooleanField(default=False)
+    private = models.BooleanField(default=True)
     creator = models.ForeignKey(
         "users.User", related_name="playlists", on_delete=models.CASCADE
     )
     length = models.IntegerField(default=0)
 
     def get_absolute_url(self):
-        return reverse("playlist:song", kwargs={"slug": self.slug})
+        return reverse("music:playlist", kwargs={"slug": self.slug})
 
     def get_songs(self):
         return self.songs.all().values("song")

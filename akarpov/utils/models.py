@@ -27,5 +27,17 @@ def get_object_user(obj: Model) -> User | None:
 
 
 @lru_cache
+def get_model_user_field(app_name: str, model: str) -> str:
+    model = apps.get_model(app_name, model)
+    if hasattr(model, "creator") and model.creator.field.related_model is User:
+        return "creator"
+    elif hasattr(model, "user") and model.user.field.related_model is User:
+        return "user"
+    elif hasattr(model, "owner") and model.owner.field.related_model is User:
+        return "owner"
+    return ""
+
+
+@lru_cache
 def get_app_verbose_name(app: str) -> str:
     return apps.get_app_config(app).verbose_name
