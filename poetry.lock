@@ -1776,12 +1776,13 @@ with-social = ["django-allauth (>=0.25.0)"]
 
 [[package]]
 name = "django-robots"
-version = "5.0"
+version = "6.1"
 description = "Robots exclusion application for Django, complementing Sitemaps."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-robots-5.0.tar.gz", hash = "sha256:f5817975a9e3b082440a81396111d8a6671b54f6aa11349847554bd1beebd959"},
+    {file = "django-robots-6.1.tar.gz", hash = "sha256:f86bcc3d16d7d7c2a4e37af6063cb4785f50ae16943f82248b48c9e7ac034f1d"},
+    {file = "django_robots-6.1-py3-none-any.whl", hash = "sha256:07e11a1bf3ddc08290123ec3c55abb45dbbffb9b38aea0a002e9b4a87bd9abcc"},
 ]
 
 [[package]]
@@ -6701,4 +6702,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fe117c032c078d125b6549da9d687f1932bfa0585b26c6373faf535986550eec"
+content-hash = "ac20ed4a2fbcefce235c3aa344158e9c99f0edb2d8a9e92a155a27ca80a9f16e"
