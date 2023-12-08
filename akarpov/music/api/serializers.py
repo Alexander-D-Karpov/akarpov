@@ -32,10 +32,12 @@ class SongSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.BooleanField)
     def get_liked(self, obj):
-        if self.context["request"].user.is_authenticated:
-            return SongUserRating.objects.filter(
-                song=obj, user=self.context["request"].user, like=True
-            ).exists()
+        if "request" in self.context:
+            if self.context["request"].user.is_authenticated:
+                return SongUserRating.objects.filter(
+                    song=obj, user=self.context["request"].user, like=True
+                ).exists()
+        return None
 
     class Meta:
         model = Song
@@ -66,7 +68,9 @@ class ListSongSerializer(SetUserModelSerializer):
     def get_liked(self, obj):
         if "likes" in self.context:
             return self.context["likes"]
-        return obj.id in self.context["likes_ids"]
+        if "likes_ids" in self.context:
+            return obj.id in self.context["likes_ids"]
+        return None
 
     class Meta:
         model = Song
