@@ -1,10 +1,11 @@
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
+from django.utils.timezone import now
 from pytube import Channel, Playlist
 
 from akarpov.music.api.serializers import SongSerializer
-from akarpov.music.models import RadioSong, Song
+from akarpov.music.models import RadioSong, Song, UserListenHistory
 from akarpov.music.services import yandex, youtube
 from akarpov.music.services.file import load_dir, load_file
 from akarpov.utils.celery import get_scheduled_tasks_name
@@ -86,3 +87,29 @@ def start_next_song(previous_ids: list):
                 countdown=song.length,
             )
     return
+
+
+@shared_task
+def listen_to_song(song_id, user_id=None):
+    # protection from multiple listen,
+    # check that last listen by user was more than the length of the song
+    # and last listened song is not the same
+    s = Song.objects.get(id=song_id)
+    s.played += 1
+    s.save(update_fields=["played"])
+    if user_id:
+        try:
+            last_listen = UserListenHistory.objects.filter(user_id=user_id).latest("id")
+        except UserListenHistory.DoesNotExist:
+            last_listen = None
+        if (
+            last_listen
+            and last_listen.song_id == song_id
+            or last_listen.created + s.length > now()
+        ):
+            return
+        UserListenHistory.objects.create(
+            user_id=user_id,
+            song_id=song_id,
+        )
+    return song_id

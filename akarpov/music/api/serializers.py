@@ -32,7 +32,7 @@ class SongSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.BooleanField)
     def get_liked(self, obj):
-        if "request" in self.context:
+        if "request" in self.context and self.context["request"]:
             if self.context["request"].user.is_authenticated:
                 return SongUserRating.objects.filter(
                     song=obj, user=self.context["request"].user, like=True
@@ -61,8 +61,8 @@ class SongSerializer(serializers.ModelSerializer):
 
 
 class ListSongSerializer(SetUserModelSerializer):
-    album = AlbumSerializer(read_only=True)
-    authors = AuthorSerializer(many=True, read_only=True)
+    album = serializers.SerializerMethodField(method_name="get_album")
+    authors = serializers.SerializerMethodField(method_name="get_authors")
     liked = serializers.SerializerMethodField(method_name="get_liked")
 
     @extend_schema_field(serializers.BooleanField)
@@ -71,6 +71,20 @@ class ListSongSerializer(SetUserModelSerializer):
             return self.context["likes"]
         if "likes_ids" in self.context:
             return obj.id in self.context["likes_ids"]
+        return None
+
+    @extend_schema_field(AlbumSerializer)
+    def get_album(self, obj):
+        if obj.album:
+            return AlbumSerializer(Album.objects.cache().get(id=obj.album_id)).data
+        return None
+
+    @extend_schema_field(AuthorSerializer(many=True))
+    def get_authors(self, obj):
+        if obj.authors:
+            return AuthorSerializer(
+                Author.objects.cache().filter(songs__id=obj.id), many=True
+            ).data
         return None
 
     class Meta:

@@ -1,4 +1,6 @@
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import generics, permissions
+from rest_framework.response import Response
 
 from akarpov.common.api.pagination import StandardResultsSetPagination
 from akarpov.common.api.permissions import IsAdminOrReadOnly, IsCreatorOrReadOnly
@@ -15,7 +17,15 @@ from akarpov.music.api.serializers import (
     PlaylistSerializer,
     SongSerializer,
 )
-from akarpov.music.models import Album, Author, Playlist, Song, SongUserRating
+from akarpov.music.models import (
+    Album,
+    Author,
+    Playlist,
+    Song,
+    SongUserRating,
+    UserListenHistory,
+)
+from akarpov.music.tasks import listen_to_song
 
 
 class LikedSongsContextMixin(generics.GenericAPIView):
@@ -73,19 +83,76 @@ class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        qs = Song.objects.cache()
+
+        if "sort" in self.request.query_params:
+            sorts = self.request.query_params["sort"].split(",")
+            for sort in sorts:
+                pref = "-"
+                if sort.startswith("-"):
+                    pref = ""
+                if sort == "likes":
+                    qs = qs.order_by(pref + "likes")
+                elif sort == "length":
+                    qs = qs.order_by(pref + "length")
+                elif sort == "played":
+                    qs = qs.order_by(pref + "played")
+                elif sort == "uploaded":
+                    qs = qs.order_by(pref + "created")
+
         if self.request.user.is_authenticated:
-            return (
-                Song.objects.all()
-                .exclude(
-                    id__in=SongUserRating.objects.filter(
-                        user=self.request.user,
-                        like=False,
-                    ).values_list("song_id", flat=True)
-                )
-                .prefetch_related("authors")
-                .select_related("album")
+            return qs.exclude(
+                id__in=SongUserRating.objects.filter(
+                    user=self.request.user,
+                    like=False,
+                ).values_list("song_id", flat=True)
             )
-        return Song.objects.all().prefetch_related("authors").select_related("album")
+        return qs
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="sort",
+                description="Sorting algorithm",
+                required=False,
+                type=str,
+                examples=[
+                    OpenApiExample(
+                        "Default",
+                        description="by date added",
+                        value=None,
+                    ),
+                    OpenApiExample(
+                        "played",
+                        description="by total times played",
+                        value="played",
+                    ),
+                    OpenApiExample(
+                        "likes",
+                        description="by total likes",
+                        value="likes",
+                    ),
+                    OpenApiExample(
+                        "likes reversed",
+                        description="by total likes",
+                        value="-likes",
+                    ),
+                    OpenApiExample(
+                        "length",
+                        description="by track length",
+                        value="length",
+                    ),
+                    OpenApiExample(
+                        "uploaded",
+                        description="by date uploaded",
+                        value="uploaded",
+                    ),
+                ],
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class RetrieveUpdateDestroySongAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -142,15 +209,10 @@ class ListDislikedSongsAPIView(generics.ListAPIView):
         return context
 
     def get_queryset(self):
-        return (
-            Song.objects.cache()
-            .filter(
-                id__in=SongUserRating.objects.cache()
-                .filter(user=self.request.user, like=True)
-                .values_list("song_id", flat=False)
-            )
-            .prefetch_related("authors")
-            .select_related("album")
+        return Song.objects.cache().filter(
+            id__in=SongUserRating.objects.cache()
+            .filter(user=self.request.user, like=True)
+            .values_list("song_id", flat=False)
         )
 
 
@@ -240,3 +302,45 @@ class RetrieveUpdateDestroyAuthorAPIView(
     lookup_url_kwarg = "slug"
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = FullAuthorSerializer
+
+
+class ListenSongAPIView(generics.GenericAPIView):
+    serializer_class = LikeDislikeSongSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Song.objects.cache()
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=False)
+        data = serializer.validated_data
+
+        try:
+            song = Song.objects.cache().get(slug=data["song"])
+        except Song.DoesNotExist:
+            return Response(status=404)
+        if self.request.user.is_authenticated:
+            listen_to_song.apply_async(
+                kwargs={"song_id": song.id, "user_id": self.request.user.id},
+                countdown=2,
+            )
+        else:
+            listen_to_song.apply_async(
+                kwargs={"song_id": song.id},
+                countdown=2,
+            )
+        return Response(status=201)
+
+
+class ListUserListenedSongsAPIView(generics.ListAPIView):
+    serializer_class = ListSongSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Song.objects.cache().filter(
+            id__in=UserListenHistory.objects.cache()
+            .filter(user=self.request.user)
+            .values_list("song_id", flat=True)
+        )
