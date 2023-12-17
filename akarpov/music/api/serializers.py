@@ -243,10 +243,16 @@ class FullAlbumSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(AuthorSerializer(many=True))
     def get_artists(self, obj):
+        artists = []
+        qs = Author.objects.cache().filter(
+            songs__id__in=obj.songs.cache().all().values("id").distinct()
+        )
+        for artist in qs:
+            if artist not in artists:
+                artists.append(artist)
+
         return AuthorSerializer(
-            Author.objects.cache().filter(
-                songs__id__in=obj.songs.cache().all().values("id")
-            ),
+            artists,
             many=True,
         ).data
 
@@ -265,10 +271,17 @@ class FullAuthorSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(AlbumSerializer(many=True))
     def get_albums(self, obj):
+        qs = Album.objects.cache().filter(
+            songs__id__in=obj.songs.cache().all().values("id").distinct()
+        )
+        albums = []
+        for album in qs:
+            # TODO: rewrite to filter
+            if album not in albums:
+                albums.append(album)
+
         return AlbumSerializer(
-            Album.objects.cache().filter(
-                songs__id__in=obj.songs.cache().all().values("id")
-            ),
+            albums,
             many=True,
         ).data
 
