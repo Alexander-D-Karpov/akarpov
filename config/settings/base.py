@@ -74,7 +74,7 @@ CACHEOPS = {
     "blog.post": {"ops": ("fetch", "get"), "timeout": 20 * 15},
     "themes.theme": {"ops": ("fetch", "get"), "timeout": 60 * 60},
     "gallery.*": {"ops": ("fetch", "get", "list"), "timeout": 60 * 15},
-    "files.*": {"ops": ("fetch", "get"), "timeout": 60},
+    "files.*": {"ops": ("fetch", "get", "list"), "timeout": 60},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
     "music.*": {"ops": ("fetch", "get", "list"), "timeout": 60 * 15},
 }
