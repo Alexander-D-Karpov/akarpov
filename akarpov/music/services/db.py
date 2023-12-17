@@ -1,6 +1,8 @@
 import os
 
+from deep_translator import GoogleTranslator
 from django.core.files import File
+from django.utils.text import slugify
 from mutagen import File as MutagenFile
 from mutagen.id3 import APIC, ID3, TCON, TORY, TextFrame
 from mutagen.mp3 import MP3
@@ -72,15 +74,31 @@ def load_track(
     if kwargs:
         song.meta = kwargs
 
+    new_file_name = (
+        str(
+            slugify(
+                GoogleTranslator(source="auto", target="en").translate(
+                    f"{song.name} {' '.join([x.name for x in song.authors])}",
+                    target_language="en",
+                )
+            )
+        )
+        + ".mp3"
+    )
+
     if image_path:
         with open(path, "rb") as file, open(image_path, "rb") as image:
             song.image = File(image, name=image_path.split("/")[-1])
-            song.file = File(file, name=path.split("/")[-1])
+            song.file = File(file, name=new_file_name)
             song.save()
     else:
         with open(path, "rb") as file:
-            song.file = File(file, name=path.split("/")[-1])
+            song.file = File(file, name=new_file_name)
             song.save()
+
+    if not album.image and song.image:
+        album.image = song.image
+        album.save()
 
     if authors:
         song.authors.set(authors)

@@ -114,6 +114,7 @@ pydantic-settings = "^2.0.3"
 django-elasticsearch-dsl = "^8.0"
 elasticsearch-dsl = "^8.11.0"
 numpy = "1.25.2"
+deep-translator = "1.4.2"
 
 
 [build-system]

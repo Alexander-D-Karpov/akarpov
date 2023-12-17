@@ -3,7 +3,7 @@ import os
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
-from akarpov.music.models import PlaylistSong, Song, SongUserRating
+from akarpov.music.models import Album, Author, PlaylistSong, Song, SongUserRating
 
 
 @receiver(post_delete, sender=Song)
@@ -11,6 +11,20 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     if instance.file:
         if os.path.isfile(instance.file.path):
             os.remove(instance.file.path)
+
+
+@receiver(post_save, sender=Author)
+def author_create(sender, instance, created, **kwargs):
+    if created:
+        # TODO: add logic to retrieve author info here
+        return
+
+
+@receiver(post_save, sender=Album)
+def album_create(sender, instance, created, **kwargs):
+    if created:
+        # TODO: add logic to retrieve author info here
+        return
 
 
 @receiver(post_save)
