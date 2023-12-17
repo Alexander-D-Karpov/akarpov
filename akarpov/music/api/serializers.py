@@ -239,10 +239,20 @@ class ListPlaylistSerializer(serializers.ModelSerializer):
 
 class FullAlbumSerializer(serializers.ModelSerializer):
     songs = ListSongSerializer(many=True, read_only=True)
+    artists = serializers.SerializerMethodField("get_artists")
+
+    @extend_schema_field(AuthorSerializer(many=True))
+    def get_artists(self, obj):
+        return AuthorSerializer(
+            Author.objects.cache().filter(
+                songs__id__in=obj.songs.cache().all().values("id")
+            ),
+            many=True,
+        ).data
 
     class Meta:
         model = Album
-        fields = ["name", "link", "image", "songs"]
+        fields = ["name", "link", "image", "songs", "artists"]
         extra_kwargs = {
             "link": {"read_only": True},
             "image": {"read_only": True},
@@ -251,10 +261,20 @@ class FullAlbumSerializer(serializers.ModelSerializer):
 
 class FullAuthorSerializer(serializers.ModelSerializer):
     songs = ListSongSerializer(many=True, read_only=True)
+    albums = serializers.SerializerMethodField(method_name="get_albums")
+
+    @extend_schema_field(AlbumSerializer(many=True))
+    def get_albums(self, obj):
+        return AlbumSerializer(
+            Album.objects.cache().filter(
+                songs__id__in=obj.songs.cache().all().values("id")
+            ),
+            many=True,
+        ).data
 
     class Meta:
         model = Author
-        fields = ["name", "link", "image", "songs"]
+        fields = ["name", "link", "image", "songs", "albums"]
         extra_kwargs = {
             "link": {"read_only": True},
             "image": {"read_only": True},

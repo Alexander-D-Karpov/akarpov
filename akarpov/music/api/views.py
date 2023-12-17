@@ -272,9 +272,7 @@ class ListAlbumsAPIView(generics.ListAPIView):
     serializer_class = AlbumSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
-        return Album.objects.all()
+    queryset = Album.objects.cache().all()
 
 
 class RetrieveUpdateDestroyAlbumAPIView(
@@ -284,15 +282,14 @@ class RetrieveUpdateDestroyAlbumAPIView(
     lookup_url_kwarg = "slug"
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = FullAlbumSerializer
+    queryset = Album.objects.cache().all()
 
 
 class ListAuthorsAPIView(generics.ListAPIView):
     serializer_class = AuthorSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
-        return Author.objects.all()
+    queryset = Author.objects.cache().all()
 
 
 class RetrieveUpdateDestroyAuthorAPIView(
@@ -302,6 +299,7 @@ class RetrieveUpdateDestroyAuthorAPIView(
     lookup_url_kwarg = "slug"
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = FullAuthorSerializer
+    queryset = Author.objects.cache().all()
 
 
 class ListenSongAPIView(generics.GenericAPIView):
