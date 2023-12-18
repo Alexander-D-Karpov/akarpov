@@ -130,9 +130,9 @@ def update_album_info(album: AlbumModel) -> None:
         if search_album.artists:
             for x in search_album.artists:
                 try:
-                    authors.append(Author.objects.get_or_create(name=x.name)[0])
-                except Author.MultipleObjectsReturned:
-                    authors.append(Author.objects.filter(name=x.name).first())
+                    authors.append(Author.objects.get(name=x.name))
+                except Author.DoesNotExist:
+                    authors.append(Author.objects.create(name=x.name))
         album.authors.set(authors)
         album.meta = data
         image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
