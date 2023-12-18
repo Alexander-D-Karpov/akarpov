@@ -23,7 +23,7 @@ class Album(BaseImageModel, ShortLinkModel):
     name = models.CharField(max_length=200, unique=True)
     link = models.URLField(blank=True)
     meta = models.JSONField(blank=True, null=True)
-    authors = models.ManyToManyField("Album", related_name="albums")
+    authors = models.ManyToManyField("Author", related_name="albums")
 
     def get_absolute_url(self):
         return reverse("music:album", kwargs={"slug": self.slug})

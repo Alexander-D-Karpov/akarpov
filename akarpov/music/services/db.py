@@ -113,7 +113,7 @@ def load_track(
         album.save()
 
     if authors:
-        song.authors.set(authors)
+        song.authors.set([x.id for x in authors])
 
     # set music meta
     tag = MutagenFile(song.file.path)
