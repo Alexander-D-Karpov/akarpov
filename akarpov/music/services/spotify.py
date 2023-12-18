@@ -2,8 +2,6 @@ import spotipy
 from django.conf import settings
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from akarpov.music.services.yandex import search_ym
-
 
 def login() -> spotipy.Spotify:
     if not settings.MUSIC_SPOTIFY_ID or not settings.MUSIC_SPOTIFY_SECRET:
@@ -47,15 +45,7 @@ def get_track_info(name: str) -> dict:
     # try to get genre
     sp = login()
     genres = sp.album(res["album"]["external_urls"]["spotify"])["genres"]
-    if not genres:
-        ym_info = search_ym(info["artist"] + " " + info["title"])
-        if ym_info and "genre" in ym_info:
-            info["genre"] = ym_info["genre"]
-        else:
-            genres = sp.artist(res["artists"][0]["external_urls"]["spotify"])["genres"]
-            if genres:
-                info["genre"] = genres[0]
-    else:
+    if genres:
         info["genre"] = genres[0]
 
     return info

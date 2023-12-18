@@ -2,11 +2,13 @@ import os
 from random import randint
 
 from django.conf import settings
-from django.utils.text import slugify
+from django.core.files import File
 from yandex_music import Client, Playlist, Search, Track
+from yandex_music.exceptions import NotFoundError
 
 from akarpov.music import tasks
-from akarpov.music.models import Song, SongInQue
+from akarpov.music.models import Album as AlbumModel
+from akarpov.music.models import Author, Song, SongInQue
 from akarpov.music.services.db import load_track
 
 
@@ -43,7 +45,7 @@ def search_ym(name: str):
     return info
 
 
-def load_file_meta(track: int, user_id: int):
+def load_file_meta(track: int, user_id: int) -> str:
     que = SongInQue.objects.create()
     client = login()
     track = client.tracks(track)[0]  # type: Track
@@ -55,19 +57,32 @@ def load_file_meta(track: int, user_id: int):
             name=track.title, album__name=track.albums[0].title
         ):
             que.delete()
-            return sng.first()
+            return str(sng.first())
     except IndexError:
         que.delete()
-        return
+        return ""
 
-    filename = slugify(f"{track.artists[0].name} - {track.title}")
+    print("Start downloading")
+
+    filename = f"_{str(randint(10000, 9999999))}"
     orig_path = f"{settings.MEDIA_ROOT}/{filename}.mp3"
     album = track.albums[0]
 
     track.download(filename=orig_path, codec="mp3")
     img_pth = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
 
-    track.download_cover(filename=img_pth)
+    try:
+        track.download_cover(filename=img_pth)
+    except NotFoundError:
+        img_pth = None
+
+    print("Downloaded file")
+
+    try:
+        lyrics = track.get_lyrics("LRC").fetch_lyrics()
+    except NotFoundError:
+        lyrics = ""
+    print("Start loading")
     song = load_track(
         orig_path,
         img_pth,
@@ -77,7 +92,11 @@ def load_file_meta(track: int, user_id: int):
         track.title,
         release=album.release_date,
         genre=album.genre,
+        lyrics=lyrics,
+        explicit=track.explicit,
+        track_source=track.track_source,
     )
+    print("Loaded")
     if os.path.exists(orig_path):
         os.remove(orig_path)
     if os.path.exists(img_pth):
@@ -96,3 +115,65 @@ def load_playlist(link: str, user_id: int):
         tasks.load_ym_file_meta.apply_async(
             kwargs={"track": track.track.id, "user_id": user_id}
         )
+
+
+def update_album_info(album: AlbumModel) -> None:
+    client = login()
+    search = client.search(album.name, type_="album")  # type: Search
+
+    if search.albums:
+        search_album = search.albums.results[0]
+        data = {
+            "name": search_album.title,
+            "tracks": search_album.track_count,
+            "explicit": search_album.explicit,
+            "year": search_album.year,
+            "genre": search_album.genre,
+            "description": search_album.description,
+            "type": search_album.type,
+        }
+        authors = []
+        if search_album.artists:
+            authors = [
+                Author.objects.get_or_create(name=x.name)[0]
+                for x in search_album.artists
+            ]
+        album.authors.set(authors)
+        album.meta = data
+        image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
+        if not search_album.cover_uri:
+            album.save()
+            return
+        search_album.download_cover(filename=image_path)
+        with open(image_path, "rb") as f:
+            album.image = File(f, name=image_path.split("/")[-1])
+            album.save()
+        os.remove(image_path)
+
+
+def update_author_info(author: Author) -> None:
+    client = login()
+    search = client.search(author.name, type_="artist")  # type: Search
+
+    print("Loading author info " + author.name)
+
+    if search.artists:
+        search_artist = search.artists.results[0]
+        data = {
+            "name": search_artist.name,
+            "description": search_artist.description,
+            "genres": search_artist.genres,
+        }
+
+        author.meta = data
+
+        image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
+        if not search_artist.cover:
+            author.save()
+            return
+        print("Downloading image")
+        search_artist.cover.download(filename=image_path)
+        with open(image_path, "rb") as f:
+            author.image = File(f, name=image_path.split("/")[-1])
+            author.save()
+        os.remove(image_path)

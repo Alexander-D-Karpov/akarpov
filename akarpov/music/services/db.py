@@ -78,7 +78,7 @@ def load_track(
         str(
             slugify(
                 GoogleTranslator(source="auto", target="en").translate(
-                    f"{song.name} {' '.join([x.name for x in song.authors])}",
+                    f"{song.name} {' '.join([x.name for x in authors])}",
                     target_language="en",
                 )
             )
@@ -124,9 +124,9 @@ def load_track(
                     data=f.read(),
                 )
             )
-    if "release" in kwargs:
+    if "release" in kwargs and kwargs["release"]:
         tag.tags.add(TORY(text=kwargs["release"]))
-    if "genre" in kwargs:
+    if "genre" in kwargs and kwargs["genre"]:
         tag.tags.add(TCON(text=kwargs["genre"]))
     tag.save()
 

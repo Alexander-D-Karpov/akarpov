@@ -10,6 +10,8 @@ from akarpov.utils.cache import cache_model_property
 class Author(BaseImageModel, ShortLinkModel):
     name = models.CharField(max_length=200)
     link = models.URLField(blank=True)
+    meta = models.JSONField(blank=True, null=True)
+    albums = models.ManyToManyField("Album", related_name="authors")
 
     def get_absolute_url(self):
         return reverse("music:author", kwargs={"slug": self.slug})
@@ -21,6 +23,7 @@ class Author(BaseImageModel, ShortLinkModel):
 class Album(BaseImageModel, ShortLinkModel):
     name = models.CharField(max_length=200)
     link = models.URLField(blank=True)
+    meta = models.JSONField(blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("music:album", kwargs={"slug": self.slug})

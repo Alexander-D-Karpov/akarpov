@@ -7,10 +7,8 @@ class MusicConfig(AppConfig):
     name = "akarpov.music"
 
     def ready(self):
-        try:
-            import akarpov.music.signals  # noqa F401
-        except ImportError:
-            pass
+        import akarpov.music.signals  # noqa F401
+
         try:
             from akarpov.music.tasks import start_next_song
 
