@@ -62,8 +62,6 @@ def load_file_meta(track: int, user_id: int) -> str:
         que.delete()
         return ""
 
-    print("Start downloading")
-
     filename = f"_{str(randint(10000, 9999999))}"
     orig_path = f"{settings.MEDIA_ROOT}/{filename}.mp3"
     album = track.albums[0]
@@ -76,13 +74,10 @@ def load_file_meta(track: int, user_id: int) -> str:
     except NotFoundError:
         img_pth = None
 
-    print("Downloaded file")
-
     try:
         lyrics = track.get_lyrics("LRC").fetch_lyrics()
     except NotFoundError:
         lyrics = ""
-    print("Start loading")
     song = load_track(
         orig_path,
         img_pth,
@@ -96,7 +91,6 @@ def load_file_meta(track: int, user_id: int) -> str:
         explicit=track.explicit,
         track_source=track.track_source,
     )
-    print("Loaded")
     if os.path.exists(orig_path):
         os.remove(orig_path)
     if os.path.exists(img_pth):
@@ -134,10 +128,11 @@ def update_album_info(album: AlbumModel) -> None:
         }
         authors = []
         if search_album.artists:
-            authors = [
-                Author.objects.get_or_create(name=x.name)[0]
-                for x in search_album.artists
-            ]
+            for x in search_album.artists:
+                try:
+                    authors.append(Author.objects.get_or_create(name=x.name)[0])
+                except Author.MultipleObjectsReturned:
+                    authors.append(Author.objects.filter(name=x.name).first())
         album.authors.set(authors)
         album.meta = data
         image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
@@ -155,8 +150,6 @@ def update_author_info(author: Author) -> None:
     client = login()
     search = client.search(author.name, type_="artist")  # type: Search
 
-    print("Loading author info " + author.name)
-
     if search.artists:
         search_artist = search.artists.results[0]
         data = {
@@ -171,7 +164,6 @@ def update_author_info(author: Author) -> None:
         if not search_artist.cover:
             author.save()
             return
-        print("Downloading image")
         search_artist.cover.download(filename=image_path)
         with open(image_path, "rb") as f:
             author.image = File(f, name=image_path.split("/")[-1])
