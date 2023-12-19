@@ -13,6 +13,11 @@ from akarpov.files.models import File
 from ..documents import FileDocument
 from .lema import lemmatize_and_remove_stopwords
 
+"""
+Calculus on types of searches:
+https://new.akarpov.ru/files/FZUTFBIyfbdlDHVzxUNU
+"""
+
 
 class BaseSearch:
     def __init__(self, queryset: QuerySet | None = None):

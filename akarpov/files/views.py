@@ -92,9 +92,7 @@ class TopFolderView(LoginRequiredMixin, ListView, FileFilterView):
         ):
             return self.filter(BaseFileItem.objects.none())
         return self.filter(
-            BaseFileItem.objects.cache().filter(
-                user=self.request.user, parent__isnull=True
-            )
+            BaseFileItem.objects.filter(user=self.request.user, parent__isnull=True)
         )
 
 
