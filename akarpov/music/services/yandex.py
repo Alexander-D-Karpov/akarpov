@@ -126,24 +126,25 @@ def update_album_info(album: AlbumModel) -> None:
             "description": search_album.description,
             "type": search_album.type,
         }
+
+        album.meta = data
+        image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
+        if search_album.cover_uri:
+            search_album.download_cover(filename=image_path)
+            with open(image_path, "rb") as f:
+                album.image = File(f, name=image_path.split("/")[-1])
+                album.save()
+            os.remove(image_path)
+
         authors = []
         if search_album.artists:
             for x in search_album.artists:
                 try:
-                    authors.append(Author.objects.get_or_create(name=x.name)[0])
-                except Author.MultipleObjectsReturned:
-                    authors.append(Author.objects.filter(name=x.name).first())
-        album.authors.set(authors)
-        album.meta = data
-        image_path = str(settings.MEDIA_ROOT + f"/_{str(randint(10000, 99999))}.png")
-        if not search_album.cover_uri:
-            album.save()
-            return
-        search_album.download_cover(filename=image_path)
-        with open(image_path, "rb") as f:
-            album.image = File(f, name=image_path.split("/")[-1])
-            album.save()
-        os.remove(image_path)
+                    authors.append(Author.objects.get(name=x.name))
+                except Author.DoesNotExist:
+                    authors.append(Author.objects.create(name=x.name))
+        album.authors.set([x.id for x in authors])
+        album.save()
 
 
 def update_author_info(author: Author) -> None:

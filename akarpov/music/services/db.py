@@ -27,16 +27,28 @@ def load_track(
     if album and type(album) is str and album.startswith("['"):
         album = album.replace("['", "").replace("']", "")
 
+    re_authors = []
     if authors:
-        authors = [Author.objects.get_or_create(name=x)[0] for x in authors if authors]
-    else:
-        authors = []
+        for x in authors:
+            try:
+                re_authors.append(Author.objects.get(name=x))
+            except Author.DoesNotExist:
+                re_authors.append(Author.objects.create(name=x))
+    authors = re_authors
+    album_name = None
     if album:
         if type(album) is str:
-            album = Album.objects.get_or_create(name=album)[0]
+            album_name = album
         elif type(album) is list:
-            album = Album.objects.get_or_create(name=album[0])[0]
-    else:
+            album_name = album[0]
+        else:
+            album_name = None
+        if album_name:
+            try:
+                album = Album.objects.get(name=album_name)
+            except Album.DoesNotExist:
+                album = Album.objects.create(name=album_name)
+    if not album_name:
         album = None
 
     if sng := Song.objects.filter(
@@ -101,7 +113,7 @@ def load_track(
         album.save()
 
     if authors:
-        song.authors.set(authors)
+        song.authors.set([x.id for x in authors])
 
     # set music meta
     tag = MutagenFile(song.file.path)
