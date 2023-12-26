@@ -29,6 +29,7 @@ def search_ym(name: str):
         info = {
             "artists": [artist.name for artist in best.artists],
             "title": best.title,
+            "album": best.albums[0].title,
         }
 
         # getting genre

@@ -29,8 +29,10 @@ def get_track_info(name: str) -> dict:
         "artist": "",
         "title": "",
     }
-
-    res = search(name)["tracks"]["items"]
+    try:
+        res = search(name)["tracks"]["items"]
+    except TypeError:
+        return info
     if not res:
         return info
     res = res[0]

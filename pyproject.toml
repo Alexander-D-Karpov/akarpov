@@ -95,7 +95,6 @@ yt-dlp = "^2023.7.6"
 pytube = "^15.0.0"
 urllib3 = ">=1.26"
 requests = ">=2.25"
-extract-msg = "0.28.7"
 pytest-factoryboy = "2.3.1"
 pytest-xdist = "^3.3.1"
 pytest-mock = "^3.11.1"
@@ -103,7 +102,6 @@ pytest-asyncio = "^0.21.1"
 pytest-lambda = "^2.2.0"
 pgvector = "^0.2.2"
 pycld2 = "^0.41"
-textract = "^1.6.5"
 uuid6 = "^2023.5.2"
 uvicorn = "^0.24.0.post1"
 nltk = "^3.8.1"
@@ -115,6 +113,7 @@ django-elasticsearch-dsl = "^8.0"
 elasticsearch-dsl = "^8.11.0"
 numpy = "1.25.2"
 deep-translator = "1.4.2"
+textract = {git = "https://github.com/Alexander-D-Karpov/textract.git"}
 
 
 [build-system]
