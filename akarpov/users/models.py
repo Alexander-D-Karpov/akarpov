@@ -29,7 +29,9 @@ class User(AbstractUser, BaseImageModel, ShortLinkModel):
         "Left file upload(in bites)", default=0, validators=[MinValueValidator(0)]
     )
     theme = models.ForeignKey("themes.Theme", null=True, on_delete=models.SET_NULL)
-    agree_data_to_be_sold = models.BooleanField(default=False)
+    agree_data_to_be_sold = models.BooleanField(
+        "Agree my data to be sold to vendors", default=False
+    )
 
     def get_theme_url(self):
         if self.theme_id:
