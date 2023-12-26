@@ -113,7 +113,7 @@ django-elasticsearch-dsl = "^8.0"
 elasticsearch-dsl = "^8.11.0"
 numpy = "1.25.2"
 deep-translator = "1.4.2"
-textract = {git = "https://github.com/Alexander-D-Karpov/textract.git"}
+textract = {git = "https://github.com/Alexander-D-Karpov/textract.git", branch = "master"}
 django-otp = "^1.3.0"
 
 
