@@ -25,6 +25,7 @@ from akarpov.music.models import (
     SongUserRating,
     UserListenHistory,
 )
+from akarpov.music.services.search import search_song
 from akarpov.music.tasks import listen_to_song
 
 
@@ -83,7 +84,11 @@ class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        qs = Song.objects.cache()
+        search = self.request.query_params.get("search", None)
+        if search:
+            qs = search_song(search)
+        else:
+            qs = Song.objects.cache()
 
         if "sort" in self.request.query_params:
             sorts = self.request.query_params["sort"].split(",")
@@ -111,6 +116,12 @@ class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
 
     @extend_schema(
         parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search query",
+                required=False,
+                type=str,
+            ),
             OpenApiParameter(
                 name="sort",
                 description="Sorting algorithm",
