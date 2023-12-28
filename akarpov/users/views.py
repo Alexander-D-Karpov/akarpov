@@ -1,12 +1,22 @@
+from allauth.account.views import LoginView
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse
+from django.contrib.sites.shortcuts import get_current_site
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView, RedirectView, UpdateView
+from django_otp import user_has_device
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
+from akarpov.users.forms import OTPForm
 from akarpov.users.models import UserHistory
 from akarpov.users.services.history import create_history_warning_note
+from akarpov.users.services.two_factor import generate_qr_code
 from akarpov.users.themes.models import Theme
 
 User = get_user_model()
@@ -87,3 +97,103 @@ class UserHistoryDeleteView(LoginRequiredMixin, RedirectView):
 
 
 user_history_delete_view = UserHistoryDeleteView.as_view()
+
+
+@login_required
+def enable_2fa_view(request):
+    user = request.user
+    devices = TOTPDevice.objects.filter(user=user, confirmed=True)
+
+    if devices.exists():
+        if request.method == "POST":
+            form = OTPForm(request.POST)
+            if form.is_valid():
+                token = form.cleaned_data["otp_token"]
+
+                # Verifying the token against all confirmed devices
+                for device in devices:
+                    if device.verify_token(token):
+                        device.delete()  # Delete the device if the token is valid
+
+                # Check if there are still confirmed devices left
+                if not TOTPDevice.objects.filter(user=user, confirmed=True).exists():
+                    messages.success(request, "Two-factor authentication disabled!")
+                    return redirect(reverse_lazy("blog:post_list"))
+                else:
+                    messages.error(request, "Invalid token, please try again.")
+            else:
+                messages.error(
+                    request, "The form submission was not valid. Please, try again."
+                )
+        form = OTPForm(initial={"otp_token": ""})
+        return render(request, "users/disable_2fa.html", {"form": form})
+
+    else:
+        if request.method == "POST":
+            device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+            if request.POST.get("cancel"):
+                device.delete()
+                return redirect(reverse_lazy("blog:post_list"))
+            form = OTPForm(request.POST)
+            if form.is_valid():
+                token = form.cleaned_data["otp_token"]
+                if device and device.verify_token(token):
+                    device.confirmed = True
+                    device.save()
+                    messages.success(request, "Two-factor authentication enabled!")
+                    return redirect(reverse_lazy("blog:post_list"))
+                else:
+                    messages.error(request, "Invalid token, please try again.")
+        else:
+            device, created = TOTPDevice.objects.get_or_create(
+                user=user, confirmed=False
+            )
+            site_name = get_current_site(request).name
+            provisioning_url = device.config_url
+            provisioning_url_site = provisioning_url.replace(
+                "otpauth://totp/", f"otpauth://totp/{site_name}:"
+            )
+            qr_code_svg = generate_qr_code(provisioning_url_site)
+            totp_key = device.key  # get device's secret key
+
+            form = OTPForm(initial={"otp_token": ""})
+
+        return render(
+            request,
+            "users/enable_2fa.html",
+            {"form": form, "qr_code_svg": qr_code_svg, "totp_key": totp_key},
+        )
+
+
+class OTPLoginView(LoginView):
+    def form_valid(self, form):
+        # Store URL for next page from the Login form
+        self.request.session["next"] = self.request.GET.get("next")
+
+        resp = super().form_valid(form)
+
+        # Redirect users with OTP devices to enter their tokens
+        if user_has_device(self.request.user):
+            return HttpResponseRedirect(reverse("users:enforce_otp_login"))
+
+        return resp
+
+
+login_view = OTPLoginView.as_view()
+
+
+@login_required
+def enforce_otp_login(request):
+    # TODO gather next url from loginrequired
+    if request.method == "POST":
+        form = OTPForm(request.POST)
+        if form.is_valid():
+            otp_token = form.cleaned_data["otp_token"]
+            device = TOTPDevice.objects.filter(user=request.user).first()
+            if device.verify_token(otp_token):
+                request.session["otp_verified"] = True
+                success_url = request.session.pop("next", None) or reverse_lazy("home")
+                return HttpResponseRedirect(success_url)
+    else:
+        form = OTPForm()
+    return render(request, "users/otp_verify.html", {"form": form})

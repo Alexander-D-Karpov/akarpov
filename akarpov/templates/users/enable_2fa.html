@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-5">Enable Two-Factor Authentication</h1>
+    <p class="lead">Scan the QR code below or enter key with your TOTP app, then enter the code provided by the app to enable 2FA.</p>
+    <p>Your TOTP secret key is: {{ totp_key }}</p>
+
+    <div class="mb-4">
+        <img src="data:image/svg+xml;utf8,{{ qr_code_svg }}">
+    </div>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary mt-2">Confirm</button>
+        <button type="submit" class="btn btn-secondary mt-2" name="cancel">Cancel</button>
+    </form>
+</div>
+{% endblock %}

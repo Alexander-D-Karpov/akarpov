@@ -14,6 +14,7 @@ from drf_spectacular.views import (
 
 from akarpov.about.views import about_view, list_faq
 from akarpov.tools.shortener.views import redirect_view
+from akarpov.users.views import OTPLoginView
 from config.sitemaps import sitemaps
 
 urlpatterns = [
@@ -44,6 +45,7 @@ urlpatterns = [
     path("gallery/", include("akarpov.gallery.urls", namespace="gallery")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("accounts/", include("allauth.urls")),
+    path("accounts/login/", OTPLoginView.as_view(), name="account_login"),
     path("", include("akarpov.blog.urls", namespace="blog")),
     path("<str:slug>", redirect_view, name="short_url"),
     # Your stuff: custom urls includes go here

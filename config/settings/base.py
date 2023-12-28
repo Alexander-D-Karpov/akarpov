@@ -143,6 +143,12 @@ THIRD_PARTY_APPS = [
     "django_tables2",
     "location_field",
     "django_elasticsearch_dsl",
+    # 2fa
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_hotp",
+    "django_otp.plugins.otp_email",
 ]
 
 HEALTH_CHECKS = [
@@ -237,6 +243,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
+    "akarpov.users.middleware.Enforce2FAMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -317,17 +325,6 @@ X_FRAME_OPTIONS = "DENY"
 
 # EMAIL
 # ------------------------------------------------------------------------------
-"""
-    host: EMAIL_HOST
-    port: EMAIL_PORT
-    username: EMAIL_HOST_USER
-    password: EMAIL_HOST_PASSWORD
-    use_tls: EMAIL_USE_TLS
-    use_ssl: EMAIL_USE_SSL
-    timeout: EMAIL_TIMEOUT
-    ssl_keyfile: EMAIL_SSL_KEYFILE
-    ssl_certfile: EMAIL_SSL_CERTFILE
-"""
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND",

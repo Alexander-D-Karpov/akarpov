@@ -19,6 +19,7 @@ def load_dir(path: str, user_id: int):
 
 
 def load_file(path: str, user_id: int):
+    # TODO: convert to mp3 if not mp3
     process_mp3_file(path, user_id)
 
 
