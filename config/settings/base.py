@@ -77,6 +77,7 @@ CACHEOPS = {
     "files.*": {"ops": ("fetch", "get", "list"), "timeout": 60},
     "auth.permission": {"ops": "all", "timeout": 60 * 15},
     "music.*": {"ops": ("fetch", "get", "list"), "timeout": 60 * 15},
+    "otp_totp.totpdevice": {"ops": "all", "timeout": 15 * 60},
 }
 CACHEOPS_REDIS = env.str("REDIS_URL")
 
