@@ -515,7 +515,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 CORS_URLS_REGEX = r"^/api/.*$"
-
+APPEND_SLASH = False
 SPECTACULAR_SETTINGS = {
     "TITLE": "akarpov API",
     "SCHEMA_PATH_PREFIX": "/api/v[0-9]",

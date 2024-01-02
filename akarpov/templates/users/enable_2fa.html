@@ -9,7 +9,7 @@
     <p>Your TOTP secret key is: {{ totp_key }}</p>
 
     <div class="mb-4">
-        <img src="data:image/svg+xml;utf8,{{ qr_code_svg }}">
+        <img id="qr" src="data:image/svg+xml;utf8,{{ qr_code_svg }}">
     </div>
 
     <form method="post" class="form">
