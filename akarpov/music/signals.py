@@ -17,15 +17,14 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=Author)
 def author_create(sender, instance, created, **kwargs):
     if created:
-        songs = Song.objects.filter(authors=instance)
-        update_author_info(instance, songs.first().name if songs.exists() else "")
+        update_author_info(instance)
 
 
 @receiver(post_save, sender=Album)
 def album_create(sender, instance, created, **kwargs):
     if created:
-        songs = Song.objects.filter(album=instance)
-        update_album_info(instance, songs.first().name if songs.exists() else "")
+        authors = instance.authors.all()
+        update_album_info(instance, authors.first().name if authors.exists() else None)
 
 
 @receiver(post_save)

@@ -166,28 +166,34 @@ def get_yandex_artist_info(artist_name: str, client: Client):
 
 
 def download_image(url, save_path):
+    image_path = os.path.join(save_path, f"tmp_{randint(10000, 99999)}.png")
     if type(url) is Cover:
-        url = url["uri"]
-    if not str(url).startswith("http"):
-        url = "https://" + str(url)
-    response = requests.get(url)
-    if response.status_code == 200:
-        image_path = os.path.join(save_path, f"tmp_{randint(10000, 99999)}.png")
-        with open(image_path, "wb") as f:
-            f.write(response.content)
-        return image_path
+        url.download(image_path)
+    else:
+        if not url.startswith("http"):
+            url = "https://" + url
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(image_path, "wb") as f:
+                f.write(response.content)
+            return image_path
     return ""
 
 
-def update_album_info(album: AlbumModel, track_name: str) -> None:
+def update_album_info(album: AlbumModel, author_name: str = None) -> None:
     client = yandex_login()
     spotify_session = create_spotify_session()
 
-    # Retrieve info from both services
-    yandex_album_info = get_yandex_album_info(album.name + " - " + track_name, client)
-    spotify_album_info = get_spotify_album_info(
-        album.name + " - " + track_name, spotify_session
-    )
+    if author_name:
+        yandex_album_info = get_yandex_album_info(
+            album.name + " - " + author_name, client
+        )
+        spotify_album_info = get_spotify_album_info(
+            album.name + " - " + author_name, spotify_session
+        )
+    else:
+        yandex_album_info = get_yandex_album_info(album.name, client)
+        spotify_album_info = get_spotify_album_info(album.name, spotify_session)
 
     # Combine and prioritize Spotify data
     album_data = {}
@@ -271,17 +277,13 @@ def update_album_info(album: AlbumModel, track_name: str) -> None:
             album.save()
 
 
-def update_author_info(author: Author, track_name: str) -> None:
+def update_author_info(author: Author) -> None:
     client = yandex_login()
     spotify_session = create_spotify_session()
 
     # Retrieve info from both services
-    yandex_artist_info = get_yandex_artist_info(
-        author.name + " - " + track_name, client
-    )
-    spotify_artist_info = get_spotify_artist_info(
-        author.name + " - " + track_name, spotify_session
-    )
+    yandex_artist_info = get_yandex_artist_info(author.name, client)
+    spotify_artist_info = get_spotify_artist_info(author.name, spotify_session)
 
     # Combine and prioritize Spotify data
     author_data = {}
