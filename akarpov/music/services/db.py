@@ -10,6 +10,9 @@ from PIL import Image
 from pydub import AudioSegment
 
 from akarpov.music.models import Album, Author, Song
+from akarpov.music.services.info import search_all_platforms
+from akarpov.users.models import User
+from akarpov.utils.generators import generate_charset
 
 
 def load_track(
@@ -23,6 +26,20 @@ def load_track(
     **kwargs,
 ) -> Song:
     p_name = path.split("/")[-1]
+    query = f"{name if name else p_name} - {album if album else ''} - {', '.join(authors) if authors else ''}"
+    search_info = search_all_platforms(query)
+
+    if image_path and search_info.get("album_image", None):
+        os.remove(search_info["album_image"])
+
+    name = name or search_info.get("title", p_name)
+    album = album or search_info.get("album_name", None)
+    authors = authors or search_info.get("artists", [])
+    genre = kwargs.get("genre") or search_info.get("genre", None)
+    image_path = image_path or search_info.get("album_image", "")
+    release = (
+        kwargs["release"] if "release" in kwargs else search_info.get("release", None)
+    )
 
     if album and type(album) is str and album.startswith("['"):
         album = album.replace("['", "").replace("']", "")
@@ -81,26 +98,34 @@ def load_track(
     )
 
     if user_id:
-        song.user_id = user_id
+        song.creator = User.objects.get(id=user_id)
 
-    if kwargs:
-        song.meta = kwargs
+    if release:
+        kwargs["release"] = release
 
-    new_file_name = (
-        str(
-            slugify(
-                GoogleTranslator(source="auto", target="en").translate(
-                    f"{song.name} {' '.join([x.name for x in authors])}",
-                    target_language="en",
-                )
+    kwargs = {
+        "explicit": kwargs["explicit"] if "explicit" in kwargs else None,
+        "genre": genre,
+        "lyrics": kwargs["lyrics"] if "lyrics" in kwargs else None,
+        "track_source": kwargs["track_source"] if "track_source" in kwargs else None,
+    } | kwargs
+
+    song.meta = kwargs
+
+    generated_name = str(
+        slugify(
+            GoogleTranslator(source="auto", target="en").translate(
+                f"{song.name} {' '.join([x.name for x in authors])}",
+                target_language="en",
             )
         )
-        + ".mp3"
     )
+
+    new_file_name = generated_name + ".mp3"
 
     if image_path:
         with open(path, "rb") as file, open(image_path, "rb") as image:
-            song.image = File(image, name=image_path.split("/")[-1])
+            song.image = File(image, name=generated_name + ".png")
             song.file = File(file, name=new_file_name)
             song.save()
     else:
@@ -136,9 +161,9 @@ def load_track(
                     data=f.read(),
                 )
             )
-    if "release" in kwargs and kwargs["release"]:
+    if release:
         tag.tags.add(TORY(text=kwargs["release"]))
-    if "genre" in kwargs and kwargs["genre"]:
+    if genre:
         tag.tags.add(TCON(text=kwargs["genre"]))
     tag.save()
 
@@ -147,5 +172,20 @@ def load_track(
 
     if os.path.exists(image_path):
         os.remove(image_path)
+
+    if generated_name and not Song.objects.filter(slug=generated_name).exists():
+        if len(generated_name) > 20:
+            generated_name = generated_name.split("-")[0]
+            if len(generated_name) > 20:
+                generated_name = generated_name[:20]
+            if not Song.objects.filter(slug=generated_name).exists():
+                song.slug = generated_name
+                song.save()
+            else:
+                song.slug = generated_name[:14] + "_" + generate_charset(5)
+                song.save()
+        else:
+            song.slug = generated_name
+            song.save()
 
     return song

@@ -12,7 +12,7 @@ from pytube import Search, YouTube
 
 from akarpov.music.models import Song
 from akarpov.music.services.db import load_track
-from akarpov.music.services.spotify import get_track_info
+from akarpov.music.services.info import search_all_platforms
 
 final_filename = None
 
@@ -99,7 +99,7 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
                 st = chapters[i][1]
                 audio = sound[st:]
             chapter_path = path.split(".")[0] + chapters[i][2] + ".mp3"
-            info = get_track_info(chapters[i][2])
+            info = search_all_platforms(chapters[i][2])
             audio.export(chapter_path, format="mp3")
             r = requests.get(info["album_image"])
             img_pth = str(
@@ -136,7 +136,7 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
     else:
         print(f"[processing] loading {title}")
 
-        info = get_track_info(title)
+        info = search_all_platforms(title)
         r = requests.get(info["album_image"])
         img_pth = str(
             settings.MEDIA_ROOT

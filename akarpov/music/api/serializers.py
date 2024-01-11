@@ -13,21 +13,21 @@ from akarpov.music.models import (
 from akarpov.users.api.serializers import UserPublicInfoSerializer
 
 
-class AuthorSerializer(serializers.ModelSerializer):
+class ListAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = ["name", "slug", "image_cropped"]
 
 
-class AlbumSerializer(serializers.ModelSerializer):
+class ListAlbumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
         fields = ["name", "slug", "image_cropped"]
 
 
 class SongSerializer(serializers.ModelSerializer):
-    authors = AuthorSerializer(many=True)
-    album = AlbumSerializer()
+    authors = ListAuthorSerializer(many=True)
+    album = ListAlbumSerializer()
     liked = serializers.SerializerMethodField(method_name="get_liked")
 
     @extend_schema_field(serializers.BooleanField)
@@ -51,6 +51,7 @@ class SongSerializer(serializers.ModelSerializer):
             "authors",
             "album",
             "liked",
+            "meta",
         ]
         extra_kwargs = {
             "slug": {"read_only": True},
@@ -73,16 +74,16 @@ class ListSongSerializer(SetUserModelSerializer):
             return obj.id in self.context["likes_ids"]
         return None
 
-    @extend_schema_field(AlbumSerializer)
+    @extend_schema_field(ListAlbumSerializer)
     def get_album(self, obj):
         if obj.album:
-            return AlbumSerializer(Album.objects.cache().get(id=obj.album_id)).data
+            return ListAlbumSerializer(Album.objects.cache().get(id=obj.album_id)).data
         return None
 
-    @extend_schema_field(AuthorSerializer(many=True))
+    @extend_schema_field(ListAuthorSerializer(many=True))
     def get_authors(self, obj):
         if obj.authors:
-            return AuthorSerializer(
+            return ListAuthorSerializer(
                 Author.objects.cache().filter(songs__id=obj.id), many=True
             ).data
         return None
@@ -241,7 +242,7 @@ class FullAlbumSerializer(serializers.ModelSerializer):
     songs = ListSongSerializer(many=True, read_only=True)
     artists = serializers.SerializerMethodField("get_artists")
 
-    @extend_schema_field(AuthorSerializer(many=True))
+    @extend_schema_field(ListAuthorSerializer(many=True))
     def get_artists(self, obj):
         artists = []
         qs = Author.objects.cache().filter(
@@ -251,14 +252,14 @@ class FullAlbumSerializer(serializers.ModelSerializer):
             if artist not in artists:
                 artists.append(artist)
 
-        return AuthorSerializer(
+        return ListAuthorSerializer(
             artists,
             many=True,
         ).data
 
     class Meta:
         model = Album
-        fields = ["name", "link", "image", "songs", "artists"]
+        fields = ["name", "link", "image", "songs", "artists", "meta"]
         extra_kwargs = {
             "link": {"read_only": True},
             "image": {"read_only": True},
@@ -269,7 +270,7 @@ class FullAuthorSerializer(serializers.ModelSerializer):
     songs = ListSongSerializer(many=True, read_only=True)
     albums = serializers.SerializerMethodField(method_name="get_albums")
 
-    @extend_schema_field(AlbumSerializer(many=True))
+    @extend_schema_field(ListAlbumSerializer(many=True))
     def get_albums(self, obj):
         qs = Album.objects.cache().filter(
             songs__id__in=obj.songs.cache().all().values("id").distinct()
@@ -280,14 +281,14 @@ class FullAuthorSerializer(serializers.ModelSerializer):
             if album not in albums:
                 albums.append(album)
 
-        return AlbumSerializer(
+        return ListAlbumSerializer(
             albums,
             many=True,
         ).data
 
     class Meta:
         model = Author
-        fields = ["name", "link", "image", "songs", "albums"]
+        fields = ["name", "link", "image", "songs", "albums", "meta"]
         extra_kwargs = {
             "link": {"read_only": True},
             "image": {"read_only": True},

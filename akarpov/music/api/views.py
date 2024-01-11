@@ -6,12 +6,12 @@ from akarpov.common.api.pagination import StandardResultsSetPagination
 from akarpov.common.api.permissions import IsAdminOrReadOnly, IsCreatorOrReadOnly
 from akarpov.music.api.serializers import (
     AddSongToPlaylistSerializer,
-    AlbumSerializer,
-    AuthorSerializer,
     FullAlbumSerializer,
     FullAuthorSerializer,
     FullPlaylistSerializer,
     LikeDislikeSongSerializer,
+    ListAlbumSerializer,
+    ListAuthorSerializer,
     ListPlaylistSerializer,
     ListSongSerializer,
     PlaylistSerializer,
@@ -280,7 +280,7 @@ class DislikeSongAPIView(generics.CreateAPIView):
 
 
 class ListAlbumsAPIView(generics.ListAPIView):
-    serializer_class = AlbumSerializer
+    serializer_class = ListAlbumSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
     queryset = Album.objects.cache().all()
@@ -297,7 +297,7 @@ class RetrieveUpdateDestroyAlbumAPIView(
 
 
 class ListAuthorsAPIView(generics.ListAPIView):
-    serializer_class = AuthorSerializer
+    serializer_class = ListAuthorSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
     queryset = Author.objects.cache().all()
