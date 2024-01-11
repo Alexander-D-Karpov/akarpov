@@ -101,6 +101,46 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
             chapter_path = path.split(".")[0] + chapters[i][2] + ".mp3"
             info = search_all_platforms(chapters[i][2])
             audio.export(chapter_path, format="mp3")
+            if not info["album_image"].startswith("/"):
+                r = requests.get(info["album_image"])
+                img_pth = str(
+                    settings.MEDIA_ROOT
+                    + f"/{info['album_image'].split('/')[-1]}_{str(randint(100, 999))}"
+                )
+                with open(img_pth, "wb") as f:
+                    f.write(r.content)
+
+                im = Image.open(img_pth)
+                im.save(str(f"{img_pth}.png"))
+                img_pth = f"{img_pth}.png"
+            else:
+                img_pth = info["album_image"]
+
+            if "genre" in info:
+                song = load_track(
+                    chapter_path,
+                    img_pth,
+                    user_id,
+                    info["artists"],
+                    info["album_name"],
+                    chapters[i][2],
+                    genre=info["genre"],
+                )
+            else:
+                song = load_track(
+                    chapter_path,
+                    img_pth,
+                    user_id,
+                    info["artists"],
+                    info["album_name"],
+                    chapters[i][2],
+                )
+            os.remove(chapter_path)
+    else:
+        print(f"[processing] loading {title}")
+
+        info = search_all_platforms(title)
+        if not info["album_image"].startswith("/"):
             r = requests.get(info["album_image"])
             img_pth = str(
                 settings.MEDIA_ROOT
@@ -113,46 +153,13 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
             im.save(str(f"{img_pth}.png"))
 
             os.remove(img_pth)
-            if "genre" in info:
-                song = load_track(
-                    chapter_path,
-                    f"{img_pth}.png",
-                    user_id,
-                    info["artists"],
-                    info["album_name"],
-                    chapters[i][2],
-                    genre=info["genre"],
-                )
-            else:
-                song = load_track(
-                    chapter_path,
-                    f"{img_pth}.png",
-                    user_id,
-                    info["artists"],
-                    info["album_name"],
-                    chapters[i][2],
-                )
-            os.remove(chapter_path)
-    else:
-        print(f"[processing] loading {title}")
-
-        info = search_all_platforms(title)
-        r = requests.get(info["album_image"])
-        img_pth = str(
-            settings.MEDIA_ROOT
-            + f"/{info['album_image'].split('/')[-1]}_{str(randint(100, 999))}"
-        )
-        with open(img_pth, "wb") as f:
-            f.write(r.content)
-
-        im = Image.open(img_pth)
-        im.save(str(f"{img_pth}.png"))
-
-        os.remove(img_pth)
+            img_pth = f"{img_pth}.png"
+        else:
+            img_pth = info["album_image"]
         if "genre" in info:
             song = load_track(
                 path,
-                f"{img_pth}.png",
+                img_pth,
                 user_id,
                 info["artists"],
                 info["album_name"],
@@ -162,7 +169,7 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
         else:
             song = load_track(
                 path,
-                f"{img_pth}.png",
+                img_pth,
                 user_id,
                 info["artists"],
                 info["album_name"],
