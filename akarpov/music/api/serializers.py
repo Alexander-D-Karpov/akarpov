@@ -1,3 +1,4 @@
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -65,6 +66,7 @@ class ListSongSerializer(SetUserModelSerializer):
     album = serializers.SerializerMethodField(method_name="get_album")
     authors = serializers.SerializerMethodField(method_name="get_authors")
     liked = serializers.SerializerMethodField(method_name="get_liked")
+    image_cropped = serializers.SerializerMethodField(method_name="get_image")
 
     @extend_schema_field(serializers.BooleanField)
     def get_liked(self, obj):
@@ -86,6 +88,25 @@ class ListSongSerializer(SetUserModelSerializer):
             return ListAuthorSerializer(
                 Author.objects.cache().filter(songs__id=obj.id), many=True
             ).data
+        return None
+
+    @extend_schema_field(serializers.ImageField)
+    def get_image(self, obj):
+        img = None
+        if obj.image_cropped:
+            img = obj.image_cropped
+        else:
+            album = Album.objects.cache().get(id=obj.album_id)
+            if album.image_cropped:
+                img = album.image_cropped
+            else:
+                authors = Author.objects.cache().filter(
+                    Q(songs__id=obj.id) & ~Q(image="")
+                )
+                if authors:
+                    img = authors.first().image_cropped
+        if img:
+            return self.context["request"].build_absolute_uri(img.url)
         return None
 
     class Meta:

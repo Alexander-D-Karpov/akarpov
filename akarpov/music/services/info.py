@@ -252,6 +252,7 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
                 save=True,
             )
         os.remove(image_path)
+        album.save()
 
     # Update Album Authors from Spotify data if available
     if spotify_album_info and "artists" in spotify_album_info:
@@ -334,6 +335,7 @@ def update_author_info(author: Author) -> None:
                 save=True,
             )
         os.remove(image_path)
+        author.save()
 
     if generated_name and not Author.objects.filter(slug=generated_name).exists():
         if len(generated_name) > 20:
