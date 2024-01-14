@@ -62,6 +62,10 @@
                             <a href="{% url 'about' %}" class="{% active_link 'about' %} text-muted nav-link px-sm-0 px-2">
                                 <i class="fs-5 bi-person"></i><span class="ms-1 d-none d-sm-inline">About me</span></a>
                         </li>
+                        <li>
+                            <a href="{% url 'music:landing' %}" class="{% active_link 'music:landing' %} text-muted nav-link px-sm-0 px-2">
+                                <i class="fs-5 bi-music-note-list"></i><span class="ms-1 d-none d-sm-inline">Music</span></a>
+                        </li>
                         {% if request.user.is_authenticated %}
                         <li>
                             <a href="{% url 'files:main' %}" class="{% active_link 'files:main' %} text-muted nav-link px-sm-0 px-2">

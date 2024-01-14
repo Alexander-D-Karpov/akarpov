@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to music app</h1>
+<p>This is mainly the backend of music, you should consider using side clients like: <a href="https://next.akarpov.ru/msuic">otomir23's client</a></p>
+{% if request.user.is_authenticated %}
+  {% if last_fm_account %}
+    <p>Last.fm connected to {{ last_fm_account }}, <a href="{% url 'music:lastfm_connect' %}">reconnect</a></p>
+  {% else %}
+    <p>Last.fm is not connected, <a href="{% url 'music:lastfm_connect' %}">connect</a></p>
+  {% endif %}
+{% else %}
+  <p>Login to connect last.fm account</p>
+{% endif %}
+{% endblock %}

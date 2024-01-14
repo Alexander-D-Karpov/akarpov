@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neofetch in HTML</title>
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono:500" rel="stylesheet">
+    <style>
+       body {
+            background-color: #1e1e1e;
+            color: #c7c7c7;
+            font-family: 'Fira Mono', monospace;
+            margin: 0;
+            padding:
+
+20px;
+display: grid;
+grid-template-columns: auto 1fr;
+gap: 20px;
+}
+.neofetch-container {
+align-items: start;
+grid-column: 1 / -1;
+display: grid;
+grid-template-columns: minmax(auto, 1fr) 3fr;
+}
+.neofetch-logo img {
+width: 100%;
+height: auto;
+grid-row: 1;
+}
+.neofetch-info {
+white-space: pre;
+line-height: 1.1;
+grid-row: 1;
+}
+.color-blocks {
+grid-column: 1 / -1;
+display: flex;
+justify-content: start;
+margin-top: 5px;
+}
+.color-block {
+height: 20px;
+width: 20px;
+margin-right: 4px;
+}
+.red { background-color: #FF5555; }
+.green { background-color: #50FA7B; }
+.yellow { background-color: #F1FA8C; }
+.blue { background-color: #BD93F9; }
+.purple { background-color: #FF79C6; }
+.cyan { background-color: #8BE9FD; }
+.white { background-color: #BBBBBB; }
+.black { background-color: #282A36; }
+    </style>
+</head>
+<body>
+  <divЮ class="neofetch-container">
+        <div class="neofetch-logo">
+            <img src="archlinux-icon.svg" alt="Arch Linux Logo">
+        </div>
+        <div class="neofetch-info">
+          <span class="key-name">sanspie@TanOS</span>
+          <br>
+          -------------<br>
+          <span class="key-name">OS:</span> ArchLinux x86_64<br>
+          <span class="key-name">Kernel:</span> 6.6.10-arch1-1<br>
+          <span class="key-name">Uptime:</span> 59 mins<br>
+          <span class="key-name">Packages:</span> 2097 (pacman)<br>
+          <span class="key-name">Shell:</span> zsh 5.9<br>
+          <span class="key-name">Resolution:</span> 1920x1080, 3440x1440<br>
+          <span class="key-name">DE:</span> Plasma 5.27.10<br>
+          <span class="key-name">WM:</span> KWin<br>
+          <span class="key-name">WM Theme:</span> Sweet-Dark<br>
+          <span class="key-name">Theme:</span> [Plasma], Breeze [GTK2/3]<br>
+          <span class="key-name">Icons:</span> candy-icons [Plasma], candy-icons [GTK2/3]<br>
+          <span class="key-name">Terminal:</span> alacritty<br>
+          <span class="key-name">CPU:</span> AMD Ryzen 7 3700X (16) @ 3.600GHz<br>
+          <span class="key-name">GPU:</span> NVIDIA GeForce RTX 3060 Lite Hash Rate<br>
+          <span class="key-name">Memory:</span> 12384MiB / 32022MiB<br>
+          <span class="key-name">Disk (/):</span> 351G / 466G (76%)<br>
+        </div>
+        <div class="color-blocks">
+            <div class="color-block black"></div> <!-- Add a black color block if needed -->
+            <div class="color-block red"></div>
+            <div class="color-block green"></div>
+            <div class="color-block yellow"></div>
+            <div class="color-block blue"></div>
+            <div class="color-block purple"></div>
+            <div class="color-block cyan"></div>
+            <div class="color-block white"></div>
+        </div>
+      </div>
+</body>
+</html>

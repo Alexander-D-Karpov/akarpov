@@ -161,3 +161,15 @@ class UserListenHistory(models.Model):
 
     class Meta:
         ordering = ["-created"]
+
+
+class UserMusicProfile(models.Model):
+    user = models.OneToOneField(
+        "users.User", related_name="music_profile", on_delete=models.CASCADE
+    )
+    lastfm_username = models.CharField(max_length=50, blank=True, null=True)
+    lastfm_token = models.CharField(max_length=50, blank=True, null=True)
+    preferences = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"{self.user} music profile"

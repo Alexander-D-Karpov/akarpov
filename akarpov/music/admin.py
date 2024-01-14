@@ -13,6 +13,7 @@ from .models import (
     SongUserRating,
     TempFileUpload,
     UserListenHistory,
+    UserMusicProfile,
 )
 
 
@@ -147,3 +148,5 @@ class UserListenHistoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserListenHistory, UserListenHistoryAdmin)
+
+admin.site.register(UserMusicProfile)

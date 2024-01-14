@@ -1,14 +1,20 @@
+import pylast
+import structlog
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
+from django.conf import settings
+from django.utils import timezone
 from django.utils.timezone import now
 from pytube import Channel, Playlist
 
 from akarpov.music.api.serializers import SongSerializer
-from akarpov.music.models import RadioSong, Song, UserListenHistory
+from akarpov.music.models import RadioSong, Song, UserListenHistory, UserMusicProfile
 from akarpov.music.services import yandex, youtube
 from akarpov.music.services.file import load_dir, load_file
 from akarpov.utils.celery import get_scheduled_tasks_name
+
+logger = structlog.get_logger(__name__)
 
 
 @shared_task
@@ -105,11 +111,31 @@ def listen_to_song(song_id, user_id=None):
         if (
             last_listen
             and last_listen.song_id == song_id
-            or last_listen.created + s.length > now()
+            or last_listen
+            and last_listen.created + s.length > now()
         ):
             return
         UserListenHistory.objects.create(
             user_id=user_id,
             song_id=song_id,
         )
+        try:
+            user_profile = UserMusicProfile.objects.get(user_id=user_id)
+            lastfm_token = user_profile.lastfm_token
+
+            # Initialize Last.fm network with the user's session key
+            network = pylast.LastFMNetwork(
+                api_key=settings.LAST_FM_API_KEY,
+                api_secret=settings.LAST_FM_SECRET,
+                session_key=lastfm_token,
+            )
+            song = Song.objects.get(id=song_id)
+            artist_name = song.artists_names
+            track_name = song.name
+            timestamp = int(timezone.now().timestamp())
+            network.scrobble(artist=artist_name, title=track_name, timestamp=timestamp)
+        except UserMusicProfile.DoesNotExist:
+            pass
+        except Exception as e:
+            logger.error(f"Last.fm scrobble error: {e}")
     return song_id

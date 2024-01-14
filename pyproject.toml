@@ -119,6 +119,7 @@ qrcode = {extras = ["pil"], version = "^7.4.2"}
 spotdl = "^4.2.4"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.23.0"
+pylast = "^5.2.0"
 
 
 [build-system]

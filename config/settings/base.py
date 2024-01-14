@@ -599,6 +599,10 @@ MUSIC_SPOTIFY_SECRET = env("SPOTIFY_SECRET", default="")
 # YANDEX_MUSIC
 MUSIC_YANDEX_TOKEN = env("YANDEX_TOKEN", default="")
 
+# LAST.FM
+LAST_FM_API_KEY = env("LAST_FM_API_KET", default="")
+LAST_FM_SECRET = env("LAST_FM_SECRET", default="")
+
 # ROBOTS
 # ------------------------------------------------------------------------------
 ROBOTS_USE_SITEMAP = True
