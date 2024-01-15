@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.urls import reverse
 
@@ -47,6 +48,7 @@ class Song(BaseImageModel, ShortLinkModel):
     )
     meta = models.JSONField(blank=True, null=True)
     likes = models.IntegerField(default=0)
+    volume = ArrayField(models.IntegerField(), null=True)
 
     def get_absolute_url(self):
         return reverse("music:song", kwargs={"slug": self.slug})

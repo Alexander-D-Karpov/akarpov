@@ -3,7 +3,9 @@ from io import BytesIO
 from pathlib import Path
 from random import randint
 
+import librosa
 import mutagen
+import numpy as np
 from mutagen.id3 import ID3
 from PIL import Image, UnidentifiedImageError
 
@@ -59,3 +61,25 @@ def process_mp3_file(path: str, user_id: int) -> None:
     load_track(path, image_pth, user_id, author, album, name)
     if image_pth and os.path.exists(image_pth):
         os.remove(image_pth)
+
+
+def analyze_music_loudness(mp3_file):
+    y, sr = librosa.load(mp3_file, sr=None)
+    frame_length = int(0.5 * sr)
+    stft = np.abs(librosa.stft(y, n_fft=frame_length, hop_length=frame_length))
+    rms_energy = librosa.feature.rms(
+        S=stft, frame_length=frame_length, hop_length=frame_length
+    )[0]
+    scaling_factor = 10000
+    scaled_rms_energy = rms_energy * scaling_factor
+
+    # Convert the scaled RMS energy to a list of integers
+    rms_energy_integers = [int(x) for x in scaled_rms_energy]
+
+    return rms_energy_integers
+
+
+def set_song_volume(song: Song):
+    mp3_file = song.file.path
+    song.volume = analyze_music_loudness(mp3_file)
+    song.save(update_fields=["volume"])

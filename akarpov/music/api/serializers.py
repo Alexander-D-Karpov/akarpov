@@ -53,6 +53,7 @@ class SongSerializer(serializers.ModelSerializer):
             "album",
             "liked",
             "meta",
+            "volume",
         ]
         extra_kwargs = {
             "slug": {"read_only": True},

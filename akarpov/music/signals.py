@@ -4,6 +4,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from akarpov.music.models import Album, Author, PlaylistSong, Song, SongUserRating
+from akarpov.music.services.file import set_song_volume
 from akarpov.music.services.info import update_album_info, update_author_info
 
 
@@ -12,6 +13,12 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     if instance.file:
         if os.path.isfile(instance.file.path):
             os.remove(instance.file.path)
+
+
+@receiver(post_save, sender=Song)
+def song_create(sender, instance: Song, created, **kwargs):
+    if instance.volume is None:
+        set_song_volume(instance)
 
 
 @receiver(post_save, sender=Author)
