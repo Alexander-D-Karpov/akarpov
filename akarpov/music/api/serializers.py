@@ -271,6 +271,10 @@ class LikeDislikeSongSerializer(serializers.ModelSerializer):
         return song_user_rating
 
 
+class ListSongSlugsSerializer(serializers.Serializer):
+    slugs = serializers.ListField(child=serializers.SlugField())
+
+
 class ListPlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Playlist

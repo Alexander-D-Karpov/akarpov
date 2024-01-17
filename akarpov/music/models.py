@@ -48,6 +48,7 @@ class Song(BaseImageModel, ShortLinkModel):
     creator = models.ForeignKey(
         "users.User", related_name="songs", on_delete=models.SET_NULL, null=True
     )
+    created = models.DateTimeField(auto_now_add=True)
     meta = models.JSONField(blank=True, null=True)
     likes = models.IntegerField(default=0)
     volume = ArrayField(models.IntegerField(), null=True)

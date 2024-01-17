@@ -14,6 +14,7 @@ from akarpov.music.api.views import (
     ListLikedSongsAPIView,
     ListPublicPlaylistAPIView,
     ListSongPlaylistsAPIView,
+    ListSongSlugsAPIView,
     ListUserListenedSongsAPIView,
     RemoveSongFromPlaylistAPIView,
     RetrieveUpdateDestroyAlbumAPIView,
@@ -41,6 +42,7 @@ urlpatterns = [
         name="retrieve_update_delete_playlist",
     ),
     path("song/", ListCreateSongAPIView.as_view(), name="list_create_song"),
+    path("song/slugs/", ListSongSlugsAPIView.as_view(), name="list_songs_slugs"),
     path(
         "song/<str:slug>",
         RetrieveUpdateDestroySongAPIView.as_view(),

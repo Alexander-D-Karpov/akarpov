@@ -16,6 +16,7 @@ from akarpov.music.api.serializers import (
     ListenSongSerializer,
     ListPlaylistSerializer,
     ListSongSerializer,
+    ListSongSlugsSerializer,
     PlaylistSerializer,
     SongSerializer,
 )
@@ -80,11 +81,7 @@ class RetrieveUpdateDestroyPlaylistAPIView(
         return qs.select_related("creator")
 
 
-class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
-    serializer_class = ListSongSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    pagination_class = StandardResultsSetPagination
-
+class ListBaseSongAPIView(generics.ListAPIView):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         if search:
@@ -115,6 +112,14 @@ class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
                 ).values_list("song_id", flat=True)
             )
         return qs
+
+
+class ListCreateSongAPIView(
+    LikedSongsContextMixin, generics.ListCreateAPIView, ListBaseSongAPIView
+):
+    serializer_class = ListSongSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = StandardResultsSetPagination
 
     @extend_schema(
         parameters=[
@@ -166,6 +171,67 @@ class ListCreateSongAPIView(LikedSongsContextMixin, generics.ListCreateAPIView):
     )
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+
+class ListSongSlugsAPIView(ListBaseSongAPIView):
+    serializer_class = ListSongSlugsSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search query",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="sort",
+                description="Sorting algorithm",
+                required=False,
+                type=str,
+                examples=[
+                    OpenApiExample(
+                        "Default",
+                        description="by date added",
+                        value=None,
+                    ),
+                    OpenApiExample(
+                        "played",
+                        description="by total times played",
+                        value="played",
+                    ),
+                    OpenApiExample(
+                        "likes",
+                        description="by total likes",
+                        value="likes",
+                    ),
+                    OpenApiExample(
+                        "likes reversed",
+                        description="by total likes",
+                        value="-likes",
+                    ),
+                    OpenApiExample(
+                        "length",
+                        description="by track length",
+                        value="length",
+                    ),
+                    OpenApiExample(
+                        "uploaded",
+                        description="by date uploaded",
+                        value="uploaded",
+                    ),
+                ],
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        songs = self.get_queryset()
+        return Response(
+            data={
+                "songs": songs.values_list("slug", flat=True),
+            }
+        )
 
 
 class RetrieveUpdateDestroySongAPIView(generics.RetrieveUpdateDestroyAPIView):
