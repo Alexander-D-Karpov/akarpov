@@ -5,6 +5,7 @@ from rest_framework import serializers
 from akarpov.common.api.serializers import SetUserModelSerializer
 from akarpov.music.models import (
     Album,
+    AnonMusicUser,
     Author,
     Playlist,
     PlaylistSong,
@@ -196,6 +197,26 @@ class AddSongToPlaylistSerializer(serializers.ModelSerializer):
             order = playlist.songs.count()
             playlist_song = playlist.songs.create(song=song, order=order)
         return playlist_song
+
+
+class ListenSongSerializer(serializers.Serializer):
+    song = serializers.SlugField()
+    user_id = serializers.CharField(required=False)
+
+    def validate(self, attrs):
+        if not Song.objects.filter(slug=attrs["song"]).exists():
+            raise serializers.ValidationError("Song not found")
+
+        if "user_id" in attrs and attrs["user_id"]:
+            if not AnonMusicUser.objects.filter(id=attrs["user_id"]).exists():
+                raise serializers.ValidationError("User not found")
+        return attrs
+
+
+class AnonMusicUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnonMusicUser
+        fields = ["id"]
 
 
 class LikeDislikeSongSerializer(serializers.ModelSerializer):

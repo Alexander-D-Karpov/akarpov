@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.urls import reverse
@@ -152,6 +154,29 @@ class SongUserRating(models.Model):
     class Meta:
         unique_together = ["song", "user"]
         ordering = ["-created"]
+
+
+class AnonMusicUser(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return f"AnonMusicUser {self.id}"
+
+
+class AnonMusicUserHistory(models.Model):
+    user = models.ForeignKey(
+        "music.AnonMusicUser", related_name="songs_listened", on_delete=models.CASCADE
+    )
+    song = models.ForeignKey(
+        "Song", related_name="anon_listeners", on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"{self.user} - {self.song}"
 
 
 class UserListenHistory(models.Model):

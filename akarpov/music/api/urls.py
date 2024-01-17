@@ -2,6 +2,7 @@ from django.urls import path
 
 from akarpov.music.api.views import (
     AddSongToPlaylistAPIView,
+    CreateAnonMusicUserAPIView,
     DislikeSongAPIView,
     LikeSongAPIView,
     ListAlbumsAPIView,
@@ -76,4 +77,5 @@ urlpatterns = [
         RetrieveUpdateDestroyAuthorAPIView.as_view(),
         name="retrieve_update_delete_author",
     ),
+    path("anon/create/", CreateAnonMusicUserAPIView.as_view(), name="create-anon"),
 ]

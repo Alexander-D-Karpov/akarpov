@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pylast
 import structlog
 from asgiref.sync import async_to_sync
@@ -9,7 +11,14 @@ from django.utils.timezone import now
 from pytube import Channel, Playlist
 
 from akarpov.music.api.serializers import SongSerializer
-from akarpov.music.models import RadioSong, Song, UserListenHistory, UserMusicProfile
+from akarpov.music.models import (
+    AnonMusicUser,
+    AnonMusicUserHistory,
+    RadioSong,
+    Song,
+    UserListenHistory,
+    UserMusicProfile,
+)
 from akarpov.music.services import yandex, youtube
 from akarpov.music.services.file import load_dir, load_file
 from akarpov.utils.celery import get_scheduled_tasks_name
@@ -96,7 +105,7 @@ def start_next_song(previous_ids: list):
 
 
 @shared_task
-def listen_to_song(song_id, user_id=None):
+def listen_to_song(song_id, user_id=None, anon=True):
     # protection from multiple listen,
     # check that last listen by user was more than the length of the song
     # and last listened song is not the same
@@ -104,38 +113,63 @@ def listen_to_song(song_id, user_id=None):
     s.played += 1
     s.save(update_fields=["played"])
     if user_id:
-        try:
-            last_listen = UserListenHistory.objects.filter(user_id=user_id).latest("id")
-        except UserListenHistory.DoesNotExist:
-            last_listen = None
-        if (
-            last_listen
-            and last_listen.song_id == song_id
-            or last_listen
-            and last_listen.created + s.length > now()
-        ):
-            return
-        UserListenHistory.objects.create(
-            user_id=user_id,
-            song_id=song_id,
-        )
-        try:
-            user_profile = UserMusicProfile.objects.get(user_id=user_id)
-            lastfm_token = user_profile.lastfm_token
-
-            # Initialize Last.fm network with the user's session key
-            network = pylast.LastFMNetwork(
-                api_key=settings.LAST_FM_API_KEY,
-                api_secret=settings.LAST_FM_SECRET,
-                session_key=lastfm_token,
+        if anon:
+            try:
+                anon_user = AnonMusicUser.objects.get(id=user_id)
+            except AnonMusicUser.DoesNotExist:
+                anon_user = AnonMusicUser.objects.create(id=user_id)
+            try:
+                last_listen = AnonMusicUserHistory.objects.filter(
+                    user_id=user_id
+                ).last()
+            except AnonMusicUserHistory.DoesNotExist:
+                last_listen = None
+            if (
+                last_listen
+                and last_listen.song_id == song_id
+                or last_listen
+                and last_listen.created + timedelta(seconds=s.length) > now()
+            ):
+                return
+            AnonMusicUserHistory.objects.create(
+                user=anon_user,
+                song_id=song_id,
             )
-            song = Song.objects.get(id=song_id)
-            artist_name = song.artists_names
-            track_name = song.name
-            timestamp = int(timezone.now().timestamp())
-            network.scrobble(artist=artist_name, title=track_name, timestamp=timestamp)
-        except UserMusicProfile.DoesNotExist:
-            pass
-        except Exception as e:
-            logger.error(f"Last.fm scrobble error: {e}")
+        else:
+            try:
+                last_listen = UserListenHistory.objects.filter(user_id=user_id).last()
+            except UserListenHistory.DoesNotExist:
+                last_listen = None
+            if (
+                last_listen
+                and last_listen.song_id == song_id
+                or last_listen
+                and last_listen.created + timedelta(seconds=s.length) > now()
+            ):
+                return
+            UserListenHistory.objects.create(
+                user_id=user_id,
+                song_id=song_id,
+            )
+            try:
+                user_profile = UserMusicProfile.objects.get(user_id=user_id)
+                lastfm_token = user_profile.lastfm_token
+
+                # Initialize Last.fm network with the user's session key
+                network = pylast.LastFMNetwork(
+                    api_key=settings.LAST_FM_API_KEY,
+                    api_secret=settings.LAST_FM_SECRET,
+                    session_key=lastfm_token,
+                )
+                song = Song.objects.get(id=song_id)
+                artist_name = song.artists_names
+                track_name = song.name
+                timestamp = int(timezone.now().timestamp())
+                network.scrobble(
+                    artist=artist_name, title=track_name, timestamp=timestamp
+                )
+            except UserMusicProfile.DoesNotExist:
+                pass
+            except Exception as e:
+                logger.error(f"Last.fm scrobble error: {e}")
     return song_id

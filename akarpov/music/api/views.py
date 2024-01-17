@@ -6,12 +6,14 @@ from akarpov.common.api.pagination import StandardResultsSetPagination
 from akarpov.common.api.permissions import IsAdminOrReadOnly, IsCreatorOrReadOnly
 from akarpov.music.api.serializers import (
     AddSongToPlaylistSerializer,
+    AnonMusicUserSerializer,
     FullAlbumSerializer,
     FullAuthorSerializer,
     FullPlaylistSerializer,
     LikeDislikeSongSerializer,
     ListAlbumSerializer,
     ListAuthorSerializer,
+    ListenSongSerializer,
     ListPlaylistSerializer,
     ListSongSerializer,
     PlaylistSerializer,
@@ -314,7 +316,7 @@ class RetrieveUpdateDestroyAuthorAPIView(
 
 
 class ListenSongAPIView(generics.GenericAPIView):
-    serializer_class = LikeDislikeSongSerializer
+    serializer_class = ListenSongSerializer
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
@@ -331,12 +333,25 @@ class ListenSongAPIView(generics.GenericAPIView):
             return Response(status=404)
         if self.request.user.is_authenticated:
             listen_to_song.apply_async(
-                kwargs={"song_id": song.id, "user_id": self.request.user.id},
+                kwargs={
+                    "song_id": song.id,
+                    "user_id": self.request.user.id,
+                    "anon": False,
+                },
+                countdown=2,
+            )
+        elif "user_id" in data:
+            listen_to_song.apply_async(
+                kwargs={
+                    "song_id": song.id,
+                    "user_id": data["user_id"],
+                    "anon": True,
+                },
                 countdown=2,
             )
         else:
             listen_to_song.apply_async(
-                kwargs={"song_id": song.id},
+                kwargs={"song_id": song.id, "user_id": None, "anon": True},
                 countdown=2,
             )
         return Response(status=201)
@@ -353,3 +368,8 @@ class ListUserListenedSongsAPIView(generics.ListAPIView):
             .filter(user=self.request.user)
             .values_list("song_id", flat=True)
         )
+
+
+class CreateAnonMusicUserAPIView(generics.CreateAPIView):
+    serializer_class = AnonMusicUserSerializer
+    permission_classes = [permissions.AllowAny]
