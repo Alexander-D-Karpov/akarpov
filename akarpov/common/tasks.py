@@ -5,7 +5,7 @@ from django.core.files import File
 from akarpov.utils.files import crop_image
 
 
-@shared_task()
+@shared_task(max_retries=3)
 def crop_model_image(pk: int, app_label: str, model_name: str):
     model = apps.get_model(app_label=app_label, model_name=model_name)
     instance = model.objects.get(pk=pk)

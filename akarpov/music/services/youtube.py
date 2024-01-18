@@ -6,6 +6,7 @@ from random import randint
 import requests
 import yt_dlp
 from django.conf import settings
+from django.utils.text import slugify
 from PIL import Image
 from pydub import AudioSegment
 from pytube import Search, YouTube
@@ -75,9 +76,15 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
 
     # convert to mp3
     print(f"[processing] {title} converting to mp3")
-    path = orig_path.replace(orig_path.split(".")[-1], "mp3")
+    path = (
+        "/".join(orig_path.split("/")[:-1])
+        + "/"
+        + slugify(orig_path.split("/")[-1].split(".")[0])
+        + ".mp3"
+    )
     AudioSegment.from_file(orig_path).export(path)
-    os.remove(orig_path)
+    if orig_path != path:
+        os.remove(orig_path)
     print(f"[processing] {title} converting to mp3: done")
 
     # split in chapters
@@ -175,7 +182,8 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
                 info["album_name"],
                 title,
             )
-    os.remove(path)
+    if os.path.exists(path):
+        os.remove(path)
 
     return song
 

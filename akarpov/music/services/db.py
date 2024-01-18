@@ -1,7 +1,9 @@
 import os
+import re
 
 from deep_translator import GoogleTranslator
 from django.core.files import File
+from django.db import transaction
 from django.utils.text import slugify
 from mutagen import File as MutagenFile
 from mutagen.id3 import APIC, ID3, TCON, TORY, TextFrame
@@ -10,9 +12,24 @@ from PIL import Image
 from pydub import AudioSegment
 
 from akarpov.music.models import Album, Author, Song
-from akarpov.music.services.info import search_all_platforms
+from akarpov.music.services.info import generate_readable_slug, search_all_platforms
 from akarpov.users.models import User
-from akarpov.utils.generators import generate_charset
+
+
+def process_track_name(track_name: str) -> str:
+    # Split the track name by dash and parentheses
+    parts = track_name.split(" - ")
+    processed_parts = []
+
+    for part in parts:
+        if "feat" in part:
+            continue
+        if "(" in part:
+            part = part.split("(")[0].strip()
+        processed_parts.append(part)
+
+    processed_track_name = " - ".join(processed_parts)
+    return processed_track_name
 
 
 def load_track(
@@ -25,14 +42,31 @@ def load_track(
     link: str | None = None,
     **kwargs,
 ) -> Song:
-    p_name = path.split("/")[-1]
-    query = f"{name if name else p_name} - {album if album else ''} - {', '.join(authors) if authors else ''}"
+    p_name = process_track_name(
+        " ".join(path.split("/")[-1].split(".")[0].strip().split())
+    )
+    query = (
+        f"{process_track_name(name) if name else p_name} "
+        f"- {album if album else ''} - {', '.join(authors) if authors else ''}"
+    )
     search_info = search_all_platforms(query)
+    orig_name = name if name else p_name
 
     if image_path and search_info.get("album_image", None):
         os.remove(search_info["album_image"])
+    if "title" in search_info:
+        title = re.sub(r"\W+", "", search_info["title"]).lower()
+        name_clean = re.sub(r"\W+", "", name).lower()
 
-    name = name or search_info.get("title", p_name)
+        # Check if title is in name
+        if title in name_clean:
+            name = search_info["title"]
+        else:
+            name = process_track_name(" ".join(p_name.strip().split("-")))
+
+    if not name:
+        name = orig_name
+
     album = album or search_info.get("album_name", None)
     authors = authors or search_info.get("artists", [])
     genre = kwargs.get("genre") or search_info.get("genre", None)
@@ -47,12 +81,21 @@ def load_track(
     re_authors = []
     if authors:
         for x in authors:
-            try:
-                re_authors.append(Author.objects.get(name=x))
-            except Author.DoesNotExist:
-                re_authors.append(Author.objects.create(name=x))
+            while True:
+                try:
+                    with transaction.atomic():
+                        author, created = Author.objects.get_or_create(
+                            name__iexact=x, defaults={"name": x}
+                        )
+                    re_authors.append(author)
+                    break
+                except Author.MultipleObjectsReturned:
+                    # If multiple authors are found, delete all but one
+                    Author.objects.filter(name__iexact=x).exclude(
+                        id=Author.objects.filter(name__iexact=x).first().id
+                    ).delete()
     authors = re_authors
-    album_name = None
+
     if album:
         if type(album) is str:
             album_name = album
@@ -61,12 +104,9 @@ def load_track(
         else:
             album_name = None
         if album_name:
-            try:
-                album = Album.objects.get(name=album_name)
-            except Album.DoesNotExist:
-                album = Album.objects.create(name=album_name)
-    if not album_name:
-        album = None
+            album, created = Album.objects.get_or_create(
+                name__iexact=album_name, defaults={"name": album_name}
+            )
 
     if sng := Song.objects.filter(
         name=name if name else p_name,
@@ -173,19 +213,7 @@ def load_track(
     if os.path.exists(image_path):
         os.remove(image_path)
 
-    if generated_name and not Song.objects.filter(slug=generated_name).exists():
-        if len(generated_name) > 20:
-            generated_name = generated_name.split("-")[0]
-            if len(generated_name) > 20:
-                generated_name = generated_name[:20]
-            if not Song.objects.filter(slug=generated_name).exists():
-                song.slug = generated_name
-                song.save()
-            else:
-                song.slug = generated_name[:14] + "_" + generate_charset(5)
-                song.save()
-        else:
-            song.slug = generated_name
-            song.save()
+    song.slug = generate_readable_slug(song.name, Song)
+    song.save()
 
     return song

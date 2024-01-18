@@ -87,8 +87,6 @@ def start_next_song(previous_ids: list):
         async_to_sync(channel_layer.group_send)(
             "radio_main", {"type": "song", "data": data}
         )
-        song.played += 1
-        song.save(update_fields=["played"])
         if RadioSong.objects.filter(slug="").exists():
             r = RadioSong.objects.get(slug="")
             r.song = song

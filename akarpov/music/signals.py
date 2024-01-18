@@ -17,7 +17,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Song)
 def song_create(sender, instance: Song, created, **kwargs):
-    if instance.volume is None:
+    if instance.volume is None and instance.file:
         set_song_volume(instance)
 
 

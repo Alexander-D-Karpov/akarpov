@@ -13,7 +13,7 @@ def create_cropped_model_image(sender, instance, created, **kwargs):
                     "app_label": model._meta.app_label,
                     "model_name": model._meta.model_name,
                 },
-                countdown=2,
+                countdown=5,
             )
 
 

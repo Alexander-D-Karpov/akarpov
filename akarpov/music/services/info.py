@@ -16,6 +16,34 @@ from akarpov.utils.generators import generate_charset
 from akarpov.utils.text import is_similar_artist, normalize_text
 
 
+def generate_readable_slug(name: str, model) -> str:
+    # Translate and slugify the name
+    slug = str(
+        slugify(
+            GoogleTranslator(source="auto", target="en").translate(
+                name,
+                target_language="en",
+            )
+        )
+    )
+
+    if len(slug) > 20:
+        slug = slug[:20]
+        last_dash = slug.rfind("-")
+        if last_dash != -1:
+            slug = slug[:last_dash]
+
+    while model.objects.filter(slug=slug).exists():
+        if len(slug) > 14:
+            slug = slug[:14]
+            last_dash = slug.rfind("-")
+            if last_dash != -1:
+                slug = slug[:last_dash]
+        slug = slug + "_" + generate_charset(5)
+
+    return slug
+
+
 def create_spotify_session() -> spotipy.Spotify:
     if not settings.MUSIC_SPOTIFY_ID or not settings.MUSIC_SPOTIFY_SECRET:
         raise ConnectionError("No spotify credentials provided")
@@ -197,15 +225,6 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
 
     # Combine and prioritize Spotify data
     album_data = {}
-    if yandex_album_info:
-        album_data.update(
-            {
-                "name": album_data.get("name", yandex_album_info.title),
-                "genre": album_data.get("genre", yandex_album_info.genre),
-                "description": yandex_album_info.description,
-                "type": yandex_album_info.type,
-            }
-        )
 
     if spotify_album_info:
         album_data = {
@@ -215,6 +234,15 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
             "link": spotify_album_info["external_urls"]["spotify"],
             "genre": spotify_album_info.get("genres", []),
         }
+    if yandex_album_info:
+        album_data.update(
+            {
+                "name": album_data.get("name", yandex_album_info.title),
+                "genre": album_data.get("genre", yandex_album_info.genre),
+                "description": yandex_album_info.description,
+                "type": yandex_album_info.type,
+            }
+        )
 
     album.meta = album_data
     album.save()
@@ -262,20 +290,8 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
             album_authors.append(author)
         album.authors.set(album_authors)
 
-    if generated_name and not AlbumModel.objects.filter(slug=generated_name).exists():
-        if len(generated_name) > 20:
-            generated_name = generated_name.split("-")[0]
-            if len(generated_name) > 20:
-                generated_name = generated_name[:20]
-            if not AlbumModel.objects.filter(slug=generated_name).exists():
-                album.slug = generated_name
-                album.save()
-            else:
-                album.slug = generated_name[:14] + "_" + generate_charset(5)
-                album.save()
-        else:
-            album.slug = generated_name
-            album.save()
+    album.slug = generate_readable_slug(album.name, AlbumModel)
+    album.save()
 
 
 def update_author_info(author: Author) -> None:
@@ -288,6 +304,13 @@ def update_author_info(author: Author) -> None:
 
     # Combine and prioritize Spotify data
     author_data = {}
+    if spotify_artist_info:
+        author_data = {
+            "name": spotify_artist_info.get("name", author.name),
+            "genres": spotify_artist_info.get("genres", []),
+            "popularity": spotify_artist_info.get("popularity", 0),
+            "link": spotify_artist_info["external_urls"]["spotify"],
+        }
     if yandex_artist_info:
         author_data.update(
             {
@@ -296,14 +319,6 @@ def update_author_info(author: Author) -> None:
                 "description": yandex_artist_info.description,
             }
         )
-
-    if spotify_artist_info:
-        author_data = {
-            "name": spotify_artist_info.get("name", author.name),
-            "genres": spotify_artist_info.get("genres", []),
-            "popularity": spotify_artist_info.get("popularity", 0),
-            "link": spotify_artist_info["external_urls"]["spotify"],
-        }
 
     author.meta = author_data
     author.save()
@@ -337,20 +352,8 @@ def update_author_info(author: Author) -> None:
         os.remove(image_path)
         author.save()
 
-    if generated_name and not Author.objects.filter(slug=generated_name).exists():
-        if len(generated_name) > 20:
-            generated_name = generated_name.split("-")[0]
-            if len(generated_name) > 20:
-                generated_name = generated_name[:20]
-            if not Author.objects.filter(slug=generated_name).exists():
-                author.slug = generated_name
-                author.save()
-            else:
-                author.slug = generated_name[:14] + "_" + generate_charset(5)
-                author.save()
-        else:
-            author.slug = generated_name
-            author.save()
+    author.slug = generate_readable_slug(author.name, Author)
+    author.save()
 
 
 def search_all_platforms(track_name: str) -> dict:
@@ -373,7 +376,6 @@ def search_all_platforms(track_name: str) -> dict:
             for existing_artist in combined_artists
         ):
             combined_artists.add(normalized_artist)
-
     genre = spotify_info.get("genre") or yandex_info.get("genre")
     if type(genre) is list:
         genre = sorted(genre, key=lambda x: len(x))
