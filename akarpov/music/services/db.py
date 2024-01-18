@@ -56,11 +56,13 @@ def load_track(
         os.remove(search_info["album_image"])
     if "title" in search_info:
         title = re.sub(r"\W+", "", search_info["title"]).lower()
-        name_clean = re.sub(r"\W+", "", name).lower()
+        name_clean = re.sub(r"\W+", "", orig_name).lower()
 
         # Check if title is in name
         if title in name_clean:
             name = search_info["title"]
+        elif name:
+            name = name
         else:
             name = process_track_name(" ".join(p_name.strip().split("-")))
 
