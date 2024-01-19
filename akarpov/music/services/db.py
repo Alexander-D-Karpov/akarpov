@@ -61,9 +61,7 @@ def load_track(
         # Check if title is in name
         if title in name_clean:
             name = search_info["title"]
-        elif name:
-            name = name
-        else:
+        elif not name:
             name = process_track_name(" ".join(p_name.strip().split("-")))
 
     if not name:
