@@ -63,7 +63,7 @@ class FileFilterView(View):
 
             if search_type in search_classes:
                 search_instance = search_classes[search_type](
-                    queryset=File.objects.filter(user=self.request.user)
+                    queryset=File.objects.filter(user=self.request.user).nocache()
                 )
                 queryset = search_instance.search(query)
         return queryset

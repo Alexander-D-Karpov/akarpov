@@ -1,9 +1,11 @@
 import os
 import re
 
+import requests
 from deep_translator import GoogleTranslator
 from django.core.files import File
 from django.db import transaction
+from django.db.models import Min
 from django.utils.text import slugify
 from mutagen import File as MutagenFile
 from mutagen.id3 import APIC, ID3, TCON, TORY, TextFrame
@@ -14,6 +16,32 @@ from pydub import AudioSegment
 from akarpov.music.models import Album, Author, Song
 from akarpov.music.services.info import generate_readable_slug, search_all_platforms
 from akarpov.users.models import User
+
+
+def get_or_create_author(author_name):
+    retry = True
+    while retry:
+        retry = False
+        try:
+            with transaction.atomic():
+                author, created = Author.objects.get_or_create(
+                    name__iexact=author_name, defaults={"name": author_name}
+                )
+            return author
+        except Author.MultipleObjectsReturned:
+            with transaction.atomic():
+                # If multiple authors are found, get the first one and delete the rest
+                min_id = Author.objects.filter(name__iexact=author_name).aggregate(
+                    Min("id")
+                )["id__min"]
+                author = Author.objects.get(id=min_id)
+                Author.objects.filter(name__iexact=author_name).exclude(
+                    id=min_id
+                ).delete()
+            return author
+        except Exception as e:
+            if "could not serialize access due to concurrent update" in str(e):
+                retry = True
 
 
 def process_track_name(track_name: str) -> str:
@@ -78,23 +106,12 @@ def load_track(
     if album and type(album) is str and album.startswith("['"):
         album = album.replace("['", "").replace("']", "")
 
-    re_authors = []
+    processed_authors = []
     if authors:
-        for x in authors:
-            while True:
-                try:
-                    with transaction.atomic():
-                        author, created = Author.objects.get_or_create(
-                            name__iexact=x, defaults={"name": x}
-                        )
-                    re_authors.append(author)
-                    break
-                except Author.MultipleObjectsReturned:
-                    # If multiple authors are found, delete all but one
-                    Author.objects.filter(name__iexact=x).exclude(
-                        id=Author.objects.filter(name__iexact=x).first().id
-                    ).delete()
-    authors = re_authors
+        for author_name in authors:
+            author = get_or_create_author(author_name)
+            processed_authors.append(author)
+    authors = processed_authors
 
     if album:
         if type(album) is str:
@@ -122,6 +139,14 @@ def load_track(
         path = mp3_path
 
     tag = MP3(path, ID3=ID3)
+
+    if image_path and image_path.startswith("http"):
+        response = requests.get(image_path)
+        se = image_path.split("/")[-1]
+        image_path = f'/tmp/{generate_readable_slug(name, Song)}.{"png" if "." not in se else se.split(".")[-1]}'
+        with open(image_path, "wb") as f:
+            f.write(response.content)
+
     if image_path:
         if not image_path.endswith(".png"):
             nm = image_path

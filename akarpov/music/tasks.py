@@ -19,7 +19,7 @@ from akarpov.music.models import (
     UserListenHistory,
     UserMusicProfile,
 )
-from akarpov.music.services import yandex, youtube
+from akarpov.music.services import spotify, yandex, youtube
 from akarpov.music.services.file import load_dir, load_file
 from akarpov.utils.celery import get_scheduled_tasks_name
 
@@ -28,7 +28,11 @@ logger = structlog.get_logger(__name__)
 
 @shared_task
 def list_tracks(url, user_id):
-    if "music.yandex.ru" in url:
+    if "music.youtube.com" in url:
+        url = url.replace("music.youtube.com", "youtube.com")
+    if "spotify.com" in url:
+        spotify.download_url(url, user_id)
+    elif "music.yandex.ru" in url:
         yandex.load_playlist(url, user_id)
     elif "channel" in url or "/c/" in url:
         p = Channel(url)
