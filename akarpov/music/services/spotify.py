@@ -34,7 +34,7 @@ def download_url(url, user_id=None):
         client_id=settings.MUSIC_SPOTIFY_ID,
         client_secret=settings.MUSIC_SPOTIFY_SECRET,
         user_auth=False,
-        cache_path="/tmp/",
+        cache_path=settings.MEDIA_ROOT,
         headless=False,
         downloader_settings=spot_settings,
     )
