@@ -33,7 +33,11 @@ def get_spotdl_client():
         spot_settings = {
             "simple_tui": True,
             "log_level": "ERROR",
-            "lyrics_providers": ["genius", "musixmatch"],
+            "lyrics_providers": ["genius", "azlyrics", "musixmatch"],
+            "threads": 6,
+            "format": "mp3",
+            "ffmpeg": "ffmpeg",
+            "sponsor_block": True,
         }
         thread_local.spotdl_client = Spotdl(
             client_id=settings.MUSIC_SPOTIFY_ID,

@@ -10,6 +10,7 @@ from django.utils.text import slugify
 from PIL import Image
 from pydub import AudioSegment
 from pytube import Search, YouTube
+from spotdl.providers.audio import YouTubeMusic
 
 from akarpov.music.models import Song
 from akarpov.music.services.db import load_track
@@ -18,22 +19,28 @@ from akarpov.music.services.info import search_all_platforms
 final_filename = None
 
 
-ydl_opts = {
-    "format": "m4a/bestaudio/best",
-    "postprocessors": [
-        {  # Extract audio using ffmpeg
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "m4a",
-        }
-    ],
-    "outtmpl": f"{settings.MEDIA_ROOT}/%(uploader)s_%(title)s.%(ext)s",
-}
+ytmusic = YouTubeMusic()
 
 
 def download_file(url):
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "outtmpl": f"{settings.MEDIA_ROOT}/%(uploader)s_%(title)s.%(ext)s",
+        "postprocessors": [
+            {"key": "SponsorBlock"},  # Skip sponsor segments
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            },  # Extract audio
+            {"key": "EmbedThumbnail"},  # Embed Thumbnail
+            {"key": "FFmpegMetadata"},  # Apply correct metadata
+        ],
+    }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url)
-    return info["requested_downloads"][0]["_filename"]
+        info = ydl.extract_info(url, download=True)
+        filename = ydl.prepare_filename(info)
+    return os.path.splitext(filename)[0] + ".mp3"
 
 
 def parse_description(description: str) -> list:
@@ -67,7 +74,7 @@ def parse_description(description: str) -> list:
 def download_from_youtube_link(link: str, user_id: int) -> Song:
     song = None
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL({"ignoreerrors": True, "extract_flat": True}) as ydl:
         info_dict = ydl.extract_info(link, download=False)
         title = info_dict.get("title", None)
         description = info_dict.get("description", None)
@@ -82,9 +89,12 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
         + slugify(orig_path.split("/")[-1].split(".")[0])
         + ".mp3"
     )
-    AudioSegment.from_file(orig_path).export(path)
-    if orig_path != path:
-        os.remove(orig_path)
+    if orig_path.endswith(".mp3"):
+        os.rename(orig_path, path)
+    else:
+        AudioSegment.from_file(orig_path).export(path)
+        if orig_path != path:
+            os.remove(orig_path)
     print(f"[processing] {title} converting to mp3: done")
 
     # split in chapters

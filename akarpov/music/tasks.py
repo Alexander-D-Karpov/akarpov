@@ -3,14 +3,13 @@ from datetime import timedelta
 import pylast
 import spotipy
 import structlog
-import yt_dlp
+import ytmusicapi
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
-from pytube import Channel, Playlist
 from spotipy import SpotifyClientCredentials
 
 from akarpov.music.api.serializers import SongSerializer
@@ -40,19 +39,30 @@ def list_tracks(url, user_id):
         yandex.load_playlist(url, user_id)
     if "youtube.com" in url:
         if "channel" in url or "/c/" in url:
-            channel = Channel(url)
-            for video in channel.videos:
-                with yt_dlp.YoutubeDL({}) as ydl:
-                    info = ydl.extract_info(video, download=False)
-                    if info.get("category") == "Music":
-                        process_yb.apply_async(
-                            kwargs={"url": video.watch_url, "user_id": user_id}
-                        )
-        elif "playlist" in url or "&list=" in url:
-            playlist = Playlist(url)
-            for video in playlist.videos:
+            ytmusic = ytmusicapi.YTMusic()
+            channel_id = url.split("/")[-1]
+            channel_songs = ytmusic.get_artist(channel_id)["songs"]["results"]
+            print(channel_songs)
+
+            for song in channel_songs:
                 process_yb.apply_async(
-                    kwargs={"url": video.watch_url, "user_id": user_id}
+                    kwargs={
+                        "url": f"https://youtube.com/watch?v={song['videoId']}",
+                        "user_id": user_id,
+                    }
+                )
+
+        elif "playlist" in url or "&list=" in url:
+            ytmusic = ytmusicapi.YTMusic()
+            playlist_id = url.split("=")[-1]
+            playlist_songs = ytmusic.get_playlist(playlist_id)["tracks"]["results"]
+
+            for song in playlist_songs:
+                process_yb.apply_async(
+                    kwargs={
+                        "url": f"https://music.youtube.com/watch?v={song['videoId']}",
+                        "user_id": user_id,
+                    }
                 )
         else:
             process_yb.apply_async(kwargs={"url": url, "user_id": user_id})
