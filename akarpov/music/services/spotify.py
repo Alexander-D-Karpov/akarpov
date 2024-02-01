@@ -26,7 +26,7 @@ def search(name: str, session: spotipy.Spotify, search_type="track"):
 def download_url(url, user_id=None):
     spot_settings = {
         "simple_tui": True,
-        "log_level": "DEBUG",
+        "log_level": "ERROR",
         "lyrics_providers": ["genius", "musixmatch"],
     }
 
@@ -34,7 +34,6 @@ def download_url(url, user_id=None):
         client_id=settings.MUSIC_SPOTIFY_ID,
         client_secret=settings.MUSIC_SPOTIFY_SECRET,
         user_auth=False,
-        cache_path=settings.MEDIA_ROOT,
         headless=False,
         downloader_settings=spot_settings,
     )
