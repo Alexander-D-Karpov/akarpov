@@ -33,6 +33,13 @@ RUN apt-get update && \
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
+# Make ssh dir
+RUN mkdir -p /root/.ssh/
+
+# Create known_hosts and add github to it
+RUN touch /root/.ssh/known_hosts
+RUN ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+
 RUN pip install "poetry==$POETRY_VERSION"
 RUN python -m venv /venv
 
