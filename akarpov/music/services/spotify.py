@@ -1,3 +1,5 @@
+import threading
+
 import spotipy
 from django.conf import settings
 from spotdl import Song, Spotdl
@@ -23,21 +25,28 @@ def search(name: str, session: spotipy.Spotify, search_type="track"):
     return res
 
 
+thread_local = threading.local()
+
+
+def get_spotdl_client():
+    if not hasattr(thread_local, "spotdl_client"):
+        spot_settings = {
+            "simple_tui": True,
+            "log_level": "ERROR",
+            "lyrics_providers": ["genius", "musixmatch"],
+        }
+        thread_local.spotdl_client = Spotdl(
+            client_id=settings.MUSIC_SPOTIFY_ID,
+            client_secret=settings.MUSIC_SPOTIFY_SECRET,
+            user_auth=False,
+            headless=False,
+            downloader_settings=spot_settings,
+        )
+    return thread_local.spotdl_client
+
+
 def download_url(url, user_id=None):
-    spot_settings = {
-        "simple_tui": True,
-        "log_level": "ERROR",
-        "lyrics_providers": ["genius", "musixmatch"],
-    }
-
-    spotdl_client = Spotdl(
-        client_id=settings.MUSIC_SPOTIFY_ID,
-        client_secret=settings.MUSIC_SPOTIFY_SECRET,
-        user_auth=False,
-        headless=False,
-        downloader_settings=spot_settings,
-    )
-
+    spotdl_client = get_spotdl_client()
     session = create_session()
 
     if "track" in url:

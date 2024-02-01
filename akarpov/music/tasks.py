@@ -1,7 +1,9 @@
 from datetime import timedelta
 
 import pylast
+import spotipy
 import structlog
+import yt_dlp
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
@@ -9,6 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
 from pytube import Channel, Playlist
+from spotipy import SpotifyClientCredentials
 
 from akarpov.music.api.serializers import SongSerializer
 from akarpov.music.models import (
@@ -28,22 +31,46 @@ logger = structlog.get_logger(__name__)
 
 @shared_task
 def list_tracks(url, user_id):
-    if "music.youtube.com" in url:
+    if "music.youtube.com" in url or "youtu.be" in url:
         url = url.replace("music.youtube.com", "youtube.com")
+        url = url.replace("youtu.be", "youtube.com")
     if "spotify.com" in url:
         spotify.download_url(url, user_id)
     elif "music.yandex.ru" in url:
         yandex.load_playlist(url, user_id)
-    elif "channel" in url or "/c/" in url:
-        p = Channel(url)
-        for video in p.video_urls:
-            process_yb.apply_async(kwargs={"url": video, "user_id": user_id})
-    elif "playlist" in url or "&list=" in url:
-        p = Playlist(url)
-        for video in p.video_urls:
-            process_yb.apply_async(kwargs={"url": video, "user_id": user_id})
+    if "youtube.com" in url:
+        if "channel" in url or "/c/" in url:
+            channel = Channel(url)
+            for video in channel.videos:
+                with yt_dlp.YoutubeDL({}) as ydl:
+                    info = ydl.extract_info(video, download=False)
+                    if info.get("category") == "Music":
+                        process_yb.apply_async(
+                            kwargs={"url": video.watch_url, "user_id": user_id}
+                        )
+        elif "playlist" in url or "&list=" in url:
+            playlist = Playlist(url)
+            for video in playlist.videos:
+                process_yb.apply_async(
+                    kwargs={"url": video.watch_url, "user_id": user_id}
+                )
+        else:
+            process_yb.apply_async(kwargs={"url": url, "user_id": user_id})
     else:
-        process_yb.apply_async(kwargs={"url": url, "user_id": user_id})
+        spotify_manager = SpotifyClientCredentials(
+            client_id=settings.MUSIC_SPOTIFY_ID,
+            client_secret=settings.MUSIC_SPOTIFY_SECRET,
+        )
+        spotify_search = spotipy.Spotify(client_credentials_manager=spotify_manager)
+
+        results = spotify_search.search(q=url, type="track", limit=1)
+        top_track = (
+            results["tracks"]["items"][0] if results["tracks"]["items"] else None
+        )
+
+        if top_track:
+            spotify.download_url(top_track["external_urls"]["spotify"], user_id)
+            url = top_track["external_urls"]["spotify"]
 
     return url
 
