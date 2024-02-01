@@ -6,6 +6,7 @@ import spotipy
 from deep_translator import GoogleTranslator
 from django.conf import settings
 from django.core.files import File
+from django.db import transaction
 from django.utils.text import slugify
 from spotipy import SpotifyClientCredentials
 from yandex_music import Client, Cover
@@ -321,7 +322,8 @@ def update_author_info(author: Author) -> None:
         )
 
     author.meta = author_data
-    author.save()
+    with transaction.atomic():
+        author.save()
 
     # Handle Author Image - Prefer Spotify, fallback to Yandex
     image_path = None
@@ -353,7 +355,8 @@ def update_author_info(author: Author) -> None:
         author.save()
 
     author.slug = generate_readable_slug(author.name, Author)
-    author.save()
+    with transaction.atomic():
+        author.save()
 
 
 def search_all_platforms(track_name: str) -> dict:

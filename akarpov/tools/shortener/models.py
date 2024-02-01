@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
@@ -79,7 +79,8 @@ def create_model_link(sender, instance, created, **kwargs):
 
         link.save()
         instance.short_link = link
-        instance.save()
+        with transaction.atomic():
+            instance.save()
 
 
 def update_model_link(sender, instance, **kwargs):

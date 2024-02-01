@@ -5,7 +5,6 @@ import requests
 from deep_translator import GoogleTranslator
 from django.core.files import File
 from django.db import transaction
-from django.db.models import Min
 from django.utils.text import slugify
 from mutagen import File as MutagenFile
 from mutagen.id3 import APIC, ID3, TCON, TORY, TextFrame
@@ -19,29 +18,11 @@ from akarpov.users.models import User
 
 
 def get_or_create_author(author_name):
-    retry = True
-    while retry:
-        retry = False
-        try:
-            with transaction.atomic():
-                author, created = Author.objects.get_or_create(
-                    name__iexact=author_name, defaults={"name": author_name}
-                )
-            return author
-        except Author.MultipleObjectsReturned:
-            with transaction.atomic():
-                # If multiple authors are found, get the first one and delete the rest
-                min_id = Author.objects.filter(name__iexact=author_name).aggregate(
-                    Min("id")
-                )["id__min"]
-                author = Author.objects.get(id=min_id)
-                Author.objects.filter(name__iexact=author_name).exclude(
-                    id=min_id
-                ).delete()
-            return author
-        except Exception as e:
-            if "could not serialize access due to concurrent update" in str(e):
-                retry = True
+    with transaction.atomic():
+        author = Author.objects.filter(name__iexact=author_name).order_by("id").first()
+        if author is None:
+            author = Author.objects.create(name=author_name)
+        return author
 
 
 def process_track_name(track_name: str) -> str:
@@ -106,13 +87,6 @@ def load_track(
     if album and type(album) is str and album.startswith("['"):
         album = album.replace("['", "").replace("']", "")
 
-    processed_authors = []
-    if authors:
-        for author_name in authors:
-            author = get_or_create_author(author_name)
-            processed_authors.append(author)
-    authors = processed_authors
-
     if album:
         if type(album) is str:
             album_name = album
@@ -124,6 +98,13 @@ def load_track(
             album, created = Album.objects.get_or_create(
                 name__iexact=album_name, defaults={"name": album_name}
             )
+
+    processed_authors = []
+    if authors:
+        for author_name in authors:
+            author = get_or_create_author(author_name)
+            processed_authors.append(author)
+    authors = processed_authors
 
     if sng := Song.objects.filter(
         name=name if name else p_name,
