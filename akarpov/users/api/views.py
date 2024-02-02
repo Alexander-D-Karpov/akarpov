@@ -1,11 +1,14 @@
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, status, views
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from akarpov.common.api.pagination import SmallResultsSetPagination
 from akarpov.common.jwt import sign_jwt
 from akarpov.users.api.serializers import (
+    OTPSerializer,
     UserEmailVerification,
     UserFullPublicInfoSerializer,
     UserFullSerializer,
@@ -105,3 +108,24 @@ class UserUpdatePasswordAPIView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class VerifyOTPView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OTPSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = OTPSerializer(data=request.data)
+        if serializer.is_valid():
+            otp_token = serializer.validated_data.get("token")
+
+            device = TOTPDevice.objects.filter(user=request.user).first()
+            if device.verify_token(otp_token):
+                return Response({"status": "OTP Token validated successfully"})
+            else:
+                return Response(
+                    {"error": "OTP Token is invalid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

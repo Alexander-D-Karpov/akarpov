@@ -6,6 +6,7 @@ from .views import (
     UserRetrieveAPIViewSet,
     UserRetrieveIdAPIAPIView,
     UserUpdatePasswordAPIView,
+    VerifyOTPView,
 )
 
 app_name = "users_api"
@@ -17,6 +18,11 @@ urlpatterns = [
         "self/",
         UserRetireUpdateSelfAPIViewSet.as_view(),
         name="self",
+    ),
+    path(
+        "self/otp/verify/",
+        VerifyOTPView.as_view(),
+        name="otp_verify",
     ),
     path(
         "self/password",

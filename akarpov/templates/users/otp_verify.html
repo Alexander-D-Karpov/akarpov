@@ -1,17 +1,41 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags static %}
+
+{% block javascript %}
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/jquery.mask.min.js' %}"></script>
+{% endblock %}
+
+{% block inline_javascript %}
+<script>
+$(document).ready(function(){
+  document.getElementById('totp').addEventListener('input', function (e) {
+      e.target.value = e.target.value.replace(/[^\d]/g, '');
+      if (e.target.value.length > 6) {
+          e.target.value = e.target.value.slice(0, 6);
+      }
+  });
+});
+</script>
+{% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center">
+  <div class="d-flex justify-content-center align-items-center" style="height: calc(100vh - 60px);">
     <div class="col-md-6">
       <div class="card">
         <div class="card-header bg-primary text-white">Enter OTP</div>
         <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" class="btn btn-primary mt-2">Submit OTP</button>
-          </form>
+            <form method="POST" class="form">
+                {% csrf_token %}
+            <div class="input-group gap-4">
+                <input name="{{ form.otp_token.name }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="6" size="6" minlength="6"
+                    id="totp" type="tel" pattern="\d{6}" inputmode="numeric" class="form-control rounded" placeholder="______" aria-label="TOTP" required autofocus>
+                {% if form.otp_token.errors %}
+                {% endif %}
+                    <div class="error-message">{{ form.otp_token.errors }}</div>
+                            <button type="submit" class="btn btn-primary btn-block" value="Disable 2FA"> Submit </button>
+            </div>
+            </form>
         </div>
       </div>
     </div>

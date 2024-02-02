@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
+{% block inline_javascript %}
+<script>
+document.getElementById('totp').addEventListener('input', function (e) {
+    e.target.value = e.target.value.replace(/[^\d]/g, '');
+    if (e.target.value.length > 6) {
+        e.target.value = e.target.value.slice(0, 6);
+    }
+});
+</script>
+{% endblock %}
+
 {% block content %}
   <div class="container">
     <div class="row">
@@ -13,8 +24,14 @@
             <br>
             <form method="POST">
                 {% csrf_token %}
-                {% crispy form %}
-                <button type="submit" class="btn btn-primary btn-block" value="Disable 2FA">
+            <div class="input-group gap-4">
+                <input name="{{ form.otp_token.name }}"
+                    id="totp" type="tel" pattern="[0-9]{6}" inputmode="numeric" class="form-control rounded" placeholder="______" aria-label="TOTP" required autofocus>
+                {% if form.otp_token.errors %}
+                {% endif %}
+                    <div class="error-message">{{ form.otp_token.errors }}</div>
+                            <button type="submit" class="btn btn-primary btn-block" value="Disable 2FA"> Disable 2FA </button>
+            </div>
             </form>
           </div>
         </div>

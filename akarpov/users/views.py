@@ -103,6 +103,8 @@ user_history_delete_view = UserHistoryDeleteView.as_view()
 def enable_2fa_view(request):
     user = request.user
     devices = TOTPDevice.objects.filter(user=user, confirmed=True)
+    qr_code_svg = None
+    totp_key = None
 
     if devices.exists():
         if request.method == "POST":
@@ -184,7 +186,11 @@ login_view = OTPLoginView.as_view()
 
 @login_required
 def enforce_otp_login(request):
-    # TODO gather next url from loginrequired
+    next_url = request.GET.get("next")
+
+    if not next_url:
+        next_url = request.session.get("next", reverse_lazy("home"))
+
     if request.method == "POST":
         form = OTPForm(request.POST)
         if form.is_valid():
@@ -192,8 +198,8 @@ def enforce_otp_login(request):
             device = TOTPDevice.objects.filter(user=request.user).first()
             if device.verify_token(otp_token):
                 request.session["otp_verified"] = True
-                success_url = request.session.pop("next", None) or reverse_lazy("home")
-                return HttpResponseRedirect(success_url)
+                request.session.pop("next", None)
+                return redirect(next_url)
     else:
         form = OTPForm()
     return render(request, "users/otp_verify.html", {"form": form})

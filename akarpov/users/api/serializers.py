@@ -78,3 +78,7 @@ class UserUpdatePassword(serializers.ModelSerializer):
         instance.set_password(validated_data["password"])
         instance.save(update_fields=["password"])
         return instance
+
+
+class OTPSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
