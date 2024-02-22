@@ -5,4 +5,4 @@ set -o nounset
 
 /install_preview_dependencies
 
-celery -A config.celery_app worker --loglevel=info -c 5
+celery -A config.celery_app  worker --autoscale 20 -l INFO

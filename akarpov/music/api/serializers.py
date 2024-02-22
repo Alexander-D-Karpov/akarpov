@@ -22,9 +22,17 @@ class ListAuthorSerializer(serializers.ModelSerializer):
 
 
 class ListAlbumSerializer(serializers.ModelSerializer):
+    authors = serializers.SerializerMethodField(method_name="get_authors")
+
+    @extend_schema_field(ListAuthorSerializer(many=True))
+    def get_authors(self, obj):
+        return ListAuthorSerializer(
+            Author.objects.cache().filter(albums__id=obj.id), many=True
+        ).data
+
     class Meta:
         model = Album
-        fields = ["name", "slug", "image_cropped"]
+        fields = ["name", "slug", "image_cropped", "authors"]
 
 
 class SongSerializer(serializers.ModelSerializer):
@@ -133,10 +141,32 @@ class ListSongSerializer(SetUserModelSerializer):
 
 class PlaylistSerializer(SetUserModelSerializer):
     creator = UserPublicInfoSerializer(read_only=True)
+    images = serializers.SerializerMethodField(method_name="get_images")
+
+    @extend_schema_field(serializers.ListField(child=serializers.ImageField()))
+    def get_images(self, obj):
+        # Get distinct album images from songs
+        images = (
+            Song.objects.cache()
+            .filter(
+                playlists__id__in=PlaylistSong.objects.cache()
+                .filter(playlist=obj)
+                .values("id")
+            )
+            .values_list("album__image", flat=True)
+            .distinct()[:4]
+        )
+        # Build absolute URI for each image
+        images = [
+            self.context["request"].build_absolute_uri(image)
+            for image in images
+            if image
+        ]
+        return images
 
     class Meta:
         model = Playlist
-        fields = ["name", "length", "slug", "private", "creator"]
+        fields = ["name", "length", "slug", "images", "private", "creator"]
         extra_kwargs = {
             "slug": {"read_only": True},
             "creator": {"read_only": True},
@@ -144,13 +174,21 @@ class PlaylistSerializer(SetUserModelSerializer):
         }
 
 
-class FullPlaylistSerializer(serializers.ModelSerializer):
-    songs = ListSongSerializer(many=True, read_only=True)
+class FullPlaylistSerializer(PlaylistSerializer):
+    songs = serializers.SerializerMethodField(method_name="get_songs")
     creator = UserPublicInfoSerializer(read_only=True)
+
+    @extend_schema_field(ListSongSerializer(many=True))
+    def get_songs(self, obj):
+        return ListSongSerializer(
+            Song.objects.cache().filter(playlists__id=obj.id),
+            many=True,
+            context=self.context,
+        ).data
 
     class Meta:
         model = Playlist
-        fields = ["name", "private", "creator", "songs"]
+        fields = ["name", "private", "creator", "images", "songs"]
         extra_kwargs = {
             "slug": {"read_only": True},
             "creator": {"read_only": True},
@@ -158,8 +196,8 @@ class FullPlaylistSerializer(serializers.ModelSerializer):
 
 
 class AddSongToPlaylistSerializer(serializers.ModelSerializer):
-    song = serializers.SlugField()
-    playlist = serializers.SlugField()
+    song = serializers.SlugField(write_only=True)
+    playlist = serializers.SlugField(write_only=True)
 
     class Meta:
         model = Playlist
