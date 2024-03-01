@@ -101,7 +101,9 @@ services:
     command: /start-flower
 
   elasticsearch:
-    image: elasticsearch:8.11.1
+    build:
+      context: .
+      dockerfile: ./compose/production/elasticsearch/Dockerfile
     ports:
       - "9200:9200"
       - "9300:9300"

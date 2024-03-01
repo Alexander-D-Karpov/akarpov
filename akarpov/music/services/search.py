@@ -13,9 +13,9 @@ def search_song(query):
             ES_Q(
                 "multi_match",
                 query=query,
-                fields=["name^3", "authors.name^2", "album.name"],
+                fields=["name^5", "authors.name^3", "album.name^3"],
                 fuzziness="AUTO",
-            ),  # Change here
+            ),
             ES_Q("wildcard", name__raw=f"*{query.lower()}*"),
             ES_Q(
                 "nested",
@@ -27,6 +27,7 @@ def search_song(query):
                 path="album",
                 query=ES_Q("wildcard", album__name__raw=f"*{query.lower()}*"),
             ),
+            ES_Q("wildcard", meta__raw=f"*{query.lower()}*"),
         ],
         minimum_should_match=1,
     )

@@ -157,22 +157,25 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
         print(f"[processing] loading {title}")
 
         info = search_all_platforms(title)
-        if not info["album_image"].startswith("/"):
-            r = requests.get(info["album_image"])
-            img_pth = str(
-                settings.MEDIA_ROOT
-                + f"/{info['album_image'].split('/')[-1]}_{str(randint(100, 999))}"
-            )
-            with open(img_pth, "wb") as f:
-                f.write(r.content)
+        if "album_image" in info and info["album_image"]:
+            if not info["album_image"].startswith("/"):
+                r = requests.get(info["album_image"])
+                img_pth = str(
+                    settings.MEDIA_ROOT
+                    + f"/{info['album_image'].split('/')[-1]}_{str(randint(100, 999))}"
+                )
+                with open(img_pth, "wb") as f:
+                    f.write(r.content)
 
-            im = Image.open(img_pth)
-            im.save(str(f"{img_pth}.png"))
+                im = Image.open(img_pth)
+                im.save(str(f"{img_pth}.png"))
 
-            os.remove(img_pth)
-            img_pth = f"{img_pth}.png"
+                os.remove(img_pth)
+                img_pth = f"{img_pth}.png"
+            else:
+                img_pth = info["album_image"]
         else:
-            img_pth = info["album_image"]
+            img_pth = None
         if "genre" in info:
             song = load_track(
                 path,

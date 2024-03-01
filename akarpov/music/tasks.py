@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import parse_qs, urlparse
 
 import pylast
 import spotipy
@@ -54,9 +55,19 @@ def list_tracks(url, user_id):
 
         elif "playlist" in url or "&list=" in url:
             ytmusic = ytmusicapi.YTMusic()
-            playlist_id = url.split("=")[-1]
-            playlist_songs = ytmusic.get_playlist(playlist_id)["tracks"]["results"]
 
+            # Parse the URL and the query string
+            parsed_url = urlparse(url)
+            parsed_qs = parse_qs(parsed_url.query)
+
+            # Get the playlist ID from the parsed query string
+            playlist_id = parsed_qs.get("list", [None])[0]
+
+            if playlist_id:
+                playlist_songs = ytmusic.get_playlist(playlist_id)["tracks"]
+
+            else:
+                raise ValueError("No playlist ID found in the URL.")
             for song in playlist_songs:
                 process_yb.apply_async(
                     kwargs={

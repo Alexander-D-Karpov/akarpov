@@ -39,24 +39,70 @@ class SongDocument(Document):
         },
     )
 
-    meta = fields.ObjectField(dynamic=True)  # Added meta field here as dynamic object
+    meta = fields.ObjectField(dynamic=True)
 
     class Index:
         name = "songs"
-        settings = {"number_of_shards": 1, "number_of_replicas": 0}
-        # settings = {
-        #     "number_of_shards": 1,
-        #     "number_of_replicas": 0,
-        #     "analysis": {
-        #         "analyzer": {
-        #             "russian_icu": {
-        #                 "type": "custom",
-        #                 "tokenizer": "icu_tokenizer",
-        #                 "filter": ["icu_folding","icu_normalizer"]
-        #             }
-        #         }
-        #     }
-        # } TODO
+        settings = {
+            "number_of_shards": 1,
+            "number_of_replicas": 0,
+            "analysis": {
+                "filter": {
+                    "russian_stop": {
+                        "type": "stop",
+                        "stopwords": "_russian_",
+                    },
+                    "russian_keywords": {
+                        "type": "keyword_marker",
+                        "keywords": ["пример"],
+                    },
+                    "russian_stemmer": {
+                        "type": "stemmer",
+                        "language": "russian",
+                    },
+                    "autocomplete_filter": {
+                        "type": "edge_ngram",
+                        "min_gram": 1,
+                        "max_gram": 20,
+                    },
+                    "synonym_filter": {
+                        "type": "synonym",
+                        "synonyms": [
+                            "бит,трек,песня,музыка,песня,мелодия,композиция",
+                            "певец,исполнитель,артист,музыкант",
+                            "альбом,диск,пластинка,сборник,коллекция",
+                        ],
+                    },
+                },
+                "analyzer": {
+                    "russian": {
+                        "tokenizer": "standard",
+                        "filter": [
+                            "russian_stop",
+                            "russian_keywords",
+                            "russian_stemmer",
+                        ],
+                    },
+                    "russian_icu": {
+                        "tokenizer": "icu_tokenizer",
+                        "filter": [
+                            "russian_stop",
+                            "russian_keywords",
+                            "russian_stemmer",
+                        ],
+                    },
+                    "autocomplete": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [
+                            "lowercase",
+                            "autocomplete_filter",
+                            "synonym_filter",
+                        ],
+                    },
+                },
+            },
+        }
 
     class Django:
         model = Song

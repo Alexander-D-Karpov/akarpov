@@ -72,6 +72,16 @@ def load_track(
             name = search_info["title"]
         elif not name:
             name = process_track_name(" ".join(p_name.strip().split("-")))
+            clear_name = [
+                "(Official HD Video)",
+                "(Official Music Video)",
+                "(Official Video)",
+                "Official Video",
+                "Official Music Video",
+                "Official HD Video",
+            ]
+            for c in clear_name:
+                name = name.replace(c, "")
 
     if not name:
         name = orig_name

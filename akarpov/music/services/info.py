@@ -360,6 +360,7 @@ def update_author_info(author: Author) -> None:
 
 
 def search_all_platforms(track_name: str) -> dict:
+    print(track_name)
     session = spotipy.Spotify(
         auth_manager=spotipy.SpotifyClientCredentials(
             client_id=settings.MUSIC_SPOTIFY_ID,
