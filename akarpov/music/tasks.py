@@ -29,7 +29,7 @@ from akarpov.utils.celery import get_scheduled_tasks_name
 logger = structlog.get_logger(__name__)
 
 
-@shared_task
+@shared_task(soft_time_limit=60 * 20, time_limit=60 * 30)
 def list_tracks(url, user_id):
     if "music.youtube.com" in url or "youtu.be" in url:
         url = url.replace("music.youtube.com", "youtube.com")
@@ -43,7 +43,6 @@ def list_tracks(url, user_id):
             ytmusic = ytmusicapi.YTMusic()
             channel_id = url.split("/")[-1]
             channel_songs = ytmusic.get_artist(channel_id)["songs"]["results"]
-            print(channel_songs)
 
             for song in channel_songs:
                 process_yb.apply_async(

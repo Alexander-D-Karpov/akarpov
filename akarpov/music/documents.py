@@ -60,6 +60,10 @@ class SongDocument(Document):
                         "type": "stemmer",
                         "language": "russian",
                     },
+                    "english_stemmer": {
+                        "type": "stemmer",
+                        "language": "english",
+                    },
                     "autocomplete_filter": {
                         "type": "edge_ngram",
                         "min_gram": 1,
@@ -68,9 +72,10 @@ class SongDocument(Document):
                     "synonym_filter": {
                         "type": "synonym",
                         "synonyms": [
-                            "бит,трек,песня,музыка,песня,мелодия,композиция",
-                            "певец,исполнитель,артист,музыкант",
-                            "альбом,диск,пластинка,сборник,коллекция",
+                            "бит, трек => песня",
+                            "песня, музыка, мелодия, композиция",
+                            "певец, исполнитель, артист, музыкант",
+                            "альбом, диск, пластинка, сборник, коллекция",
                         ],
                     },
                 },
@@ -83,21 +88,42 @@ class SongDocument(Document):
                             "russian_stemmer",
                         ],
                     },
-                    "russian_icu": {
-                        "tokenizer": "icu_tokenizer",
+                    "russian_with_synonyms_and_stemming": {
+                        "tokenizer": "standard",
                         "filter": [
+                            "lowercase",
                             "russian_stop",
                             "russian_keywords",
                             "russian_stemmer",
+                            "synonym_filter",
                         ],
                     },
-                    "autocomplete": {
+                    "english_with_stemming": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [
+                            "lowercase",
+                            "english_stemmer",
+                        ],
+                    },
+                    "autocomplete_with_stemming": {
                         "type": "custom",
                         "tokenizer": "standard",
                         "filter": [
                             "lowercase",
                             "autocomplete_filter",
+                            "english_stemmer",  # Apply English stemming for autocomplete
+                            "russian_stemmer",  # Include Russian stemming if applicable
+                        ],
+                    },
+                    "search_synonym_with_stemming": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [
+                            "lowercase",
                             "synonym_filter",
+                            "english_stemmer",  # Apply English stemming for synonym search
+                            "russian_stemmer",  # Include Russian stemming if processing Russian synonyms
                         ],
                     },
                 },
