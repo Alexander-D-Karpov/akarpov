@@ -65,7 +65,7 @@ def process_mp3_file(path: str, user_id: int) -> None:
 
 def analyze_music_loudness(mp3_file):
     y, sr = librosa.load(mp3_file, sr=None)
-    frame_length = int(0.5 * sr)
+    frame_length = int(0.1 * sr)
     stft = np.abs(librosa.stft(y, n_fft=frame_length, hop_length=frame_length))
     rms_energy = librosa.feature.rms(
         S=stft, frame_length=frame_length, hop_length=frame_length
