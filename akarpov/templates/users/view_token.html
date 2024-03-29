@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Token Details</h2>
+    {% if token.name %}
+    <p><strong>Name:</strong> {{ token.name }}</p>
+    {% endif %}
+    <p><strong>Token:</strong> {{ token.token|slice:":5" }}***{{ token.token|slice:"-5:" }}</p>
+    <p><strong>Last Used:</strong> {{ token.last_used|date:"Y-m-d H:i:s" }} ({{ token.last_used|timesince }} ago)</p>
+    <p><strong>Active Until:</strong> {{ token.active_until|date:"Y-m-d" }}</p>
+    <p><strong>Permissions:</strong></p>
+    <ul>
+        {% for app, actions in token.permissions.items %}
+            <li><strong>{{ app|title }}:</strong>
+                <ul>
+                    {% for action, value in actions.items %}
+                        <li>{{ action|title }}: {{ value|yesno:"✅,❌" }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+  {#    <a href="{% url 'edit_token' token.id %}" class="btn btn-primary">Edit</a> TODO #}
+    <a href="{% url 'users:delete_token' token.id %}" class="btn btn-danger">Delete</a>
+</div>
+{% endblock %}

@@ -6,6 +6,8 @@ from django.utils.deprecation import MiddlewareMixin
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.exceptions import AuthenticationFailed
 
+from akarpov.users.models import UserAPIToken
+
 
 class EmailVerificationMiddleware(MiddlewareMixin):
     def process_request(self, request):
@@ -21,11 +23,19 @@ class Enforce2FAMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        if (
-            request.path_info.startswith("/api/v1/music/")
-            or request.path_info == "/api/v1/auth/token/"
-        ):
+        if request.path_info == "/api/v1/auth/token/":
             return response
+
+        if "Authorization" in request.headers:
+            try:
+                token = request.headers["Authorization"]
+                if " " in token:
+                    token = token.split(" ")[1]
+                token = UserAPIToken.objects.cache().get(token=token)
+                request.token_permissions = token.permissions
+                return response
+            except (KeyError, AttributeError, UserAPIToken.DoesNotExist):
+                ...
 
         # Check user is authenticated and OTP token input is not completed
         is_authenticated = request.user.is_authenticated

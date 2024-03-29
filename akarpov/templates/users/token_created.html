@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Token Created Successfully</h2>
+    <p>Your new API token is:</p>
+    <p><code>{{ new_token }}</code><button class="btn" data-clipboard-text="{{ new_token }}">
+      <i style="font-size: 0.8em" class="bi bi-clipboard ml-2"></i>
+    </button></p>
+    <p>Please note it down. You won't be able to see it again.</p>
+    <a href="{% url 'users:list_tokens' %}" class="btn btn-primary mt-4">Back to Tokens</a>
+</div>
+<script src="{% static 'js/clipboard.min.js' %}"></script>
+<script>
+new ClipboardJS('.btn');
+</script>
+{% endblock %}

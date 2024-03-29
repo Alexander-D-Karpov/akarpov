@@ -1,8 +1,8 @@
-from ckeditor_uploader.fields import RichTextUploadingField
 from colorfield.fields import ColorField
 from django.db import models
 from django.db.models import Count
 from django.urls import reverse
+from django_ckeditor_5.fields import CKEditor5Field
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -16,7 +16,7 @@ from akarpov.utils.string import cleanhtml
 
 class Post(BaseImageModel, ShortLinkModel, UserHistoryModel):
     title = models.CharField(max_length=100, blank=False)
-    body = RichTextUploadingField(blank=False)
+    body = CKEditor5Field(blank=False, config_name="extends")
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
 

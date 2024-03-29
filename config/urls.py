@@ -43,7 +43,9 @@ urlpatterns = [
     path("forms/", include("akarpov.test_platform.urls", namespace="forms")),
     path("tools/", include("akarpov.tools.urls", namespace="tools")),
     path("gallery/", include("akarpov.gallery.urls", namespace="gallery")),
-    path("ckeditor/", include("ckeditor_uploader.urls")),
+    path(
+        "ckeditor5/", include("django_ckeditor_5.urls"), name="ck_editor_5_upload_file"
+    ),
     path("accounts/", include("allauth.urls")),
     path("accounts/login/", OTPLoginView.as_view(), name="account_login"),
     path("", include("akarpov.blog.urls", namespace="blog")),

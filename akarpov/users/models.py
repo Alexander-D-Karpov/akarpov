@@ -1,9 +1,12 @@
+import secrets
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from akarpov.common.models import BaseImageModel
@@ -78,6 +81,46 @@ class UserHistory(models.Model):
         return self
 
 
-class UserNotification:
-    # TODO: add notification system
-    ...
+class UserAPIToken(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    user = models.ForeignKey(
+        "User", related_name="api_tokens", on_delete=models.CASCADE
+    )
+    token = models.CharField(max_length=255, unique=True, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+    active_until = models.DateTimeField(null=True)
+    permissions = models.JSONField(default=dict)
+    last_used = models.DateTimeField(null=True, blank=True)
+
+    permission_template = {
+        "music": {
+            "listen": "Listen to music",
+            "upload": "Upload music",
+            "playlist": "Manage playlists",
+        },
+        "users": {
+            "edit": "Edit user profile",
+            "delete": "Delete user profile",
+        },
+        "tools": {
+            "shorten": "Shorten links",
+        },
+        "files": {
+            "upload": "Upload files",
+            "download": "Download files",
+        },
+    }
+
+    def __str__(self):
+        return self.token
+
+    @property
+    def is_active(self) -> bool:
+        return self.active_until is None or self.active_until > timezone.now()
+
+    @staticmethod
+    def generate_token():
+        token = secrets.token_urlsafe(32)
+        while UserAPIToken.objects.filter(token=token).exists():
+            token = secrets.token_urlsafe(32)
+        return token

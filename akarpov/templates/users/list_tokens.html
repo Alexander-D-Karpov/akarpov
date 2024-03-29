@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My API Tokens</h2>
+    <div class="mb-3">
+        <a href="{% url 'users:create_token' %}" class="btn btn-primary">Create New Token</a>
+    </div>
+    <ul class="list-group">
+        {% for token in tokens %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                {% if token.name %}{{ token.name }}{% else %}<em>Unnamed Token</em>{% endif %}
+                <br>
+                <small>{{ token.token|slice:":5" }}***{{ token.token|slice:"-5:" }}</small>
+            </div>
+            <div>
+                <a href="{% url 'users:view_token' token.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                <a href="{% url 'users:delete_token' token.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">No tokens found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -8,13 +8,9 @@
 <form class="pt-2" enctype="multipart/form-data" method="POST" id="designer-form">
     {% csrf_token %}
     {{ form.media }}
-    {% for field in form %}
-        {{ field|as_crispy_field }}
-    {% endfor %}
+    {{ form|crispy }}
     <div class="mt-4 flex justify-end space-x-4">
-        <button class="btn btn-secondary" type="submit" id="submit">
-            Save Changes
-        </button>
+        <input class="btn btn-secondary" type="submit" id="submit" value="Save Changes" />
     </div>
 </form>
 {% endblock %}
