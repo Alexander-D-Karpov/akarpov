@@ -207,7 +207,7 @@ def enforce_otp_login(request):
 
 @login_required
 def list_tokens(request):
-    tokens = UserAPIToken.objects.filter(user=request.user).order_by("-last_used")
+    tokens = UserAPIToken.objects.filter(user=request.user).order_by("last_used")
     return render(request, "users/list_tokens.html", {"tokens": tokens})
 
 
