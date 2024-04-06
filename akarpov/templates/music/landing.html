@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Welcome to music app</h1>
-<p>This is mainly the backend of music, you should consider using side clients like: <a href="https://next.akarpov.ru/music">otomir23's client</a></p>
+<p>This is mainly the backend of music, you should consider using side clients like: <a href="https://next.akarpov.ru/music">otomir23's client</a> or my <a href="https://t.me/akarpov_music_bot">inline telegram bot</a></p>
 {% if request.user.is_authenticated %}
   {% if last_fm_account %}
     <p>Last.fm connected to {{ last_fm_account }}, <a href="{% url 'music:lastfm_connect' %}">reconnect</a></p>
