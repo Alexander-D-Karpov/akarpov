@@ -95,21 +95,19 @@ def load_url(link: str, user_id: int):
             )
     elif "/album/" in link:
         album = client.albums_with_tracks(obj_id)
-        tracks = []
         for volume in album.volumes:
             for track in volume:
-                tracks.append(track)
-
-        for track in tracks:
-            tasks.load_ym_file_meta.apply_async(
-                kwargs={"track": track.track.id, "user_id": user_id}
-            )
+                tasks.load_ym_file_meta.apply_async(
+                    kwargs={"track": track.id, "user_id": user_id}
+                )
     elif "/artist/" in link:
         artist = client.artists(obj_id)[0]
-        for track in artist.popular_tracks:
-            tasks.load_ym_file_meta.apply_async(
-                kwargs={"track": track.id, "user_id": user_id}
-            )
+        albums = artist.get_albums(page_size=100)
+        for album in albums:
+            for track in album.fetch_tracks():
+                tasks.load_ym_file_meta.apply_async(
+                    kwargs={"track": track.id, "user_id": user_id}
+                )
     else:
         tasks.load_ym_file_meta.apply_async(
             kwargs={"track": obj_id, "user_id": user_id}

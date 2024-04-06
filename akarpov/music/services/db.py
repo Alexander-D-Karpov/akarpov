@@ -122,12 +122,15 @@ def load_track(
         album=album,
     ):
         return sng.first()
-
-    if not path.endswith(".mp3"):
-        mp3_path = path.replace(path.split(".")[-1], "mp3")
-        AudioSegment.from_file(path).export(mp3_path)
-        os.remove(path)
-        path = mp3_path
+    try:
+        if not path.endswith(".mp3"):
+            mp3_path = path.replace(path.split(".")[-1], "mp3")
+            AudioSegment.from_file(path).export(mp3_path)
+            os.remove(path)
+            path = mp3_path
+    except Exception as e:
+        print(e)
+        return Song.objects.none()
 
     tag = MP3(path, ID3=ID3)
 
