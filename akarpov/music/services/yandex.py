@@ -77,18 +77,24 @@ def load_file_meta(track: int, user_id: int) -> str:
 
 def load_url(link: str, user_id: int):
     client = login()
+    obj_id = link.split("/")[-1]
+    obj_id = obj_id.split("?")[0]
+    try:
+        obj_id = int(obj_id)
+    except ValueError:
+        print("Invalid link")
+        return None
+
     if "/playlists/" in link:
         author = link.split("/")[4]
-        playlist_id = link.split("/")[-1]
 
-        playlist = client.users_playlists(int(playlist_id), author)  # type: Playlist
+        playlist = client.users_playlists(obj_id, author)  # type: Playlist
         for track in playlist.fetch_tracks():
             tasks.load_ym_file_meta.apply_async(
                 kwargs={"track": track.track.id, "user_id": user_id}
             )
     elif "/album/" in link:
-        album_id = link.split("/")[-1]
-        album = client.albums_with_tracks(int(album_id))
+        album = client.albums_with_tracks(obj_id)
         tracks = []
         for volume in album.volumes:
             for track in volume:
@@ -99,14 +105,12 @@ def load_url(link: str, user_id: int):
                 kwargs={"track": track.track.id, "user_id": user_id}
             )
     elif "/artist/" in link:
-        author = link.split("/")[-1]
-        artist = client.artists([int(author)])[0]
+        artist = client.artists(obj_id)[0]
         for track in artist.popular_tracks:
             tasks.load_ym_file_meta.apply_async(
                 kwargs={"track": track.id, "user_id": user_id}
             )
     else:
-        track_id = link.split("/")[-1]
         tasks.load_ym_file_meta.apply_async(
-            kwargs={"track": track_id, "user_id": user_id}
+            kwargs={"track": obj_id, "user_id": user_id}
         )
