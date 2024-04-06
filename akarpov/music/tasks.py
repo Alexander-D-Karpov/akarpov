@@ -29,7 +29,7 @@ from akarpov.utils.celery import get_scheduled_tasks_name
 logger = structlog.get_logger(__name__)
 
 
-@shared_task(soft_time_limit=60 * 20, time_limit=60 * 30)
+@shared_task(soft_time_limit=60 * 60, time_limit=60 * 120)
 def list_tracks(url, user_id):
     if "music.youtube.com" in url or "youtu.be" in url:
         url = url.replace("music.youtube.com", "youtube.com")
@@ -37,7 +37,7 @@ def list_tracks(url, user_id):
     if "spotify.com" in url:
         spotify.download_url(url, user_id)
     elif "music.yandex.ru" in url:
-        yandex.load_playlist(url, user_id)
+        yandex.load_url(url, user_id)
     if "youtube.com" in url:
         if "channel" in url or "/c/" in url:
             ytmusic = ytmusicapi.YTMusic()
