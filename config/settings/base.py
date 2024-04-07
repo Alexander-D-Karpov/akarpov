@@ -529,6 +529,11 @@ SPECTACULAR_SETTINGS = {
         {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
         {"url": "https://new.akarpov.ru", "description": "Production server"},
     ],
+    "EXTENSIONS": {
+        "authentication": [
+            "akarpov.users.api.authentification.UserTokenAuthenticationExtension"
+        ],
+    },
 }
 
 # CKEDITOR

@@ -18,6 +18,8 @@ from akarpov.users.api.serializers import (
 )
 from akarpov.users.models import User
 
+from .authentification import UserTokenAuthentication  # noqa: F401
+
 
 class UserRegisterAPIViewSet(generics.CreateAPIView):
     """Creates new user and sends verification email"""
