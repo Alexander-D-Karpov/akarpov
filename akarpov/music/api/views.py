@@ -30,6 +30,7 @@ from akarpov.music.models import (
 )
 from akarpov.music.services.search import search_song
 from akarpov.music.tasks import listen_to_song
+from akarpov.users.models import User
 
 
 class LikedSongsContextMixin(generics.GenericAPIView):
@@ -394,9 +395,18 @@ class ListenSongAPIView(generics.GenericAPIView):
         data = serializer.validated_data
 
         try:
-            song = Song.objects.cache().get(slug=data["song"])
+            song = Song.objects.cache().get(slug=self.request.data.get("slug", ""))
         except Song.DoesNotExist:
             return Response(status=404)
+
+        try:
+            user_id = data.get("user_id", None)
+            user = User.objects.get(id=user_id)
+            if user != self.request.user:
+                return Response(status=403)
+        except User.DoesNotExist:
+            ...
+
         if self.request.user.is_authenticated:
             listen_to_song.apply_async(
                 kwargs={
