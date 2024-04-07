@@ -392,15 +392,14 @@ class ListenSongAPIView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=False)
-        data = serializer.validated_data
 
         try:
-            song = Song.objects.cache().get(slug=self.request.data.get("slug", ""))
+            song = Song.objects.cache().get(slug=self.request.data.get("song", ""))
         except Song.DoesNotExist:
             return Response(status=404)
 
         try:
-            user_id = data.get("user_id", None)
+            user_id = self.request.data.get("user_id", None)
             user = User.objects.get(id=user_id)
             if user != self.request.user:
                 return Response(status=403)
@@ -416,11 +415,11 @@ class ListenSongAPIView(generics.GenericAPIView):
                 },
                 countdown=2,
             )
-        elif "user_id" in data:
+        elif "user_id" in self.request.data:
             listen_to_song.apply_async(
                 kwargs={
                     "song_id": song.id,
-                    "user_id": data["user_id"],
+                    "user_id": self.request.data.get("user_id", None),
                     "anon": True,
                 },
                 countdown=2,
