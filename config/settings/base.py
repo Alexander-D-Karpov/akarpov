@@ -748,6 +748,7 @@ if dsn:
 ELASTICSEARCH_DSL = {
     "default": {"hosts": env("ELASTIC_SEARCH", default="http://127.0.0.1:9200/")},
 }
-
-
 USE_DEBUG_TOOLBAR = False
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
