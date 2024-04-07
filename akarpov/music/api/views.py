@@ -400,9 +400,10 @@ class ListenSongAPIView(generics.GenericAPIView):
 
         try:
             user_id = self.request.data.get("user_id", None)
-            user = User.objects.get(id=user_id)
-            if user != self.request.user:
-                return Response(status=403)
+            if user_id:
+                user = User.objects.cache().get(id=user_id)
+                if user != self.request.user:
+                    return Response(status=403)
         except User.DoesNotExist:
             ...
 
