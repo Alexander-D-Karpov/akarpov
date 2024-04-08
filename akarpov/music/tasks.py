@@ -213,9 +213,16 @@ def listen_to_song(song_id, user_id=None, anon=True):
                 song = Song.objects.get(id=song_id)
                 artist_name = song.artists_names
                 track_name = song.name
+                album_name = song.album.name
                 timestamp = int(timezone.now().timestamp())
                 network.scrobble(
-                    artist=artist_name, title=track_name, timestamp=timestamp
+                    artist=artist_name,
+                    title=track_name,
+                    timestamp=timestamp,
+                    album=album_name,
+                )
+                network.update_now_playing(
+                    artist=artist_name, title=track_name, album=album_name
                 )
             except UserMusicProfile.DoesNotExist:
                 pass
