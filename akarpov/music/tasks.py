@@ -211,7 +211,7 @@ def listen_to_song(song_id, user_id=None, anon=True):
                     session_key=lastfm_token,
                 )
                 song = Song.objects.get(id=song_id)
-                artist_name = song.artists_names
+                artist_name = song.get_first_author_name()
                 track_name = song.name
                 album_name = song.album.name
                 timestamp = int(timezone.now().timestamp())

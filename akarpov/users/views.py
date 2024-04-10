@@ -214,23 +214,16 @@ def list_tokens(request):
 @login_required
 def create_token(request):
     initial_data = {}
-
-    # Обработка параметров 'name' и 'active_until'
     if "name" in request.GET:
         initial_data["name"] = request.GET["name"]
     if "active_until" in request.GET:
         initial_data["active_until"] = request.GET["active_until"]
 
-    # Создаем QueryDict для разрешений, чтобы правильно обработать повторяющиеся ключи
     permissions_query_dict = QueryDict("", mutable=True)
-
-    # Разбор параметров разрешений
     permissions = request.GET.getlist("permissions")
     for perm in permissions:
         category, permission = perm.split(".")
         permissions_query_dict.update({f"permissions_{category}": [permission]})
-
-    # Переводим QueryDict в обычный словарь для использования в initial
     permissions_data = {key: value for key, value in permissions_query_dict.lists()}
 
     initial_data.update(permissions_data)
@@ -242,7 +235,6 @@ def create_token(request):
         initial=initial_data, permissions_context=UserAPIToken.permission_template
     )
     if request.method == "POST":
-        print(request.POST)
         form = TokenCreationForm(request.POST)
         if form.is_valid():
             new_token = form.save(commit=False)

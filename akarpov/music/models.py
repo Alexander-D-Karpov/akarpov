@@ -86,6 +86,11 @@ class Song(BaseImageModel, ShortLinkModel):
     def artists_names(self):
         return cache_model_property(self, "_authors_names")
 
+    def get_first_author_name(self):
+        if self.authors:
+            return self.authors.first().name
+        return ""
+
     def __str__(self):
         return self.name
 
