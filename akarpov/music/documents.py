@@ -38,6 +38,7 @@ class SongDocument(Document):
             "raw": fields.KeywordField(normalizer="lowercase"),
         },
     )
+    suggest = fields.CompletionField()
 
     meta = fields.ObjectField(dynamic=True)
 
