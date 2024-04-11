@@ -17,20 +17,38 @@ def search_song(query):
             ES_Q(
                 "multi_match",
                 query=query,
-                fields=["name^5", "authors.name^3", "album.name^3"],
+                fields=[
+                    "name^5",
+                    "name.russian^5",
+                    "authors.name^3",
+                    "authors.name.raw^3",
+                    "album.name^3",
+                    "album.name.raw^3",
+                    "name.raw^2",
+                ],
                 type="best_fields",
                 fuzziness="AUTO",
             ),
             ES_Q(
                 "nested",
                 path="authors",
-                query=ES_Q("match", authors__name=query),
+                query=ES_Q(
+                    "multi_match",
+                    query=query,
+                    fields=["authors.name", "authors.name.raw"],
+                    fuzziness="AUTO",
+                ),
             ),
             ES_Q("wildcard", name__raw=f"*{query.lower()}*"),
             ES_Q(
                 "nested",
-                path="authors",
-                query=ES_Q("wildcard", authors__name__raw=f"*{query.lower()}*"),
+                path="album",
+                query=ES_Q(
+                    "multi_match",
+                    query=query,
+                    fields=["album.name", "album.name.raw"],
+                    fuzziness="AUTO",
+                ),
             ),
             ES_Q(
                 "nested",
@@ -42,7 +60,7 @@ def search_song(query):
         minimum_should_match=1,
     )
 
-    search = search.query(search_query).size(20)
+    search = search.query(search_query).extra(size=20)
     response = search.execute()
 
     if response.hits:
