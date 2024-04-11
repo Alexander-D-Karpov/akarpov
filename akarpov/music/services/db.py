@@ -2,7 +2,11 @@ import os
 import re
 
 import requests
-from deep_translator import GoogleTranslator
+
+try:
+    from deep_translator import GoogleTranslator  # TODO: move to another service
+except requests.exceptions.JSONDecodeError:
+    print("Failed to initialize GoogleTranslator due to external API issues.")
 from django.core.files import File
 from django.db import transaction
 from django.utils.text import slugify

@@ -3,7 +3,11 @@ from random import randint
 
 import requests
 import spotipy
-from deep_translator import GoogleTranslator
+
+try:
+    from deep_translator import GoogleTranslator
+except requests.exceptions.JSONDecodeError:
+    print("Failed to initialize GoogleTranslator due to external API issues.")
 from django.conf import settings
 from django.core.files import File
 from django.db import transaction
