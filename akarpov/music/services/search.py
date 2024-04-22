@@ -12,9 +12,16 @@ def search_song(query):
     search_query = ES_Q(
         "bool",
         should=[
-            ES_Q("match_phrase", name__exact=query, boost=5),
-            ES_Q("match_phrase", name__raw=query.lower(), boost=2.5),
+            # Boost for exact matches using a "bool" and "should" combination
+            ES_Q("bool", should=[ES_Q("match_phrase", name__exact=query)], boost=5),
+            ES_Q(
+                "bool",
+                should=[ES_Q("match_phrase", name__raw=query.lower())],
+                boost=2.5,
+            ),
+            # Standard matches
             ES_Q("match", name__russian=query),
+            # Multi-match queries for various fields
             ES_Q(
                 "multi_match",
                 query=query,
@@ -29,8 +36,10 @@ def search_song(query):
                 type="best_fields",
                 fuzziness="AUTO",
             ),
+            # Matching against meta fields
             ES_Q("match", meta__lyrics=query, fuzziness="AUTO", boost=0.5),
-            ES_Q("match", meta__other_field=query, fuzziness="AUTO"),
+            ES_Q("match", meta__raw=query.lower(), fuzziness="AUTO", boost=0.5),
+            # Nested queries for authors and albums
             ES_Q(
                 "nested",
                 path="authors",
@@ -53,6 +62,7 @@ def search_song(query):
                 ),
                 boost=2,
             ),
+            # Wildcard queries for partial matches
             ES_Q("wildcard", name__raw=f"*{query.lower()}*"),
             ES_Q("wildcard", meta__raw=f"*{query.lower()}*"),
         ],
