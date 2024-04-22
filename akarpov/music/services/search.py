@@ -12,13 +12,8 @@ def search_song(query):
     search_query = ES_Q(
         "bool",
         should=[
-            # Boosting the exact matches using match_phrase
-            ES_Q("bool", should=[ES_Q("match_phrase", name__exact=query)], boost=3),
-            ES_Q(
-                "bool",
-                should=[ES_Q("match_phrase", name__raw=query.lower())],
-                boost=2.5,
-            ),  # Case-insensitive exact match with boost
+            ES_Q("match_phrase", name__exact=query, boost=5),
+            ES_Q("match_phrase", name__raw=query.lower(), boost=2.5),
             ES_Q("match", name__russian=query),
             ES_Q(
                 "multi_match",
@@ -30,11 +25,12 @@ def search_song(query):
                     "authors.name.raw^3",
                     "album.name^3",
                     "album.name.raw^3",
-                    "meta.*",  # Assuming dynamic mapping for meta fields
                 ],
                 type="best_fields",
                 fuzziness="AUTO",
             ),
+            ES_Q("match", meta__lyrics=query, fuzziness="AUTO", boost=0.5),
+            ES_Q("match", meta__other_field=query, fuzziness="AUTO"),
             ES_Q(
                 "nested",
                 path="authors",
@@ -42,6 +38,17 @@ def search_song(query):
                     "multi_match",
                     query=query,
                     fields=["authors.name", "authors.name.raw"],
+                    fuzziness="AUTO",
+                ),
+                boost=2,
+            ),
+            ES_Q(
+                "nested",
+                path="album",
+                query=ES_Q(
+                    "multi_match",
+                    query=query,
+                    fields=["album.name", "album.name.raw"],
                     fuzziness="AUTO",
                 ),
                 boost=2,
