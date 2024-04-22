@@ -35,7 +35,8 @@ class SongDocument(Document):
     name = fields.TextField(
         attr="name",
         fields={
-            "raw": fields.KeywordField(normalizer="lowercase"),
+            "raw": fields.KeywordField(),
+            "exact": fields.KeywordField(normalizer="lowercase"),
         },
     )
     suggest = fields.CompletionField()
