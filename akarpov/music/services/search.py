@@ -12,12 +12,7 @@ def search_song(query):
     search_query = ES_Q(
         "bool",
         should=[
-            ES_Q("bool", should=[ES_Q("match_phrase", name__exact=query)], boost=5),
-            ES_Q(
-                "bool",
-                should=[ES_Q("match_phrase", name__raw=query.lower())],
-                boost=2.5,
-            ),
+            ES_Q("match", name=query),
             ES_Q("match", name__russian=query),
             ES_Q(
                 "multi_match",
@@ -29,6 +24,7 @@ def search_song(query):
                     "authors.name.raw^3",
                     "album.name^3",
                     "album.name.raw^3",
+                    "name.raw^2",
                 ],
                 type="best_fields",
                 fuzziness="AUTO",
@@ -42,8 +38,9 @@ def search_song(query):
                     fields=["authors.name", "authors.name.raw"],
                     fuzziness="AUTO",
                 ),
-                boost=2,
             ),
+            # Correcting wildcard queries with the proper syntax:
+            ES_Q("wildcard", **{"name.raw": f"*{query.lower()}*"}),
             ES_Q(
                 "nested",
                 path="album",
@@ -53,10 +50,15 @@ def search_song(query):
                     fields=["album.name", "album.name.raw"],
                     fuzziness="AUTO",
                 ),
-                boost=2,
             ),
-            ES_Q("wildcard", field={"name.raw": f"*{query.lower()}*"}, boost=0.5),
-            ES_Q("wildcard", field={"meta.raw": f"*{query.lower()}*"}, boost=0.5),
+            # Ensuring the nested wildcard query is properly structured
+            ES_Q(
+                "nested",
+                path="album",
+                query=ES_Q("wildcard", **{"album.name.raw": f"*{query.lower()}*"}),
+            ),
+            # Correcting the wildcard query for `meta.raw`
+            ES_Q("wildcard", **{"meta.raw": f"*{query.lower()}*"}),
         ],
         minimum_should_match=1,
     )
