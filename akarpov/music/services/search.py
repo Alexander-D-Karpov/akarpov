@@ -12,11 +12,14 @@ def search_song(query):
     search_query = ES_Q(
         "bool",
         should=[
-            ES_Q("match_phrase", name__exact=query, boost=3),  # Boost for exact matches
+            # Boosting the exact matches using match_phrase
+            ES_Q("bool", should=[ES_Q("match_phrase", name__exact=query)], boost=3),
             ES_Q(
-                "match_phrase", name__raw=query.lower(), boost=2.5
-            ),  # Case-insensitive exact match
-            ES_Q("match", name__russian=query),  # Match in Russian field
+                "bool",
+                should=[ES_Q("match_phrase", name__raw=query.lower())],
+                boost=2.5,
+            ),  # Case-insensitive exact match with boost
+            ES_Q("match", name__russian=query),
             ES_Q(
                 "multi_match",
                 query=query,
@@ -27,7 +30,7 @@ def search_song(query):
                     "authors.name.raw^3",
                     "album.name^3",
                     "album.name.raw^3",
-                    "meta.*",
+                    "meta.*",  # Assuming dynamic mapping for meta fields
                 ],
                 type="best_fields",
                 fuzziness="AUTO",
@@ -43,23 +46,8 @@ def search_song(query):
                 ),
                 boost=2,
             ),
-            ES_Q(
-                "nested",
-                path="album",
-                query=ES_Q(
-                    "multi_match",
-                    query=query,
-                    fields=["album.name", "album.name.raw"],
-                    fuzziness="AUTO",
-                ),
-                boost=2,
-            ),
-            ES_Q(
-                "wildcard", name__raw=f"*{query.lower()}*"
-            ),  # Wildcard search for partial matches
-            ES_Q(
-                "wildcard", meta__raw=f"*{query.lower()}*"
-            ),  # Wildcard search in meta fields
+            ES_Q("wildcard", name__raw=f"*{query.lower()}*"),
+            ES_Q("wildcard", meta__raw=f"*{query.lower()}*"),
         ],
         minimum_should_match=1,
     )
