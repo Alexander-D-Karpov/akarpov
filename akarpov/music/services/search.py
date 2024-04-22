@@ -55,8 +55,8 @@ def search_song(query):
                 ),
                 boost=2,
             ),
-            ES_Q("wildcard", name__raw=f"*{query.lower()}*", boost=0.5),
-            ES_Q("wildcard", meta__raw=f"*{query.lower()}*", boost=0.5),
+            ES_Q("wildcard", field={"name.raw": f"*{query.lower()}*"}, boost=0.5),
+            ES_Q("wildcard", field={"meta.raw": f"*{query.lower()}*"}, boost=0.5),
         ],
         minimum_should_match=1,
     )
