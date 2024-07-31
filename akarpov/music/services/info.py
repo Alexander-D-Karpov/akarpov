@@ -365,13 +365,14 @@ def update_author_info(author: Author) -> None:
 
 def search_all_platforms(track_name: str) -> dict:
     print(track_name)
-    session = spotipy.Spotify(
-        auth_manager=spotipy.SpotifyClientCredentials(
-            client_id=settings.MUSIC_SPOTIFY_ID,
-            client_secret=settings.MUSIC_SPOTIFY_SECRET,
-        )
-    )
-    spotify_info = get_spotify_info(track_name, session)
+    # session = spotipy.Spotify(
+    #     auth_manager=spotipy.SpotifyClientCredentials(
+    #         client_id=settings.MUSIC_SPOTIFY_ID,
+    #         client_secret=settings.MUSIC_SPOTIFY_SECRET,
+    #     )
+    # )
+    # spotify_info = get_spotify_info(track_name, session)
+    spotify_info = {}  # TODO: add proxy for info retrieve
     yandex_info = search_yandex(track_name)
     if "album_image_path" in spotify_info and "album_image_path" in yandex_info:
         os.remove(yandex_info["album_image_path"])
