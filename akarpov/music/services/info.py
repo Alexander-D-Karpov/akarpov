@@ -217,16 +217,12 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
     client = yandex_login()
     spotify_session = create_spotify_session()
 
-    if author_name:
-        yandex_album_info = get_yandex_album_info(
-            album.name + " - " + author_name, client
-        )
-        spotify_album_info = get_spotify_album_info(
-            album.name + " - " + author_name, spotify_session
-        )
-    else:
-        yandex_album_info = get_yandex_album_info(album.name, client)
-        spotify_album_info = get_spotify_album_info(album.name, spotify_session)
+    search_term = f"{album.name} - {author_name}" if author_name else album.name
+
+    yandex_album_info = get_api_info(get_yandex_album_info, search_term, client)
+    spotify_album_info = get_api_info(
+        get_spotify_album_info, search_term, spotify_session
+    )
 
     # Combine and prioritize Spotify data
     album_data = {}
@@ -236,14 +232,14 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
             "name": spotify_album_info.get("name", album.name),
             "release_date": spotify_album_info.get("release_date", ""),
             "total_tracks": spotify_album_info.get("total_tracks", ""),
-            "link": spotify_album_info["external_urls"]["spotify"],
+            "link": spotify_album_info.get("external_urls", {}).get("spotify", ""),
             "genre": spotify_album_info.get("genres", []),
         }
     if yandex_album_info:
         album_data.update(
             {
-                "name": album_data.get("name", yandex_album_info.title),
-                "genre": album_data.get("genre", yandex_album_info.genre),
+                "name": album_data.get("name") or yandex_album_info.title,
+                "genre": album_data.get("genre") or yandex_album_info.genre,
                 "description": yandex_album_info.description,
                 "type": yandex_album_info.type,
             }
@@ -253,102 +249,120 @@ def update_album_info(album: AlbumModel, author_name: str = None) -> None:
     album.save()
 
     # Handle Album Image - Prefer Spotify, fallback to Yandex
-    image_path = None
-    if (
-        spotify_album_info
-        and "images" in spotify_album_info
-        and spotify_album_info["images"]
-    ):
-        image_path = download_image(
-            spotify_album_info["images"][0]["url"], settings.MEDIA_ROOT
-        )
-    elif yandex_album_info and yandex_album_info.cover_uri:
-        image_path = download_image(
-            "https://" + yandex_album_info.cover_uri, settings.MEDIA_ROOT
-        )
-
-    generated_name = slugify(
-        GoogleTranslator(source="auto", target="en").translate(
-            album.name,
-            target_language="en",
-        )
-    )
+    image_path = get_album_image(spotify_album_info, yandex_album_info)
 
     if image_path:
+        save_album_image(album, image_path)
+
+    # Update Album Authors from Spotify data if available
+    if spotify_album_info and "artists" in spotify_album_info:
+        update_album_authors(album, spotify_album_info["artists"])
+
+    album.slug = generate_readable_slug(album.name, AlbumModel)
+    album.save()
+
+
+def get_album_image(spotify_info, yandex_info):
+    if spotify_info and "images" in spotify_info and spotify_info["images"]:
+        return download_image(spotify_info["images"][0]["url"], settings.MEDIA_ROOT)
+    elif yandex_info and yandex_info.cover_uri:
+        return download_image("https://" + yandex_info.cover_uri, settings.MEDIA_ROOT)
+    return None
+
+
+def save_album_image(album, image_path):
+    if not image_path:
+        return
+
+    try:
+        generated_name = safe_translate(album.name)
         with open(image_path, "rb") as f:
             album.image.save(
                 generated_name + ".png",
-                File(
-                    f,
-                    name=generated_name + ".png",
-                ),
+                File(f, name=generated_name + ".png"),
                 save=True,
             )
         os.remove(image_path)
         album.save()
+    except Exception as e:
+        print(f"Error saving album image: {str(e)}")
 
-    # Update Album Authors from Spotify data if available
-    if spotify_album_info and "artists" in spotify_album_info:
-        album_authors = []
-        for artist in spotify_album_info["artists"]:
-            author, created = Author.objects.get_or_create(name=artist["name"])
-            album_authors.append(author)
-        album.authors.set(album_authors)
 
-    album.slug = generate_readable_slug(album.name, AlbumModel)
-    album.save()
+def update_album_authors(album, artists):
+    album_authors = []
+    for artist in artists:
+        author, created = Author.objects.get_or_create(name=artist["name"])
+        album_authors.append(author)
+    album.authors.set(album_authors)
 
 
 def update_author_info(author: Author) -> None:
     client = yandex_login()
     spotify_session = create_spotify_session()
 
-    # Retrieve info from both services
-    yandex_artist_info = get_yandex_artist_info(author.name, client)
-    spotify_artist_info = get_spotify_artist_info(author.name, spotify_session)
+    yandex_artist_info = get_api_info(get_yandex_artist_info, author.name, client)
+    spotify_artist_info = get_api_info(
+        get_spotify_artist_info, author.name, spotify_session
+    )
 
-    # Combine and prioritize Spotify data
-    author_data = {}
-    if spotify_artist_info:
-        author_data = {
-            "name": spotify_artist_info.get("name", author.name),
-            "genres": spotify_artist_info.get("genres", []),
-            "popularity": spotify_artist_info.get("popularity", 0),
-            "link": spotify_artist_info["external_urls"]["spotify"],
-        }
-    if yandex_artist_info:
-        author_data.update(
-            {
-                "name": author_data.get("name", yandex_artist_info.name),
-                "genres": author_data.get("genres", yandex_artist_info.genres),
-                "description": yandex_artist_info.description,
-            }
-        )
+    author_data = combine_artist_data(author, spotify_artist_info, yandex_artist_info)
 
-    author.meta = author_data
+    with transaction.atomic():
+        author.meta = author_data
+        author.save()
+
+    image_path = get_author_image(spotify_artist_info, yandex_artist_info)
+
+    if image_path:
+        save_author_image(author, image_path)
+
+    author.slug = generate_readable_slug(author.name, Author)
     with transaction.atomic():
         author.save()
 
-    # Handle Author Image - Prefer Spotify, fallback to Yandex
-    image_path = None
-    if (
-        spotify_artist_info
-        and "images" in spotify_artist_info
-        and spotify_artist_info["images"]
-    ):
-        image_path = download_image(
-            spotify_artist_info["images"][0]["url"], settings.MEDIA_ROOT
-        )
-    elif yandex_artist_info and yandex_artist_info.cover:
-        image_path = download_image(yandex_artist_info.cover, settings.MEDIA_ROOT)
 
-    generated_name = slugify(
-        GoogleTranslator(source="auto", target="en").translate(
-            author.name,
-            target_language="en",
+def get_api_info(api_func, search_term, session):
+    try:
+        return api_func(search_term, session)
+    except Exception as e:
+        print(f"Error fetching info from {api_func.__name__}: {str(e)}")
+        return None
+
+
+def combine_artist_data(author, spotify_info, yandex_info):
+    author_data = {}
+    if spotify_info:
+        author_data = {
+            "name": spotify_info.get("name", author.name),
+            "genres": spotify_info.get("genres", []),
+            "popularity": spotify_info.get("popularity", 0),
+            "link": spotify_info.get("external_urls", {}).get("spotify", ""),
+        }
+    if yandex_info:
+        author_data.update(
+            {
+                "name": author_data.get("name") or yandex_info.name,
+                "genres": author_data.get("genres") or yandex_info.genres,
+                "description": yandex_info.description,
+            }
         )
-    )
-    if image_path:
+    return author_data
+
+
+def get_author_image(spotify_info, yandex_info):
+    if spotify_info and "images" in spotify_info and spotify_info["images"]:
+        return download_image(spotify_info["images"][0]["url"], settings.MEDIA_ROOT)
+    elif yandex_info and yandex_info.cover:
+        return download_image(yandex_info.cover, settings.MEDIA_ROOT)
+    return None
+
+
+def save_author_image(author, image_path):
+    if not image_path:
+        return
+
+    try:
+        generated_name = safe_translate(author.name)
         with open(image_path, "rb") as f:
             author.image.save(
                 generated_name + ".png",
@@ -357,10 +371,17 @@ def update_author_info(author: Author) -> None:
             )
         os.remove(image_path)
         author.save()
+    except Exception as e:
+        print(f"Error saving author image: {str(e)}")
 
-    author.slug = generate_readable_slug(author.name, Author)
-    with transaction.atomic():
-        author.save()
+
+def safe_translate(text):
+    try:
+        translated = GoogleTranslator(source="auto", target="en").translate(text)
+        return slugify(translated)
+    except Exception as e:
+        print(f"Error translating text: {str(e)}")
+        return slugify(text)  # Fallback to original text if translation fails
 
 
 def search_all_platforms(track_name: str) -> dict:
