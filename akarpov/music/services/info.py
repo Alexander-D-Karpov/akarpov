@@ -21,30 +21,33 @@ from akarpov.utils.generators import generate_charset
 from akarpov.utils.text import is_similar_artist, normalize_text
 
 
-def generate_readable_slug(name: str, model) -> str:
+def generate_readable_slug(name: str, model: Model) -> str:
     # Translate and slugify the name
-    slug = str(
-        slugify(
-            GoogleTranslator(source="auto", target="en").translate(
-                name,
-                target_language="en",
-            )
-        )
-    )
+    slug = safe_translate(name)
 
+    # Truncate slug if it's too long
     if len(slug) > 20:
         slug = slug[:20]
         last_dash = slug.rfind("-")
         if last_dash != -1:
             slug = slug[:last_dash]
 
+    original_slug = slug
+
+    # Ensure uniqueness
+    counter = 1
     while model.objects.filter(slug=slug).exists():
-        if len(slug) > 14:
-            slug = slug[:14]
-            last_dash = slug.rfind("-")
+        if len(original_slug) > 14:
+            truncated_slug = original_slug[:14]
+            last_dash = truncated_slug.rfind("-")
             if last_dash != -1:
-                slug = slug[:last_dash]
-        slug = slug + "_" + generate_charset(5)
+                truncated_slug = truncated_slug[:last_dash]
+        else:
+            truncated_slug = original_slug
+
+        suffix = f"_{generate_charset(5)}" if counter == 1 else f"_{counter}"
+        slug = f"{truncated_slug}{suffix}"
+        counter += 1
 
     return slug
 
@@ -381,7 +384,7 @@ def safe_translate(text):
         return slugify(translated)
     except Exception as e:
         print(f"Error translating text: {str(e)}")
-        return slugify(text)  # Fallback to original text if translation fails
+        return slugify(text)
 
 
 def search_all_platforms(track_name: str) -> dict:
