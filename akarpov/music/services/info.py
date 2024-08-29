@@ -10,7 +10,7 @@ except requests.exceptions.JSONDecodeError:
     print("Failed to initialize GoogleTranslator due to external API issues.")
 from django.conf import settings
 from django.core.files import File
-from django.db import transaction
+from django.db import transaction, Model
 from django.utils.text import slugify
 from spotipy import SpotifyClientCredentials
 from yandex_music import Client, Cover
