@@ -1,7 +1,7 @@
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from akarpov.music.models import Song
+from akarpov.music.models import Song, Album, Author
 
 
 @registry.register_document
@@ -12,6 +12,12 @@ class SongDocument(Document):
             "name": fields.TextField(
                 fields={
                     "raw": fields.KeywordField(normalizer="lowercase"),
+                },
+            ),
+            "name_transliterated": fields.TextField(
+                analyzer="transliterate",
+                fields={
+                    "raw": fields.KeywordField(),
                 },
             ),
             "link": fields.TextField(),
@@ -27,6 +33,12 @@ class SongDocument(Document):
                     "raw": fields.KeywordField(normalizer="lowercase"),
                 },
             ),
+            "name_transliterated": fields.TextField(
+                analyzer="transliterate",
+                fields={
+                    "raw": fields.KeywordField(),
+                },
+            ),
             "link": fields.TextField(),
             "meta": fields.ObjectField(dynamic=True),
         },
@@ -37,6 +49,13 @@ class SongDocument(Document):
         fields={
             "raw": fields.KeywordField(),
             "exact": fields.KeywordField(normalizer="lowercase"),
+        },
+    )
+    name_transliterated = fields.TextField(
+        attr="name",
+        analyzer="transliterate",
+        fields={
+            "raw": fields.KeywordField(),
         },
     )
     suggest = fields.CompletionField()
@@ -50,13 +69,17 @@ class SongDocument(Document):
             "number_of_replicas": 0,
             "analysis": {
                 "filter": {
+                    "my_transliterator": {
+                        "type": "icu_transform",
+                        "id": "Any-Latin; NFD; [:Nonspacing Mark:] Remove; NFC",
+                    },
                     "russian_stop": {
                         "type": "stop",
                         "stopwords": "_russian_",
                     },
                     "russian_keywords": {
                         "type": "keyword_marker",
-                        "keywords": ["пример"],
+                        "keywords": ["песня", "музыка", "певец", "альбом"],
                     },
                     "russian_stemmer": {
                         "type": "stemmer",
@@ -82,6 +105,13 @@ class SongDocument(Document):
                     },
                 },
                 "analyzer": {
+                    "transliterate": {
+                        "tokenizer": "standard",
+                        "filter": [
+                            "lowercase",
+                            "my_transliterator",
+                        ],
+                    },
                     "russian": {
                         "tokenizer": "standard",
                         "filter": [
@@ -139,3 +169,74 @@ class SongDocument(Document):
         if isinstance(related_instance, Song):
             return related_instance.album
         return related_instance.songs.all()
+
+
+@registry.register_document
+class AuthorDocument(Document):
+    name = fields.TextField(
+        fields={
+            "raw": fields.KeywordField(),
+            "exact": fields.KeywordField(normalizer="lowercase"),
+        },
+    )
+    name_transliterated = fields.TextField(
+        attr="name",
+        analyzer="transliterate",
+        fields={
+            "raw": fields.KeywordField(),
+        },
+    )
+    suggest = fields.CompletionField()
+    meta = fields.ObjectField(dynamic=True)
+
+    class Index:
+        name = "authors"
+        settings = SongDocument.Index.settings  # Reuse settings
+
+    class Django:
+        model = Author
+
+
+@registry.register_document
+class AlbumDocument(Document):
+    name = fields.TextField(
+        fields={
+            "raw": fields.KeywordField(),
+            "exact": fields.KeywordField(normalizer="lowercase"),
+        },
+    )
+    name_transliterated = fields.TextField(
+        attr="name",
+        analyzer="transliterate",
+        fields={
+            "raw": fields.KeywordField(),
+        },
+    )
+    suggest = fields.CompletionField()
+    meta = fields.ObjectField(dynamic=True)
+    authors = fields.NestedField(
+        attr="authors",
+        properties={
+            "name": fields.TextField(
+                fields={
+                    "raw": fields.KeywordField(normalizer="lowercase"),
+                },
+            ),
+            "name_transliterated": fields.TextField(
+                attr="name",
+                analyzer="transliterate",
+                fields={
+                    "raw": fields.KeywordField(),
+                },
+            ),
+            "link": fields.TextField(),
+            "meta": fields.ObjectField(dynamic=True),
+        },
+    )
+
+    class Index:
+        name = "albums"
+        settings = SongDocument.Index.settings  # Reuse settings
+
+    class Django:
+        model = Album

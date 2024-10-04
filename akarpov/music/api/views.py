@@ -19,6 +19,7 @@ from akarpov.music.api.serializers import (
     ListSongSlugsSerializer,
     PlaylistSerializer,
     SongSerializer,
+    AllSearchSerializer,
 )
 from akarpov.music.models import (
     Album,
@@ -28,7 +29,7 @@ from akarpov.music.models import (
     SongUserRating,
     UserListenHistory,
 )
-from akarpov.music.services.search import search_song
+from akarpov.music.services.search import search_song, search_album, search_author
 from akarpov.music.tasks import listen_to_song
 from akarpov.users.models import User
 
@@ -352,7 +353,25 @@ class ListAlbumsAPIView(generics.ListAPIView):
     serializer_class = ListAlbumSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
-    queryset = Album.objects.cache().all()
+
+    def get_queryset(self):
+        search = self.request.query_params.get("search", None)
+        if search:
+            return search_album(search)
+        return Album.objects.cache().all()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search query for albums",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class RetrieveUpdateDestroyAlbumAPIView(
@@ -369,7 +388,25 @@ class ListAuthorsAPIView(generics.ListAPIView):
     serializer_class = ListAuthorSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.AllowAny]
-    queryset = Author.objects.cache().all()
+
+    def get_queryset(self):
+        search = self.request.query_params.get("search", None)
+        if search:
+            return search_author(search)
+        return Author.objects.cache().all()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search query for authors",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class RetrieveUpdateDestroyAuthorAPIView(
@@ -455,3 +492,53 @@ class ListUserListenedSongsAPIView(generics.ListAPIView):
 class CreateAnonMusicUserAPIView(generics.CreateAPIView):
     serializer_class = AnonMusicUserSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class SearchAllAPIView(LikedSongsContextMixin, generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = AllSearchSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="query",
+                description="Search query",
+                required=True,
+                type=str,
+            ),
+        ],
+        responses={
+            200: AllSearchSerializer,
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get("query", "").strip()
+        if not query:
+            return Response({"songs": [], "albums": [], "authors": []})
+
+        songs = search_song(query)[:10]  # Top 10 songs
+        albums = search_album(query)[:5]  # Top 5 albums
+        authors = search_author(query)[:5]  # Top 5 authors
+
+        song_serializer = ListSongSerializer(
+            songs, many=True, context=self.get_serializer_context()
+        )
+        album_serializer = ListAlbumSerializer(
+            albums, many=True, context=self.get_serializer_context()
+        )
+        author_serializer = ListAuthorSerializer(
+            authors, many=True, context=self.get_serializer_context()
+        )
+
+        return Response(
+            {
+                "songs": song_serializer.data,
+                "albums": album_serializer.data,
+                "authors": author_serializer.data,
+            }
+        )

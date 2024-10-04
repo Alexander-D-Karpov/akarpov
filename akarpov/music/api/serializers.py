@@ -378,3 +378,29 @@ class FullAuthorSerializer(serializers.ModelSerializer):
             "link": {"read_only": True},
             "image": {"read_only": True},
         }
+
+
+class AllSearchSerializer(serializers.Serializer):
+    songs = serializers.SerializerMethodField(method_name="get_songs")
+    authors = serializers.SerializerMethodField(method_name="get_authors")
+    albums = serializers.SerializerMethodField(method_name="get_albums")
+
+    @extend_schema_field(ListSongSerializer(many=True))
+    def get_songs(self, obj):
+        return ListSongSerializer(
+            Song.objects.cache().search(obj["query"]).to_queryset()[:10],
+            many=True,
+            context=self.context,
+        ).data
+
+    @extend_schema_field(ListAuthorSerializer(many=True))
+    def get_authors(self, obj):
+        return ListAuthorSerializer(
+            Author.objects.cache().search(obj["query"]).to_queryset()[:10], many=True
+        ).data
+
+    @extend_schema_field(ListAlbumSerializer(many=True))
+    def get_albums(self, obj):
+        return ListAlbumSerializer(
+            Album.objects.cache().search(obj["query"]).to_queryset()[:10], many=True
+        ).data

@@ -21,6 +21,7 @@ from akarpov.music.api.views import (
     RetrieveUpdateDestroyAuthorAPIView,
     RetrieveUpdateDestroyPlaylistAPIView,
     RetrieveUpdateDestroySongAPIView,
+    SearchAllAPIView,
 )
 
 app_name = "music"
@@ -80,4 +81,5 @@ urlpatterns = [
         name="retrieve_update_delete_author",
     ),
     path("anon/create/", CreateAnonMusicUserAPIView.as_view(), name="create-anon"),
+    path("search/", SearchAllAPIView.as_view(), name="search_all"),
 ]
