@@ -28,8 +28,6 @@ RUN apt-get update && \
     apt-get install -y build-essential libpq-dev gettext libmagic-dev libjpeg-dev zlib1g-dev  && \
     # Dependencies for file preview generation
     apt-get install -y webp git libimage-exiftool-perl libmagickwand-dev ffmpeg libgdal-dev && \
-    # ML dependencies \
-    # none for now
     apt-get purge -y --auto-remove -o APT:AutoRemove:RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
@@ -48,7 +46,6 @@ RUN poetry export --without-hashes -f requirements.txt | /venv/bin/pip install -
 
 COPY . .
 RUN poetry build && /venv/bin/pip install dist/*.whl
-RUN /venv/bin/python -m nltk.downloader punkt stopwords wordnet
 
 
 COPY ./compose/production/django/entrypoint /entrypoint
