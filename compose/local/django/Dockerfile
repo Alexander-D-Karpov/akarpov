@@ -71,10 +71,6 @@ COPY ./compose/local/django/start-redirect /start-redirect
 RUN sed -i 's/\r$//g' /start-redirect
 RUN chmod +x /start-redirect
 
-COPY ./compose/local/django/install_preview_dependencies /install_preview_dependencies
-RUN sed -i 's/\r$//g' /install_preview_dependencies
-RUN chmod +x /install_preview_dependencies
-
 COPY ./compose/local/django/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker
 RUN chmod +x /start-celeryworker
