@@ -758,3 +758,9 @@ USE_DEBUG_TOOLBAR = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+
+
+# PREVIEW
+# ------------------------------------------------------------------------------
+PREVIEW_SERVICE_URL = env("PREVIEW_SERVICE_URL", default=None)
+PREVIEW_SERVICE_API_KEY = env("PREVIEW_SERVICE_API_KEY", default=None)

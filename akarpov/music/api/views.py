@@ -6,6 +6,7 @@ from akarpov.common.api.pagination import StandardResultsSetPagination
 from akarpov.common.api.permissions import IsAdminOrReadOnly, IsCreatorOrReadOnly
 from akarpov.music.api.serializers import (
     AddSongToPlaylistSerializer,
+    AllSearchSerializer,
     AnonMusicUserSerializer,
     FullAlbumSerializer,
     FullAuthorSerializer,
@@ -19,7 +20,6 @@ from akarpov.music.api.serializers import (
     ListSongSlugsSerializer,
     PlaylistSerializer,
     SongSerializer,
-    AllSearchSerializer,
 )
 from akarpov.music.models import (
     Album,
@@ -29,7 +29,7 @@ from akarpov.music.models import (
     SongUserRating,
     UserListenHistory,
 )
-from akarpov.music.services.search import search_song, search_album, search_author
+from akarpov.music.services.search import search_album, search_author, search_song
 from akarpov.music.tasks import listen_to_song
 from akarpov.users.models import User
 

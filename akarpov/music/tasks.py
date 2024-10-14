@@ -4,7 +4,6 @@ from urllib.parse import parse_qs, urlparse
 import pylast
 import spotipy
 import structlog
-import ytmusicapi
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
@@ -12,6 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
 from spotipy import SpotifyClientCredentials
+from ytmusicapi import YTMusic
 
 from akarpov.music.api.serializers import SongSerializer
 from akarpov.music.models import (

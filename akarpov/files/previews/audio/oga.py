@@ -1,5 +1,3 @@
-import textract
-
 from akarpov.files.models import File
 
 
@@ -7,11 +5,7 @@ def view(file: File) -> (str, str):
     static = f"""
     <meta property="og:title" content="{file.name}" />
     """
-    text = (
-        textract.process(file.file.path, extension="ogg", output_encoding="utf8")
-        .decode("utf8")
-        .replace("\t", "    ")
-    )
+    text = file.content.replace("\t", "    ")
     content = (
         """
     <div id="waveform">

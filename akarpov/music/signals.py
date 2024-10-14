@@ -35,7 +35,8 @@ def album_create(sender, instance, created, **kwargs):
 
 
 @receiver(post_save)
-def send_que_status(sender, instance, created, **kwargs): ...
+def send_que_status(sender, instance, created, **kwargs):
+    ...
 
 
 @receiver(pre_save, sender=SongUserRating)

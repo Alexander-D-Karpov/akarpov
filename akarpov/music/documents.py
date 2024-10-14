@@ -1,7 +1,7 @@
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from akarpov.music.models import Song, Album, Author
+from akarpov.music.models import Album, Author, Song
 
 
 @registry.register_document

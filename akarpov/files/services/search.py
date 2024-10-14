@@ -11,12 +11,6 @@ from elasticsearch_dsl import Q as ES_Q
 from akarpov.files.models import File
 
 from ..documents import FileDocument
-from .lema import lemmatize_and_remove_stopwords
-
-"""
-Calculus on types of searches:
-https://new.akarpov.ru/files/FZUTFBIyfbdlDHVzxUNU
-"""
 
 
 class BaseSearch:
@@ -140,23 +134,20 @@ class SimilaritySearch(BaseSearch):
     def search(self, query: str) -> QuerySet[File]:
         if self.queryset is None:
             raise ValueError("Queryset cannot be None for similarity search")
-
-        language = "russian" if re.search("[а-яА-Я]", query) else "english"
-        filtered_query = lemmatize_and_remove_stopwords(query, language=language)
         queryset = (
             self.queryset.annotate(
                 name_similarity=Coalesce(
-                    TrigramSimilarity(UnaccentLower("name"), filtered_query),
+                    TrigramSimilarity(UnaccentLower("name"), query),
                     Value(0),
                     output_field=FloatField(),
                 ),
                 description_similarity=Coalesce(
-                    TrigramSimilarity(UnaccentLower("description"), filtered_query),
+                    TrigramSimilarity(UnaccentLower("description"), query),
                     Value(0),
                     output_field=FloatField(),
                 ),
                 content_similarity=Coalesce(
-                    TrigramSimilarity(UnaccentLower("content"), filtered_query),
+                    TrigramSimilarity(UnaccentLower("content"), query),
                     Value(0),
                     output_field=FloatField(),
                 ),

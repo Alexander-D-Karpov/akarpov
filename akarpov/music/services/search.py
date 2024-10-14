@@ -3,8 +3,8 @@ from django.db.models import Case, When
 from django_elasticsearch_dsl.registries import registry
 from elasticsearch_dsl import Q as ES_Q
 
-from akarpov.music.documents import SongDocument, AlbumDocument, AuthorDocument
-from akarpov.music.models import Song, Author, Album
+from akarpov.music.documents import AlbumDocument, AuthorDocument, SongDocument
+from akarpov.music.models import Album, Author, Song
 
 
 def search_song(query):
