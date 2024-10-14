@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.1
 
       - name: Cache packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4.1.1
         id: cache-packages
         with:
           path: "~/packages/"
@@ -45,18 +45,18 @@ jobs:
             sudo dpkg -L libimage-exiftool-perl libmagickwand-dev  | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/packages/
           fi
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.1
       - name: Install poetry
         run: pipx install poetry
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5.2.0
         with:
           python-version: '3.11'
           cache: 'poetry'
       - run: poetry install
 
       - name: Run pre-commit
-        uses: pre-commit/action@v2.0.3
+        uses: pre-commit/action@v3.0.1
 
   # With no caching at all the entire ci process takes 4m 30s to complete!
   pytest:
@@ -64,7 +64,10 @@ jobs:
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.1
+
+      - name: Install Docker Compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
 
       - name: Build the Stack
         run:  docker-compose -f local.yml build
