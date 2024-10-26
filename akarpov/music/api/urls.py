@@ -16,6 +16,8 @@ from akarpov.music.api.views import (
     ListSongPlaylistsAPIView,
     ListSongSlugsAPIView,
     ListUserListenedSongsAPIView,
+    MusicDraftCallbackView,
+    MusicDraftDetailView,
     RemoveSongFromPlaylistAPIView,
     RetrieveUpdateDestroyAlbumAPIView,
     RetrieveUpdateDestroyAuthorAPIView,
@@ -82,4 +84,12 @@ urlpatterns = [
     ),
     path("anon/create/", CreateAnonMusicUserAPIView.as_view(), name="create-anon"),
     path("search/", SearchAllAPIView.as_view(), name="search_all"),
+    path(
+        "drafts/callback/<uuid:token>/",
+        MusicDraftCallbackView.as_view(),
+        name="draft-callback",
+    ),
+    path(
+        "drafts/<str:file_token>/", MusicDraftDetailView.as_view(), name="draft-detail"
+    ),
 ]

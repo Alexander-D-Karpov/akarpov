@@ -7,6 +7,8 @@ from akarpov.music.models import (
     Album,
     AnonMusicUser,
     Author,
+    MusicDraft,
+    MusicDraftFile,
     Playlist,
     PlaylistSong,
     Song,
@@ -404,3 +406,35 @@ class AllSearchSerializer(serializers.Serializer):
         return ListAlbumSerializer(
             Album.objects.cache().search(obj["query"]).to_queryset()[:10], many=True
         ).data
+
+
+class MusicDraftFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MusicDraftFile
+        fields = ["file", "original_name", "mime_type"]
+
+
+class MusicDraftSerializer(serializers.ModelSerializer):
+    files = MusicDraftFileSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = MusicDraft
+        fields = [
+            "id",
+            "status",
+            "provider",
+            "original_url",
+            "meta_data",
+            "file_token",
+            "created",
+            "updated",
+            "error_message",
+            "files",
+        ]
+        read_only_fields = ["id", "file_token", "created", "updated"]
+
+
+class MusicDraftCallbackSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=MusicDraft.STATUS_CHOICES)
+    meta_data = serializers.JSONField(required=False)
+    error_message = serializers.CharField(required=False)

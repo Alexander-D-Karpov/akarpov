@@ -1,6 +1,7 @@
 import uuid
 
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.sites.models import Site
 from django.db import models
 from django.urls import reverse
 
@@ -96,6 +97,50 @@ class Song(BaseImageModel, ShortLinkModel):
 
     class SlugMeta:
         slug_length = 10
+
+
+class MusicDraft(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("failed", "Failed"),
+        ("complete", "Complete"),
+    )
+
+    PROVIDER_CHOICES = (
+        ("spotify", "Spotify"),
+        ("yandex", "Yandex"),
+        ("youtube", "YouTube"),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+    original_url = models.URLField()
+    meta_data = models.JSONField(null=True, blank=True)
+    file_token = models.CharField(max_length=100, unique=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    error_message = models.TextField(null=True, blank=True)
+    user_id = models.IntegerField(null=True)
+    callback_token = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def get_callback_url(self):
+        site = Site.objects.get_current()
+        path = reverse(
+            "music:api:draft-callback", kwargs={"token": self.callback_token}
+        )
+        return f"https://{site.domain}{path}"
+
+
+class MusicDraftFile(models.Model):
+    draft = models.ForeignKey(
+        MusicDraft, on_delete=models.CASCADE, related_name="files"
+    )
+    file = models.FileField(upload_to="music_drafts/")
+    original_name = models.CharField(max_length=255)
+    mime_type = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now_add=True)
 
 
 class Playlist(ShortLinkModel, UserHistoryModel):

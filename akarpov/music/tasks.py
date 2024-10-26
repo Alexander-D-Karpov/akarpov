@@ -2,12 +2,14 @@ from datetime import timedelta
 from urllib.parse import parse_qs, urlparse
 
 import pylast
+import requests
 import spotipy
 import structlog
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import now
 from spotipy import SpotifyClientCredentials
@@ -17,12 +19,14 @@ from akarpov.music.api.serializers import SongSerializer
 from akarpov.music.models import (
     AnonMusicUser,
     AnonMusicUserHistory,
+    MusicDraft,
     RadioSong,
     Song,
     UserListenHistory,
     UserMusicProfile,
 )
 from akarpov.music.services import spotify, yandex, youtube
+from akarpov.music.services.drafts import save_song_from_draft
 from akarpov.music.services.file import load_dir, load_file
 from akarpov.utils.celery import get_scheduled_tasks_name
 
@@ -30,20 +34,31 @@ logger = structlog.get_logger(__name__)
 
 
 @shared_task(soft_time_limit=60 * 60, time_limit=60 * 120)
-def list_tracks(url, user_id):
-    url = normalize_url(url)
+def list_tracks(self, url: str, user_id: int | None = None) -> str | None:
+    """Update list_tracks to handle failures"""
+    try:
+        url = normalize_url(url)
+        handlers = {
+            "spotify.com": handle_spotify,
+            "music.yandex.ru": handle_yandex,
+            "youtube.com": handle_youtube,
+        }
 
-    handlers = {
-        "spotify.com": handle_spotify,
-        "music.yandex.ru": handle_yandex,
-        "youtube.com": handle_youtube,
-    }
+        for domain, handler in handlers.items():
+            if domain in url:
+                return handler(url, user_id)
 
-    for domain, handler in handlers.items():
-        if domain in url:
-            return handler(url, user_id)
-    print("failed to find handler, falling back to search")
-    return fallback_search(url, user_id)
+        return fallback_search(url, user_id)
+    except Exception as e:
+        draft = MusicDraft.objects.create(
+            provider="unknown",
+            original_url=url,
+            user_id=user_id,
+            status="pending",
+            error_message=str(e),
+        )
+        handle_download_failure.delay(str(draft.id), self.request.id)
+        return None
 
 
 def normalize_url(url):
@@ -52,24 +67,22 @@ def normalize_url(url):
     )
 
 
-def handle_spotify(url, user_id):
-    spotify.download_url(url, user_id)
-    return url
+def handle_spotify(url: str, user_id: int | None = None) -> str | None:
+    return download_spotify_url.delay(url, user_id)
 
 
-def handle_yandex(url, user_id):
-    yandex.load_url(url, user_id)
-    return url
+def handle_yandex(url: str, user_id: int | None = None) -> str | None:
+    return load_yandex_url.delay(url, user_id)
 
 
-def handle_youtube(url, user_id):
+def handle_youtube(url: str, user_id: int | None = None) -> str | None:
+    """Handle YouTube downloads"""
     if "channel" in url or "/c/" in url:
         return handle_youtube_channel(url, user_id)
     elif "playlist" in url or "&list=" in url:
         return handle_youtube_playlist(url, user_id)
     else:
-        process_yb.apply_async(kwargs={"url": url, "user_id": user_id})
-        return url
+        return process_yb.delay(url, user_id)
 
 
 def handle_youtube_channel(url, user_id):
@@ -126,10 +139,53 @@ def fallback_search(url, user_id):
     return url
 
 
-@shared_task(max_retries=5)
-def process_yb(url, user_id):
-    youtube.download_from_youtube_link(url, user_id)
-    return url
+@shared_task(bind=True)
+def process_yb(self, url: str, user_id: int | None = None) -> str | None:
+    """Update YouTube download to handle failures"""
+    try:
+        return str(youtube.download_from_youtube_link(url, user_id))
+    except Exception as e:
+        draft = MusicDraft.objects.create(
+            provider="youtube",
+            original_url=url,
+            user_id=user_id,
+            status="pending",
+            error_message=str(e),
+        )
+        handle_download_failure.delay(str(draft.id), self.request.id)
+        return None
+
+
+@shared_task(bind=True)
+def download_spotify_url(self, url: str, user_id: int | None = None) -> str | None:
+    try:
+        return spotify.download_url(url, user_id)
+    except Exception as e:
+        draft = MusicDraft.objects.create(
+            provider="spotify",
+            original_url=url,
+            user_id=user_id,
+            status="pending",
+            error_message=str(e),
+        )
+        handle_download_failure.delay(str(draft.id), self.request.id)
+        return None
+
+
+@shared_task(bind=True)
+def load_yandex_url(self, url: str, user_id: int | None = None) -> str | None:
+    try:
+        return yandex.load_url(url, user_id)
+    except Exception as e:
+        draft = MusicDraft.objects.create(
+            provider="yandex",
+            original_url=url,
+            user_id=user_id,
+            status="pending",
+            error_message=str(e),
+        )
+        handle_download_failure.delay(str(draft.id), self.request.id)
+        return None
 
 
 @shared_task
@@ -260,3 +316,53 @@ def listen_to_song(song_id, user_id=None, anon=True):
             except Exception as e:
                 logger.error(f"Last.fm scrobble error: {e}")
     return song_id
+
+
+@shared_task
+def handle_download_failure(draft_id: str, original_task_id: str):
+    """
+    Handle failed downloads by sending request to external service
+    """
+    draft = MusicDraft.objects.get(id=draft_id)
+    external_service_url = "http://music-download-service/api/v1/download"
+
+    response = requests.post(
+        external_service_url,
+        json={
+            "url": draft.original_url,
+            "provider": draft.provider,
+            "callback_url": draft.get_callback_url(),
+            "file_token": draft.file_token,
+        },
+    )
+
+    if response.status_code != 202:
+        draft.status = "failed"
+        draft.error_message = f"External service request failed: {response.text}"
+        draft.save()
+        return False
+
+    draft.status = "processing"
+    draft.save()
+    return True
+
+
+@shared_task
+def process_draft_callback(
+    draft_id: str, status: str, meta_data: dict = None, error_message: str = None
+):
+    """
+    Process callback from external service
+    """
+    draft = get_object_or_404(MusicDraft, id=draft_id)
+    draft.status = status
+
+    if meta_data:
+        draft.meta_data = meta_data
+    if error_message:
+        draft.error_message = error_message
+
+    draft.save()
+
+    if status == "complete":
+        save_song_from_draft(draft)

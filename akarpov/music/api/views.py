@@ -1,5 +1,6 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from akarpov.common.api.pagination import StandardResultsSetPagination
@@ -18,19 +19,22 @@ from akarpov.music.api.serializers import (
     ListPlaylistSerializer,
     ListSongSerializer,
     ListSongSlugsSerializer,
+    MusicDraftCallbackSerializer,
+    MusicDraftSerializer,
     PlaylistSerializer,
     SongSerializer,
 )
 from akarpov.music.models import (
     Album,
     Author,
+    MusicDraft,
     Playlist,
     Song,
     SongUserRating,
     UserListenHistory,
 )
 from akarpov.music.services.search import search_album, search_author, search_song
-from akarpov.music.tasks import listen_to_song
+from akarpov.music.tasks import listen_to_song, process_draft_callback
 from akarpov.users.models import User
 
 
@@ -542,3 +546,38 @@ class SearchAllAPIView(LikedSongsContextMixin, generics.GenericAPIView):
                 "authors": author_serializer.data,
             }
         )
+
+
+class MusicDraftCallbackView(generics.GenericAPIView):
+    serializer_class = MusicDraftCallbackSerializer
+
+    @extend_schema(
+        description="Callback endpoint for external music service",
+        parameters=[
+            OpenApiParameter(
+                name="token",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Draft callback token",
+            ),
+        ],
+    )
+    def post(self, request, token):
+        draft = get_object_or_404(MusicDraft, callback_token=token)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        process_draft_callback.delay(
+            draft_id=str(draft.id),
+            status=serializer.validated_data["status"],
+            meta_data=serializer.validated_data.get("meta_data"),
+            error_message=serializer.validated_data.get("error_message"),
+        )
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+
+class MusicDraftDetailView(generics.RetrieveAPIView):
+    queryset = MusicDraft.objects.all()
+    serializer_class = MusicDraftSerializer
+    lookup_field = "file_token"
