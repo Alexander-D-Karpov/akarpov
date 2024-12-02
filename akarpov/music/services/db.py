@@ -22,11 +22,28 @@ from akarpov.users.models import User
 
 
 def get_or_create_author(author_name):
+    """Get or create author with unique slug."""
     with transaction.atomic():
         author = Author.objects.filter(name__iexact=author_name).order_by("id").first()
         if author is None:
-            author = Author.objects.create(name=author_name)
+            author = Author.objects.create(
+                name=author_name, slug=generate_readable_slug(author_name, Author)
+            )
         return author
+
+
+def get_or_create_album(album_name):
+    """Get or create album with unique slug."""
+    if not album_name:
+        return None
+
+    with transaction.atomic():
+        album = Album.objects.filter(name__iexact=album_name).order_by("id").first()
+        if album is None:
+            album = Album.objects.create(
+                name=album_name, slug=generate_readable_slug(album_name, Album)
+            )
+        return album
 
 
 def process_track_name(track_name: str) -> str:
@@ -109,9 +126,7 @@ def load_track(
         else:
             album_name = None
         if album_name:
-            album, created = Album.objects.get_or_create(
-                name__iexact=album_name, defaults={"name": album_name}
-            )
+            album = get_or_create_album(album_name)
 
     processed_authors = []
     if authors:
