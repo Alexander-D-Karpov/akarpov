@@ -81,11 +81,11 @@ def generate_readable_slug(name: str, model: Model) -> str:
         truncated = slug[:20].rsplit("_", 1)[0]
         slug = truncated if truncated else slug[:20]
 
-    original_slug = slug
+    original_slug = slug.lower()
 
     # Ensure uniqueness
     counter = 1
-    while model.objects.filter(slug=slug).exists():
+    while model.objects.filter(slug__iexact=slug).exists():
         if len(original_slug) > 14:
             truncated = original_slug[:14].rsplit("_", 1)[0]
             base_slug = truncated if truncated else original_slug[:14]

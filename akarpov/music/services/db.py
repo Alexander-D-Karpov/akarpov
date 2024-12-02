@@ -8,7 +8,7 @@ try:
 except requests.exceptions.JSONDecodeError:
     print("Failed to initialize GoogleTranslator due to external API issues.")
 from django.core.files import File
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 from mutagen import File as MutagenFile
 from mutagen.id3 import APIC, ID3, TCON, TORY, TextFrame
@@ -19,6 +19,7 @@ from pydub import AudioSegment
 from akarpov.music.models import Album, Author, Song
 from akarpov.music.services.info import generate_readable_slug, search_all_platforms
 from akarpov.users.models import User
+from akarpov.utils.generators import generate_charset  # Import generate_charset
 
 
 def get_or_create_author(author_name):
@@ -26,10 +27,27 @@ def get_or_create_author(author_name):
     with transaction.atomic():
         author = Author.objects.filter(name__iexact=author_name).order_by("id").first()
         if author is None:
-            author = Author.objects.create(
-                name=author_name, slug=generate_readable_slug(author_name, Author)
-            )
-        return author
+            for attempt in range(5):
+                try:
+                    slug = generate_readable_slug(author_name, Author)
+                    author = Author.objects.create(name=author_name, slug=slug)
+                    return author
+                except IntegrityError:
+                    # Slug conflict, retry slug generation
+                    continue
+            else:
+                # If we still fail, get the existing author
+                author = (
+                    Author.objects.filter(name__iexact=author_name)
+                    .order_by("id")
+                    .first()
+                )
+                if author:
+                    return author
+                else:
+                    raise Exception("Failed to create or get author")
+        else:
+            return author
 
 
 def get_or_create_album(album_name):
@@ -40,10 +58,25 @@ def get_or_create_album(album_name):
     with transaction.atomic():
         album = Album.objects.filter(name__iexact=album_name).order_by("id").first()
         if album is None:
-            album = Album.objects.create(
-                name=album_name, slug=generate_readable_slug(album_name, Album)
-            )
-        return album
+            for attempt in range(5):
+                try:
+                    slug = generate_readable_slug(album_name, Album)
+                    album = Album.objects.create(name=album_name, slug=slug)
+                    return album
+                except IntegrityError:
+                    # Slug conflict, retry slug generation
+                    continue
+            else:
+                # If we still fail, get the existing album
+                album = (
+                    Album.objects.filter(name__iexact=album_name).order_by("id").first()
+                )
+                if album:
+                    return album
+                else:
+                    raise Exception("Failed to create or get album")
+        else:
+            return album
 
 
 def process_track_name(track_name: str) -> str:
@@ -115,13 +148,13 @@ def load_track(
         kwargs["release"] if "release" in kwargs else search_info.get("release", None)
     )
 
-    if album and type(album) is str and album.startswith("['"):
+    if album and isinstance(album, str) and album.startswith("['"):
         album = album.replace("['", "").replace("']", "")
 
     if album:
-        if type(album) is str:
+        if isinstance(album, str):
             album_name = album
-        elif type(album) is list:
+        elif isinstance(album, list):
             album_name = album[0]
         else:
             album_name = None
@@ -136,7 +169,7 @@ def load_track(
     authors = processed_authors
 
     if sng := Song.objects.filter(
-        name=name if name else p_name,
+        name__iexact=name if name else p_name,
         authors__id__in=[x.id for x in authors],
         album=album,
     ):
@@ -201,15 +234,29 @@ def load_track(
 
     new_file_name = generated_name + ".mp3"
 
-    if image_path:
-        with open(path, "rb") as file, open(image_path, "rb") as image:
-            song.image = File(image, name=generated_name + ".png")
-            song.file = File(file, name=new_file_name)
-            song.save()
+    # Generate unique slug for the song
+    song.slug = generate_readable_slug(song.name, Song)
+
+    # Try to save the song, handling potential slug conflicts
+    for attempt in range(5):
+        try:
+            if image_path:
+                with open(path, "rb") as file, open(image_path, "rb") as image:
+                    song.image = File(image, name=generated_name + ".png")
+                    song.file = File(file, name=new_file_name)
+                    song.save()
+            else:
+                with open(path, "rb") as file:
+                    song.file = File(file, name=new_file_name)
+                    song.save()
+            break  # Successfully saved the song
+        except IntegrityError:
+            # Slug conflict, generate a new slug using generate_charset
+            song.slug = generate_readable_slug(
+                song.name + "_" + generate_charset(5), Song
+            )
     else:
-        with open(path, "rb") as file:
-            song.file = File(file, name=new_file_name)
-            song.save()
+        raise Exception("Failed to save song with unique slug after multiple attempts")
 
     if not album.image and song.image:
         album.image = song.image
@@ -218,7 +265,7 @@ def load_track(
     if authors:
         song.authors.set([x.id for x in authors])
 
-    # set music meta
+    # Set music metadata
     tag = MutagenFile(song.file.path)
     tag["title"] = TextFrame(encoding=3, text=[name])
     if album:
@@ -250,8 +297,5 @@ def load_track(
 
     if os.path.exists(image_path):
         os.remove(image_path)
-
-    song.slug = generate_readable_slug(song.name, Song)
-    song.save()
 
     return song
