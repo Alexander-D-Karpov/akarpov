@@ -1,5 +1,6 @@
 import os
 from random import randint
+from typing import Any
 
 import requests
 import spotipy
@@ -81,6 +82,18 @@ def spotify_search(name: str, session: spotipy.Spotify, search_type="track"):
     return res
 
 
+def clean_spotify_response(data: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(data, dict):
+        return {
+            k: clean_spotify_response(v)
+            for k, v in data.items()
+            if k != "available_markets"
+        }
+    elif isinstance(data, list):
+        return [clean_spotify_response(item) for item in data]
+    return data
+
+
 @external_service_fallback
 def get_spotify_info(name: str, session: spotipy.Spotify) -> dict:
     info = {
@@ -90,7 +103,11 @@ def get_spotify_info(name: str, session: spotipy.Spotify) -> dict:
         "artists": [],
         "artist": "",
         "title": "",
-        "genre": "",
+        "genre": [],
+        "meta": {},
+        "album_meta": {},
+        "external_urls": {},
+        "full_data": {},
     }
 
     try:
@@ -99,32 +116,47 @@ def get_spotify_info(name: str, session: spotipy.Spotify) -> dict:
             return info
 
         track = results[0]
+        artist_data = session.artist(track["artists"][0]["external_urls"]["spotify"])
+        album_data = session.album(track["album"]["id"])
+
         info.update(
             {
                 "album_name": track["album"]["name"],
+                "album_image": track["album"]["images"][0]["url"]
+                if track["album"]["images"]
+                else "",
                 "release": track["album"]["release_date"].split("-")[0],
-                "album_image": track["album"]["images"][0]["url"],
                 "artists": [artist["name"] for artist in track["artists"]],
                 "artist": track["artists"][0]["name"],
                 "title": track["name"],
-                # Extract additional data as needed
+                "genre": artist_data.get("genres", []),
+                "meta": {
+                    "duration_ms": track.get("duration_ms"),
+                    "explicit": track.get("explicit"),
+                    "popularity": track.get("popularity"),
+                    "preview_url": track.get("preview_url"),
+                    "track_number": track.get("track_number"),
+                    "type": track.get("type"),
+                },
+                "album_meta": clean_spotify_response(album_data),
+                "external_urls": track.get("external_urls", {}),
+                "full_data": clean_spotify_response(track),
             }
         )
 
-        artist_data = session.artist(track["artists"][0]["external_urls"]["spotify"])
-        info["genre"] = artist_data.get("genres", [])
+        if track["album"]["images"]:
+            album_image_url = track["album"]["images"][0]["url"]
+            image_response = requests.get(album_image_url)
+            if image_response.status_code == 200:
+                image_path = os.path.join(
+                    settings.MEDIA_ROOT, f"tmp_{randint(10000, 99999)}.png"
+                )
+                with open(image_path, "wb") as f:
+                    f.write(image_response.content)
+                info["album_image_path"] = image_path
 
-        album_image_url = track["album"]["images"][0]["url"]
-        image_response = requests.get(album_image_url)
-        if image_response.status_code == 200:
-            image_path = os.path.join(
-                settings.MEDIA_ROOT, f"tmp_{randint(10000, 99999)}.png"
-            )
-            with open(image_path, "wb") as f:
-                f.write(image_response.content)
-            info["album_image_path"] = image_path
-
-    except Exception:
+    except Exception as e:
+        print("Failed to get Spotify info", error=str(e))
         return info
 
     return info
@@ -178,20 +210,101 @@ def search_yandex(name: str):
     return info
 
 
-def get_spotify_album_info(album_name: str, session: spotipy.Spotify):
-    search_result = session.search(q="album:" + album_name, type="album")
-    albums = search_result.get("albums", {}).get("items", [])
-    if albums:
-        return albums[0]
-    return None
+@external_service_fallback
+def get_spotify_album_info(album_name: str, session: spotipy.Spotify) -> dict:
+    info = {
+        "name": "",
+        "link": "",
+        "meta": {},
+        "image_url": "",
+        "release_date": "",
+        "total_tracks": 0,
+        "images": [],
+        "external_urls": {},
+        "artists": [],
+        "genres": [],
+        "tracks": [],
+        "full_data": {},
+    }
+
+    try:
+        search_result = session.search(q="album:" + album_name, type="album")
+        albums = search_result.get("albums", {}).get("items", [])
+        if not albums:
+            return info
+
+        album = albums[0]
+        album_id = album["id"]
+        full_album = session.album(album_id)
+        tracks = session.album_tracks(album_id)
+
+        return {
+            "name": album.get("name", ""),
+            "link": album.get("external_urls", {}).get("spotify", ""),
+            "meta": {
+                "album_type": album.get("album_type", ""),
+                "release_date_precision": album.get("release_date_precision", ""),
+                "total_tracks": album.get("total_tracks", 0),
+                "type": album.get("type", ""),
+            },
+            "image_url": next(
+                (img["url"] for img in album.get("images", []) if img.get("url")), ""
+            ),
+            "release_date": album.get("release_date", ""),
+            "total_tracks": album.get("total_tracks", 0),
+            "images": album.get("images", []),
+            "external_urls": album.get("external_urls", {}),
+            "artists": clean_spotify_response(album.get("artists", [])),
+            "genres": clean_spotify_response(full_album.get("genres", [])),
+            "tracks": clean_spotify_response(tracks.get("items", [])),
+            "full_data": clean_spotify_response(full_album),
+        }
+    except Exception as e:
+        print("Failed to get album info", error=str(e))
+        return info
 
 
-def get_spotify_artist_info(artist_name: str, session: spotipy.Spotify):
-    search_result = session.search(q="artist:" + artist_name, type="artist")
-    artists = search_result.get("artists", {}).get("items", [])
-    if artists:
-        return artists[0]
-    return None
+@external_service_fallback
+def get_spotify_artist_info(artist_name: str, session: spotipy.Spotify) -> dict:
+    info = {
+        "name": "",
+        "link": "",
+        "meta": {},
+        "image_url": "",
+        "genres": [],
+        "popularity": 0,
+        "images": [],
+        "external_urls": {},
+        "full_data": {},
+    }
+
+    try:
+        search_result = session.search(q="artist:" + artist_name, type="artist")
+        artists = search_result.get("artists", {}).get("items", [])
+        if not artists:
+            return info
+
+        artist = artists[0]
+        return {
+            "name": artist.get("name", ""),
+            "link": artist.get("external_urls", {}).get("spotify", ""),
+            "meta": {
+                "followers": artist.get("followers", {}).get("total", 0),
+                "popularity": artist.get("popularity", 0),
+                "type": artist.get("type", ""),
+            },
+            "image_url": next(
+                (img["url"] for img in artist.get("images", []) if img.get("url")), ""
+            ),
+            "genres": artist.get("genres", []),
+            "popularity": artist.get("popularity", 0),
+            "images": artist.get("images", []),
+            "external_urls": artist.get("external_urls", {}),
+            "full_data": clean_spotify_response(artist),
+        }
+    except Exception as e:
+        print("Failed to get artist info", error=str(e))
+        return info
 
 
 def get_yandex_album_info(album_name: str, client: Client):
