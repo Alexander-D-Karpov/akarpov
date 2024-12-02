@@ -715,6 +715,9 @@ MUSIC_YANDEX_TOKEN = env("YANDEX_TOKEN", default="")
 LAST_FM_API_KEY = env("LAST_FM_API_KET", default="")
 LAST_FM_SECRET = env("LAST_FM_SECRET", default="")
 
+# EXTERNAL
+MUSIC_EXTERNAL_SERVICE_URL = env("MUSIC_EXTERNAL_SERVICE_URL", default="")
+
 # ROBOTS
 # ------------------------------------------------------------------------------
 ROBOTS_USE_SITEMAP = True

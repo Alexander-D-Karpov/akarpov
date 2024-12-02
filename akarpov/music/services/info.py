@@ -4,6 +4,11 @@ from random import randint
 import requests
 import spotipy
 
+from akarpov.music.services.external import (
+    ExternalServiceClient,
+    external_service_fallback,
+)
+
 try:
     from deep_translator import GoogleTranslator
 except requests.exceptions.JSONDecodeError:
@@ -76,6 +81,7 @@ def spotify_search(name: str, session: spotipy.Spotify, search_type="track"):
     return res
 
 
+@external_service_fallback
 def get_spotify_info(name: str, session: spotipy.Spotify) -> dict:
     info = {
         "album_name": "",
@@ -379,29 +385,43 @@ def save_author_image(author, image_path):
         print(f"Error saving author image: {str(e)}")
 
 
-def safe_translate(text):
+@external_service_fallback
+def safe_translate(text: str) -> str:
     try:
         translated = GoogleTranslator(source="auto", target="en").translate(text)
         return slugify(translated)
     except Exception as e:
-        print(f"Error translating text: {str(e)}")
+        print(f"Translation failed: {str(e)}")
         return slugify(text)
 
 
 def search_all_platforms(track_name: str) -> dict:
     print(track_name)
-    # session = spotipy.Spotify(
-    #     auth_manager=spotipy.SpotifyClientCredentials(
-    #         client_id=settings.MUSIC_SPOTIFY_ID,
-    #         client_secret=settings.MUSIC_SPOTIFY_SECRET,
-    #     )
-    # )
-    # spotify_info = get_spotify_info(track_name, session)
-    spotify_info = {}  # TODO: add proxy for info retrieve
+
+    if settings.MUSIC_EXTERNAL_SERVICE_URL:
+        # Use external service if configured
+        client = ExternalServiceClient()
+        spotify_info = client.get_spotify_info(track_name) or {}
+    else:
+        # Local implementation fallback
+        try:
+            session = spotipy.Spotify(
+                auth_manager=SpotifyClientCredentials(
+                    client_id=settings.MUSIC_SPOTIFY_ID,
+                    client_secret=settings.MUSIC_SPOTIFY_SECRET,
+                )
+            )
+            spotify_info = get_spotify_info(track_name, session)
+        except Exception as e:
+            print("Local Spotify implementation failed", error=str(e))
+            spotify_info = {}
+
     yandex_info = search_yandex(track_name)
+
     if "album_image_path" in spotify_info and "album_image_path" in yandex_info:
         os.remove(yandex_info["album_image_path"])
 
+    # Combine artist information
     combined_artists = set()
     for artist in spotify_info.get("artists", []) + yandex_info.get("artists", []):
         normalized_artist = normalize_text(artist)
@@ -410,12 +430,13 @@ def search_all_platforms(track_name: str) -> dict:
             for existing_artist in combined_artists
         ):
             combined_artists.add(normalized_artist)
-    genre = spotify_info.get("genre") or yandex_info.get("genre")
-    if type(genre) is list:
-        genre = sorted(genre, key=lambda x: len(x))
-        genre = genre[0]
 
-    track_info = {
+    # Process genre information
+    genre = spotify_info.get("genre") or yandex_info.get("genre")
+    if isinstance(genre, list) and genre:
+        genre = sorted(genre, key=len)[0]
+
+    return {
         "album_name": spotify_info.get("album_name")
         or yandex_info.get("album_name", ""),
         "release": spotify_info.get("release") or yandex_info.get("release", ""),
@@ -425,5 +446,3 @@ def search_all_platforms(track_name: str) -> dict:
         "album_image": spotify_info.get("album_image_path")
         or yandex_info.get("album_image_path", None),
     }
-
-    return track_info
