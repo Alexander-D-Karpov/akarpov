@@ -1,4 +1,5 @@
 import os
+import re
 from random import randint
 from typing import Any
 
@@ -28,16 +29,57 @@ from akarpov.utils.generators import generate_charset
 from akarpov.utils.text import is_similar_artist, normalize_text
 
 
+def clean_name(name: str) -> str:
+    # Replace special characters with underscores
+    cleaned = name.strip().replace(" ", "_")
+    cleaned = re.sub(r"[^\w\-]", "_", cleaned)
+    # Remove consecutive underscores
+    cleaned = re.sub(r"_+", "_", cleaned)
+    # Remove trailing underscores
+    cleaned = cleaned.strip("_")
+    return cleaned
+
+
+def split_authors(authors_str: str) -> list[str]:
+    # Split on common separators
+    if not authors_str:
+        return []
+
+    # First split by obvious delimiters
+    authors = []
+    for part in re.split(r"[,/&]", authors_str):
+        # Clean up each part
+        cleaned = part.strip()
+        if " feat." in cleaned.lower():
+            # Split on featuring
+            main_artist, feat_artist = cleaned.lower().split(" feat.", 1)
+            authors.extend([main_artist.strip(), feat_artist.strip()])
+        elif " ft." in cleaned.lower():
+            main_artist, feat_artist = cleaned.lower().split(" ft.", 1)
+            authors.extend([main_artist.strip(), feat_artist.strip()])
+        elif " x " in cleaned:
+            # Split artist collaborations
+            authors.extend(p.strip() for p in cleaned.split(" x "))
+        elif cleaned:
+            authors.append(cleaned)
+
+    # Remove duplicates while preserving order
+    seen = set()
+    return [x for x in authors if not (x in seen or seen.add(x))]
+
+
 def generate_readable_slug(name: str, model: Model) -> str:
-    # Translate and slugify the name
+    # Clean and translate name
     slug = safe_translate(name)
 
-    # Truncate slug if it's too long
+    # Remove any remaining spaces and ensure proper formatting
+    slug = clean_name(slug)
+
+    # Truncate if necessary
     if len(slug) > 20:
-        slug = slug[:20]
-        last_dash = slug.rfind("-")
-        if last_dash != -1:
-            slug = slug[:last_dash]
+        # Try to cut at word boundary
+        truncated = slug[:20].rsplit("_", 1)[0]
+        slug = truncated if truncated else slug[:20]
 
     original_slug = slug
 
@@ -45,18 +87,16 @@ def generate_readable_slug(name: str, model: Model) -> str:
     counter = 1
     while model.objects.filter(slug=slug).exists():
         if len(original_slug) > 14:
-            truncated_slug = original_slug[:14]
-            last_dash = truncated_slug.rfind("-")
-            if last_dash != -1:
-                truncated_slug = truncated_slug[:last_dash]
+            truncated = original_slug[:14].rsplit("_", 1)[0]
+            base_slug = truncated if truncated else original_slug[:14]
         else:
-            truncated_slug = original_slug
+            base_slug = original_slug
 
         suffix = f"_{generate_charset(5)}" if counter == 1 else f"_{counter}"
-        slug = f"{truncated_slug}{suffix}"
+        slug = f"{base_slug}{suffix}"
         counter += 1
 
-    return slug
+    return slug.lower()
 
 
 def create_spotify_session() -> spotipy.Spotify:
@@ -501,11 +541,14 @@ def save_author_image(author, image_path):
 @external_service_fallback
 def safe_translate(text: str) -> str:
     try:
+        text = clean_name(text)  # Clean before translation
         translated = GoogleTranslator(source="auto", target="en").translate(text)
-        return slugify(translated)
+        # Clean after translation and ensure proper slugification
+        return slugify(clean_name(translated)).replace(" ", "_").lower()
     except Exception as e:
         print(f"Translation failed: {str(e)}")
-        return slugify(text)
+        # Fallback to direct slugification
+        return slugify(clean_name(text)).replace(" ", "_").lower()
 
 
 def search_all_platforms(track_name: str) -> dict:
