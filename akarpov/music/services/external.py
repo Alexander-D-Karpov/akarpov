@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Dict, Optional
+from typing import Any
 
 import requests
 import structlog
