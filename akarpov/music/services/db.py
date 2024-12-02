@@ -235,7 +235,7 @@ def load_track(
     new_file_name = generated_name + ".mp3"
 
     # Generate unique slug for the song
-    song.slug = generate_readable_slug(song.name, Song)
+    song.slug = generate_readable_slug(name if name else p_name, Song)
 
     # Try to save the song, handling potential slug conflicts
     for attempt in range(5):
