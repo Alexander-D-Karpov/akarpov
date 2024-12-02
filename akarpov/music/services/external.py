@@ -1,17 +1,20 @@
+from functools import wraps
+from typing import Any, Dict, Optional
+
 import requests
-from typing import Optional, Dict, Any
 import structlog
 from django.conf import settings
-from functools import wraps
 
 logger = structlog.get_logger(__name__)
 
 
 class ExternalServiceClient:
     def __init__(self):
-        self.base_url = getattr(settings, 'MUSIC_EXTERNAL_SERVICE_URL', None)
+        self.base_url = getattr(settings, "MUSIC_EXTERNAL_SERVICE_URL", None)
 
-    def _make_request(self, endpoint: str, params: Dict = None, **kwargs) -> Optional[Dict]:
+    def _make_request(
+        self, endpoint: str, params: dict = None, **kwargs
+    ) -> dict | None:
         if not self.base_url:
             return None
 
@@ -25,24 +28,19 @@ class ExternalServiceClient:
                 "External service request failed",
                 error=str(e),
                 endpoint=endpoint,
-                params=params
+                params=params,
             )
             return None
 
-    def get_spotify_info(self, track_name: str) -> Optional[Dict[str, Any]]:
-        return self._make_request(
-            "/spotify/search",
-            params={"query": track_name}
-        )
+    def get_spotify_info(self, track_name: str) -> dict[str, Any] | None:
+        return self._make_request("/spotify/search", params={"query": track_name})
 
-    def translate_text(self, text: str, source_lang: str = "auto", target_lang: str = "en") -> Optional[str]:
+    def translate_text(
+        self, text: str, source_lang: str = "auto", target_lang: str = "en"
+    ) -> str | None:
         response = self._make_request(
             "/translation/translate",
-            json={
-                "text": text,
-                "source_lang": source_lang,
-                "target_lang": target_lang
-            }
+            json={"text": text, "source_lang": source_lang, "target_lang": target_lang},
         )
         return response.get("translated_text") if response else None
 
@@ -52,7 +50,10 @@ def external_service_fallback(fallback_func):
 
     @wraps(fallback_func)
     def wrapper(*args, **kwargs):
-        if not hasattr(settings, 'MUSIC_EXTERNAL_SERVICE_URL') or not settings.MUSIC_EXTERNAL_SERVICE_URL:
+        if (
+            not hasattr(settings, "MUSIC_EXTERNAL_SERVICE_URL")
+            or not settings.MUSIC_EXTERNAL_SERVICE_URL
+        ):
             return fallback_func(*args, **kwargs)
 
         client = ExternalServiceClient()
@@ -68,7 +69,7 @@ def external_service_fallback(fallback_func):
             logger.error(
                 "External service failed, falling back to local implementation",
                 error=str(e),
-                function=fallback_func.__name__
+                function=fallback_func.__name__,
             )
 
         return fallback_func(*args, **kwargs)
