@@ -88,8 +88,12 @@ class ListSongSerializer(SetUserModelSerializer):
 
     @extend_schema_field(ListAlbumSerializer)
     def get_album(self, obj):
-        if obj.album:
-            return ListAlbumSerializer(Album.objects.cache().get(id=obj.album_id)).data
+        if obj.album_id:
+            try:
+                album = Album.objects.cache().get(id=obj.album_id)
+                return ListAlbumSerializer(album).data
+            except Album.DoesNotExist:
+                return None
         return None
 
     @extend_schema_field(ListAuthorSerializer(many=True))
@@ -105,16 +109,17 @@ class ListSongSerializer(SetUserModelSerializer):
         img = None
         if obj.image_cropped:
             img = obj.image_cropped
-        else:
-            album = Album.objects.cache().get(id=obj.album_id)
-            if album.image_cropped:
-                img = album.image_cropped
-            else:
-                authors = Author.objects.cache().filter(
-                    Q(songs__id=obj.id) & ~Q(image="")
-                )
-                if authors:
-                    img = authors.first().image_cropped
+        elif obj.album_id:
+            try:
+                album = Album.objects.cache().get(id=obj.album_id)
+                if album.image_cropped:
+                    img = album.image_cropped
+            except Album.DoesNotExist:
+                pass
+        if not img:
+            authors = Author.objects.cache().filter(Q(songs__id=obj.id) & ~Q(image=""))
+            if authors.exists():
+                img = authors.first().image_cropped
         if img:
             return self.context["request"].build_absolute_uri(img.url)
         return None

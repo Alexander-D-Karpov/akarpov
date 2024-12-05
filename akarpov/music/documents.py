@@ -48,7 +48,7 @@ class SongDocument(Document):
         attr="name",
         fields={
             "raw": fields.KeywordField(),
-            "exact": fields.KeywordField(normalizer="lowercase"),
+            "exact": fields.KeywordField(normalizer="lowercase_normalizer"),
         },
     )
     name_transliterated = fields.TextField(
@@ -67,6 +67,13 @@ class SongDocument(Document):
         settings = {
             "number_of_shards": 1,
             "number_of_replicas": 0,
+            "normalizer": {
+                "lowercase_normalizer": {
+                    "type": "custom",
+                    "char_filter": [],
+                    "filter": ["lowercase"],
+                }
+            },
             "analysis": {
                 "filter": {
                     "my_transliterator": {
