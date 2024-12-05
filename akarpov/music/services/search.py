@@ -10,28 +10,60 @@ from akarpov.music.models import Album, Author, Song
 def search_song(query):
     search = SongDocument.search()
 
-    # Build a multi_match query that searches in song name, authors' names, and album names
-    multi_match_query = ES_Q(
-        "multi_match",
-        query=query,
-        fields=[
-            "name^5",
-            "name.raw^10",
-            "name.exact^15",
-            "authors.name^4",
-            "authors.name.raw^8",
-            "authors.name.exact^12",
-            "album.name^3",
-            "album.name.raw^6",
-            "album.name.exact^9",
-        ],
-        fuzziness="AUTO",
-        operator="and",
-        type="best_fields",
-    )
+    # Split the query into words
+    terms = query.strip().split()
+
+    # Initialize must and should clauses
+    must_clauses = []
+    should_clauses = []
+
+    # Build queries for song names
+    song_name_queries = [
+        ES_Q("match_phrase", name={"query": query, "boost": 5}),
+        ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 4}),
+        ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
+    ]
+
+    # Build queries for author names
+    author_name_queries = [
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q("match_phrase", name={"query": query, "boost": 5}),
+        ),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 4}),
+        ),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
+        ),
+    ]
+
+    # If the query contains multiple terms, assume it might include both song and author names
+    if len(terms) > 1:
+        # Build combined queries
+        must_clauses.extend(
+            [
+                ES_Q("bool", should=song_name_queries),
+                ES_Q("bool", should=author_name_queries),
+            ]
+        )
+    else:
+        # If single term, search both song and author names but with lower boost
+        should_clauses.extend(song_name_queries + author_name_queries)
+
+    # Combine must and should clauses
+    if must_clauses:
+        search_query = ES_Q("bool", must=must_clauses, should=should_clauses)
+    else:
+        search_query = ES_Q("bool", should=should_clauses, minimum_should_match=1)
 
     # Execute search with size limit
-    search = search.query(multi_match_query).extra(size=20)
+    search = search.query(search_query).extra(size=20)
     response = search.execute()
 
     if response.hits:
