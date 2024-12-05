@@ -11,7 +11,7 @@ class SongDocument(Document):
         properties={
             "name": fields.TextField(
                 fields={
-                    "raw": fields.KeywordField(normalizer="lowercase"),
+                    "raw": fields.KeywordField(normalizer="lowercase_normalizer"),
                 },
             ),
             "name_transliterated": fields.TextField(
@@ -30,7 +30,7 @@ class SongDocument(Document):
         properties={
             "name": fields.TextField(
                 fields={
-                    "raw": fields.KeywordField(normalizer="lowercase"),
+                    "raw": fields.KeywordField(normalizer="lowercase_normalizer"),
                 },
             ),
             "name_transliterated": fields.TextField(
@@ -67,14 +67,14 @@ class SongDocument(Document):
         settings = {
             "number_of_shards": 1,
             "number_of_replicas": 0,
-            "normalizer": {
-                "lowercase_normalizer": {
-                    "type": "custom",
-                    "char_filter": [],
-                    "filter": ["lowercase"],
-                }
-            },
             "analysis": {
+                "normalizer": {
+                    "lowercase_normalizer": {
+                        "type": "custom",
+                        "char_filter": [],
+                        "filter": ["lowercase"],
+                    }
+                },
                 "filter": {
                     "my_transliterator": {
                         "type": "icu_transform",
@@ -151,8 +151,8 @@ class SongDocument(Document):
                         "filter": [
                             "lowercase",
                             "autocomplete_filter",
-                            "english_stemmer",  # Apply English stemming for autocomplete
-                            "russian_stemmer",  # Include Russian stemming if applicable
+                            "english_stemmer",
+                            "russian_stemmer",
                         ],
                     },
                     "search_synonym_with_stemming": {
@@ -161,8 +161,8 @@ class SongDocument(Document):
                         "filter": [
                             "lowercase",
                             "synonym_filter",
-                            "english_stemmer",  # Apply English stemming for synonym search
-                            "russian_stemmer",  # Include Russian stemming if processing Russian synonyms
+                            "english_stemmer",
+                            "russian_stemmer",
                         ],
                     },
                 },
@@ -183,7 +183,7 @@ class AuthorDocument(Document):
     name = fields.TextField(
         fields={
             "raw": fields.KeywordField(),
-            "exact": fields.KeywordField(normalizer="lowercase"),
+            "exact": fields.KeywordField(normalizer="lowercase_normalizer"),
         },
     )
     name_transliterated = fields.TextField(
@@ -198,7 +198,7 @@ class AuthorDocument(Document):
 
     class Index:
         name = "authors"
-        settings = SongDocument.Index.settings  # Reuse settings
+        settings = SongDocument.Index.settings
 
     class Django:
         model = Author
@@ -209,7 +209,7 @@ class AlbumDocument(Document):
     name = fields.TextField(
         fields={
             "raw": fields.KeywordField(),
-            "exact": fields.KeywordField(normalizer="lowercase"),
+            "exact": fields.KeywordField(normalizer="lowercase_normalizer"),
         },
     )
     name_transliterated = fields.TextField(
@@ -243,7 +243,7 @@ class AlbumDocument(Document):
 
     class Index:
         name = "albums"
-        settings = SongDocument.Index.settings  # Reuse settings
+        settings = SongDocument.Index.settings
 
     class Django:
         model = Album
