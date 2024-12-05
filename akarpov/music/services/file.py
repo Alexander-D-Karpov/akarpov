@@ -15,6 +15,7 @@ from mutagen.id3 import ID3
 from mutagen.mp3 import MP3
 from PIL import Image, UnidentifiedImageError
 
+from akarpov.common.tasks import crop_model_image
 from akarpov.music.models import Album, Author, Song
 from akarpov.music.services.db import load_track
 from akarpov.users.models import User
@@ -468,6 +469,11 @@ def load_mp3_directory(
     failed_files = []
     processed_count = 0
 
+    # Keep track of created/updated objects for image cropping
+    created_authors = set()
+    created_albums = set()
+    created_songs = set()
+
     for mp3_path in path.glob("**/*.mp3"):
         try:
             metadata = extract_mp3_metadata(str(mp3_path))
@@ -486,6 +492,7 @@ def load_mp3_directory(
                             name=author_name,
                             slug=generate_unique_slug(author_name, Author),
                         )
+                        created_authors.add(author.id)
                     authors.append(author)
 
                 # Process album
@@ -493,6 +500,8 @@ def load_mp3_directory(
                 if metadata["album"]:
                     try:
                         album = get_or_create_album(metadata["album"], authors)
+                        if album.id not in created_albums and not album.image_cropped:
+                            created_albums.add(album.id)
                     except IntegrityError as e:
                         print(f"Error creating album for {mp3_path}: {str(e)}")
                         failed_files.append(str(mp3_path))
@@ -500,7 +509,9 @@ def load_mp3_directory(
 
                 # Check for existing song
                 if check_song_exists(metadata["title"], album, authors):
-                    print(f"Skipping existing song: {metadata['title']}")
+                    print(
+                        f"Skipping existing song: {metadata['artists']} - {metadata['title']}"
+                    )
                     continue
 
                 # Process cover image
@@ -540,10 +551,34 @@ def load_mp3_directory(
 
                 # Set authors
                 song.authors.set(authors)
+                created_songs.add(song.id)
                 processed_count += 1
+
+                print(f"Successfully processed: {song.artists_names} - {song.name}")
 
         except Exception as e:
             print(f"Error processing {mp3_path}: {str(e)}")
             failed_files.append(str(mp3_path))
+
+    # Trigger image cropping for all created/updated objects
+    print("Processing image cropping...")
+
+    for author_id in created_authors:
+        author = Author.objects.get(id=author_id)
+        if author.image and not author.image_cropped:
+            print(f"Cropping image for author: {author.name}")
+            crop_model_image(author_id, "music", "author")
+
+    for album_id in created_albums:
+        album = Album.objects.get(id=album_id)
+        if album.image and not album.image_cropped:
+            print(f"Cropping image for album: {album.name}")
+            crop_model_image(album_id, "music", "album")
+
+    for song_id in created_songs:
+        song = Song.objects.get(id=song_id)
+        if song.image and not song.image_cropped:
+            print(f"Cropping image for song: {song.name}")
+            crop_model_image(song_id, "music", "song")
 
     return failed_files, processed_count
