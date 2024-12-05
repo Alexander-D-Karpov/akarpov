@@ -21,7 +21,13 @@ class SongDocument(Document):
                 },
             ),
             "link": fields.TextField(),
-            "meta": fields.ObjectField(dynamic=True),
+            "meta": fields.ObjectField(
+                dynamic=True,
+                properties={
+                    "genre": fields.TextField(),
+                    "release_year": fields.KeywordField(),
+                },
+            ),
         },
     )
 
@@ -40,7 +46,13 @@ class SongDocument(Document):
                 },
             ),
             "link": fields.TextField(),
-            "meta": fields.ObjectField(dynamic=True),
+            "meta": fields.ObjectField(
+                dynamic=True,
+                properties={
+                    "genre": fields.TextField(),
+                    "release_year": fields.KeywordField(),
+                },
+            ),
         },
     )
 
@@ -60,7 +72,13 @@ class SongDocument(Document):
     )
     suggest = fields.CompletionField()
 
-    meta = fields.ObjectField(dynamic=True)
+    meta = fields.ObjectField(
+        dynamic=True,
+        properties={
+            "genre": fields.TextField(),
+            "release_year": fields.KeywordField(),
+        },
+    )
 
     class Index:
         name = "songs"
@@ -194,7 +212,14 @@ class AuthorDocument(Document):
         },
     )
     suggest = fields.CompletionField()
-    meta = fields.ObjectField(dynamic=True)
+    meta = fields.ObjectField(
+        dynamic=True,
+        properties={
+            "description": fields.TextField(),
+            # Ensure no empty date fields here either
+            "popularity": fields.IntegerField(),
+        },
+    )
 
     class Index:
         name = "authors"
@@ -220,7 +245,13 @@ class AlbumDocument(Document):
         },
     )
     suggest = fields.CompletionField()
-    meta = fields.ObjectField(dynamic=True)
+    meta = fields.ObjectField(
+        dynamic=True,
+        properties={
+            "genre": fields.TextField(),
+            "release_year": fields.KeywordField(),
+        },
+    )
     authors = fields.NestedField(
         attr="authors",
         properties={
@@ -230,7 +261,6 @@ class AlbumDocument(Document):
                 },
             ),
             "name_transliterated": fields.TextField(
-                attr="name",
                 analyzer="transliterate",
                 fields={
                     "raw": fields.KeywordField(),

@@ -8,59 +8,83 @@ from akarpov.music.models import Album, Author, Song
 
 
 def search_song(query):
+    if not query:
+        return Song.objects.none()
+
     search = SongDocument.search()
 
-    # Split the query into words
-    terms = query.strip().split()
+    # Priorities:
+    # 1. Exact phrase matches in name, author name, album name
+    # 2. Part of author/album name
+    # 3. Exact name (exact matches)
+    # 4. Fuzzy matches
+    # 5. Wildcards
 
-    # Initialize must and should clauses
-    must_clauses = []
-    should_clauses = []
+    # phrase matches (highest priority)
+    phrase_queries = [
+        ES_Q("match_phrase", name={"query": query, "boost": 10}),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q("match_phrase", authors__name={"query": query, "boost": 9}),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q("match_phrase", album__name={"query": query, "boost": 9}),
+        ),
+    ]
 
-    # Build queries for song names
-    song_name_queries = [
-        ES_Q("match_phrase", name={"query": query, "boost": 5}),
-        ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 4}),
+    # exact keyword matches (non-case sensitive due to normalizers)
+    exact_queries = [
+        ES_Q("term", **{"name.exact": {"value": query.lower(), "boost": 8}})
+    ]
+
+    # fuzzy matches
+    fuzzy_queries = [
+        ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 5}),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q(
+                "match", authors__name={"query": query, "fuzziness": "AUTO", "boost": 4}
+            ),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q(
+                "match", album__name={"query": query, "fuzziness": "AUTO", "boost": 4}
+            ),
+        ),
+    ]
+
+    # wildcard matches
+    wildcard_queries = [
         ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
-    ]
-
-    # Build queries for author names
-    author_name_queries = [
         ES_Q(
             "nested",
             path="authors",
-            query=ES_Q("match_phrase", name={"query": query, "boost": 5}),
+            query=ES_Q(
+                "wildcard", authors__name={"value": f"*{query.lower()}*", "boost": 2}
+            ),
         ),
         ES_Q(
             "nested",
-            path="authors",
-            query=ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 4}),
-        ),
-        ES_Q(
-            "nested",
-            path="authors",
-            query=ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
+            path="album",
+            query=ES_Q(
+                "wildcard", album__name={"value": f"*{query.lower()}*", "boost": 2}
+            ),
         ),
     ]
 
-    # If the query contains multiple terms, assume it might include both song and author names
-    if len(terms) > 1:
-        # Build combined queries
-        must_clauses.extend(
-            [
-                ES_Q("bool", should=song_name_queries),
-                ES_Q("bool", should=author_name_queries),
-            ]
-        )
-    else:
-        # If single term, search both song and author names but with lower boost
-        should_clauses.extend(song_name_queries + author_name_queries)
-
-    # Combine must and should clauses
-    if must_clauses:
-        search_query = ES_Q("bool", must=must_clauses, should=should_clauses)
-    else:
-        search_query = ES_Q("bool", should=should_clauses, minimum_should_match=1)
+    # Combine queries
+    # We'll use a should query to incorporate all of these, relying on boosting
+    search_query = ES_Q(
+        "bool",
+        should=phrase_queries + exact_queries + fuzzy_queries + wildcard_queries,
+        minimum_should_match=1,
+    )
 
     # Execute search with size limit
     search = search.query(search_query).extra(size=20)
@@ -98,8 +122,9 @@ def bulk_update_index(model_class):
 
 
 def search_author(query):
+    if not query:
+        return Author.objects.none()
     search = AuthorDocument.search()
-
     should_queries = [
         ES_Q("match_phrase", name={"query": query, "boost": 5}),
         ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 3}),
@@ -109,7 +134,6 @@ def search_author(query):
             name_transliterated={"query": query, "fuzziness": "AUTO", "boost": 1},
         ),
     ]
-
     search_query = ES_Q("bool", should=should_queries, minimum_should_match=1)
     search = search.query(search_query).extra(size=10)
     response = search.execute()
@@ -120,11 +144,12 @@ def search_author(query):
             Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
         )
         return authors
-
     return Author.objects.none()
 
 
 def search_album(query):
+    if not query:
+        return Album.objects.none()
     search = AlbumDocument.search()
 
     should_queries = [
@@ -136,7 +161,6 @@ def search_album(query):
             name_transliterated={"query": query, "fuzziness": "AUTO", "boost": 1},
         ),
     ]
-
     search_query = ES_Q("bool", should=should_queries, minimum_should_match=1)
     search = search.query(search_query).extra(size=10)
     response = search.execute()
@@ -147,5 +171,4 @@ def search_album(query):
             Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
         )
         return albums
-
     return Album.objects.none()
