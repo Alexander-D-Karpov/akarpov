@@ -69,6 +69,11 @@ services:
   redis:
     image: redis:6
     container_name: akarpov_local_redis
+    command: redis-server --maxmemory 4gb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 4G
 
   celeryworker:
     <<: *django
