@@ -323,7 +323,7 @@ class RemoveSongFromPlaylistAPIView(generics.DestroyAPIView):
         return context
 
 
-class LikeSongAPIView(generics.CreateAPIView):
+class LikeSongAPIView(generics.GenericAPIView):
     serializer_class = LikeDislikeSongSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -335,8 +335,19 @@ class LikeSongAPIView(generics.CreateAPIView):
         context["like"] = True
         return context
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-class DislikeSongAPIView(generics.CreateAPIView):
+        result = serializer.save()
+
+        if result is None:
+            return Response({"message": "Like removed"}, status=200)
+        else:
+            return Response({"message": "Song liked", "liked": result.like}, status=201)
+
+
+class DislikeSongAPIView(generics.GenericAPIView):
     serializer_class = LikeDislikeSongSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -347,6 +358,19 @@ class DislikeSongAPIView(generics.CreateAPIView):
         context = super().get_serializer_context()
         context["like"] = False
         return context
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        result = serializer.save()
+
+        if result is None:
+            return Response({"message": "Dislike removed"}, status=200)
+        else:
+            return Response(
+                {"message": "Song disliked", "liked": result.like}, status=201
+            )
 
 
 class ListAlbumsAPIView(generics.ListAPIView):

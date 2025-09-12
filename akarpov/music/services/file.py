@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from io import BytesIO
 from pathlib import Path
@@ -9,7 +10,6 @@ import mutagen
 import numpy as np
 from django.core.files import File
 from django.db import IntegrityError, transaction
-from django.db.models import Count
 from django.utils.text import slugify
 from mutagen.id3 import ID3
 from mutagen.mp3 import MP3
@@ -259,39 +259,6 @@ def clean_title_for_slug(title: str) -> str:
     return cleaned.strip()
 
 
-def process_authors_string(authors_str: str) -> list[str]:
-    """Split author string into individual author names."""
-    if not authors_str:
-        return []
-
-    # First split by major separators
-    authors = []
-    for part in authors_str.split("/"):
-        for subpart in part.split("&"):
-            # Handle various featuring cases
-            for feat_marker in [
-                " feat.",
-                " ft.",
-                " featuring.",
-                " presents ",
-                " pres. ",
-            ]:
-                if feat_marker in subpart.lower():
-                    parts = subpart.lower().split(feat_marker, 1)
-                    authors.extend(part.strip() for part in parts)
-                    break
-            else:
-                # Handle collaboration markers
-                if " x " in subpart:
-                    authors.extend(p.strip() for p in subpart.split(" x "))
-                else:
-                    authors.append(subpart.strip())
-
-    # Remove duplicates while preserving order
-    seen = set()
-    return [x for x in authors if not (x.lower() in seen or seen.add(x.lower()))]
-
-
 def extract_mp3_metadata(file_path: str) -> dict | None:
     """Extract metadata from MP3 file."""
     try:
@@ -442,20 +409,64 @@ def get_or_create_album(album_name: str, authors: list[Author]) -> Album | None:
             raise
 
 
+def process_authors_string(authors_str: str) -> list[str]:
+    """Split author string into individual author names."""
+    if not authors_str:
+        return []
+
+    # First split by major delimiters
+    authors = []
+
+    # Split by common delimiters while preserving Asian character sequences
+    for part in re.split(r"[,&/](?![^\[]*\])", authors_str):
+        # Clean up each part
+        cleaned = part.strip()
+
+        # Handle featuring cases
+        featuring_markers = [" feat.", " ft.", " featuring", " presents ", " pres. "]
+        for marker in featuring_markers:
+            if marker in cleaned.lower():
+                main_artist, feat_artist = cleaned.lower().split(marker, 1)
+                authors.extend(
+                    [a.strip() for a in [main_artist, feat_artist] if a.strip()]
+                )
+                break
+        else:
+            # Handle collaborations with 'x' or 'X'
+            if " x " in cleaned or " X " in cleaned:
+                collab_parts = re.split(" [xX] ", cleaned)
+                authors.extend(p.strip() for p in collab_parts if p.strip())
+            else:
+                if cleaned:
+                    authors.append(cleaned)
+
+    # Remove duplicates while preserving order
+    seen = set()
+    return [x for x in authors if not (x.lower() in seen or seen.add(x.lower()))]
+
+
 def check_song_exists(title: str, album: Album | None, authors: list[Author]) -> bool:
     """Check if a song already exists with the given title, album and authors."""
+    if not title:
+        return False
+
+    # Start with base query
     query = Song.objects.filter(name__iexact=title)
 
     if album:
         query = query.filter(album=album)
 
     if authors:
-        # Ensure exact author match
-        query = query.annotate(author_count=Count("authors")).filter(
-            author_count=len(authors), authors__in=authors
-        )
+        # Get all author IDs
+        author_ids = {author.id for author in authors}
 
-    return query.exists()
+        # Filter songs that have exactly these authors
+        for song in query:
+            song_author_ids = set(song.authors.values_list("id", flat=True))
+            if song_author_ids == author_ids:
+                return True
+
+    return False
 
 
 def load_mp3_directory(
@@ -507,10 +518,10 @@ def load_mp3_directory(
                         failed_files.append(str(mp3_path))
                         continue
 
-                # Check for existing song
+                # Check for existing song with exact matches
                 if check_song_exists(metadata["title"], album, authors):
                     print(
-                        f"Skipping existing song: {metadata['artists']} - {metadata['title']}"
+                        f"Skipping existing song: {' & '.join(author_names)} - {metadata['title']}"
                     )
                     continue
 
@@ -526,13 +537,17 @@ def load_mp3_directory(
                                 f"{album.slug}.png", File(img_file), save=True
                             )
 
-                # Create song with proper slug from file name
-                file_name = os.path.splitext(os.path.basename(str(mp3_path)))[0]
+                # Create song with proper slug
+                _name = (
+                    metadata["title"]
+                    if metadata["title"]
+                    else os.path.splitext(os.path.basename(str(mp3_path)))[0]
+                )
                 song = Song(
                     name=metadata["title"],
                     length=metadata["length"],
                     album=album,
-                    slug=generate_unique_slug(file_name, Song),
+                    slug=generate_unique_slug(_name, Song),
                     creator=User.objects.get(id=user_id) if user_id else None,
                     meta={
                         "genre": metadata["genre"],
@@ -560,7 +575,7 @@ def load_mp3_directory(
             print(f"Error processing {mp3_path}: {str(e)}")
             failed_files.append(str(mp3_path))
 
-    # Trigger image cropping for all created/updated objects
+    # Process image cropping for all created/updated objects
     print("Processing image cropping...")
 
     for author_id in created_authors:

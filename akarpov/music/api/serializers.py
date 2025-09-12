@@ -279,39 +279,33 @@ class LikeDislikeSongSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         song = Song.objects.get(slug=validated_data["song"])
-        if self.context["like"]:
-            if SongUserRating.objects.filter(
-                song=song, user=self.context["request"].user
-            ).exists():
-                song_user_rating = SongUserRating.objects.get(
-                    song=song, user=self.context["request"].user
-                )
-                if song_user_rating.like:
-                    song_user_rating.delete()
+        user = self.context["request"].user
+        is_like_action = self.context["like"]
+
+        try:
+            existing_rating = SongUserRating.objects.get(song=song, user=user)
+
+            if is_like_action:
+                if existing_rating.like:
+                    existing_rating.delete()
+                    return None
                 else:
-                    song_user_rating.like = True
-                    song_user_rating.save()
+                    existing_rating.like = True
+                    existing_rating.save()
+                    return existing_rating
             else:
-                song_user_rating = SongUserRating.objects.create(
-                    song=song, user=self.context["request"].user, like=True
-                )
-        else:
-            if SongUserRating.objects.filter(
-                song=song, user=self.context["request"].user
-            ).exists():
-                song_user_rating = SongUserRating.objects.get(
-                    song=song, user=self.context["request"].user
-                )
-                if not song_user_rating.like:
-                    song_user_rating.delete()
+                if not existing_rating.like:
+                    existing_rating.delete()
+                    return None
                 else:
-                    song_user_rating.like = False
-                    song_user_rating.save()
-            else:
-                song_user_rating = SongUserRating.objects.create(
-                    song=song, user=self.context["request"].user, like=False
-                )
-        return song_user_rating
+                    existing_rating.like = False
+                    existing_rating.save()
+                    return existing_rating
+
+        except SongUserRating.DoesNotExist:
+            return SongUserRating.objects.create(
+                song=song, user=user, like=is_like_action
+            )
 
 
 class ListSongSlugsSerializer(serializers.Serializer):
