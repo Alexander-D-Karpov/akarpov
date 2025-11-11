@@ -35,7 +35,7 @@ def create_model_slug(sender, instance, **kwargs):
             return generate_charset(private_slug_length)
         return generate_charset(slug_length)
 
-    if instance.id is None:
+    if instance.id is None and not instance.slug:
         model = sender
         slug_length = 5
         private_slug_length = 20
@@ -63,6 +63,9 @@ class SlugModel(models.Model):
     """
     model to store and generate slug for model instances
     for custom slug length use: slug_length, private_slug_length Meta options
+
+    If a slug is already set when creating the instance, it will be preserved.
+    Random slug generation only occurs when the instance is new and has no slug.
     """
 
     slug = models.SlugField(max_length=20, blank=True, unique=True, db_index=True)

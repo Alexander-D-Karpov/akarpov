@@ -70,6 +70,14 @@ class SongDocument(Document):
             "raw": fields.KeywordField(),
         },
     )
+    # New slug field for searchable transliterated title
+    slug = fields.TextField(
+        attr="slug",
+        fields={
+            "raw": fields.KeywordField(),
+            "exact": fields.KeywordField(normalizer="lowercase_normalizer"),
+        },
+    )
     suggest = fields.CompletionField()
 
     meta = fields.ObjectField(

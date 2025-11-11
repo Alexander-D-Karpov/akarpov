@@ -12,91 +12,226 @@ def search_song(query):
         return Song.objects.none()
 
     search = SongDocument.search()
+    query = query.strip()
+    terms = query.split()
 
     # Priorities:
-    # 1. Exact phrase matches in name, author name, album name
-    # 2. Part of author/album name
-    # 3. Exact name (exact matches)
-    # 4. Fuzzy matches
-    # 5. Wildcards
+    # 1. Combined field matches (Song name + Author/Album) – highest priority
+    # 2. Exact phrase matches in name, author name, album name
+    # 3. Exact keyword matches (name.exact, slug.exact)
+    # 4. Fuzzy matches (name, authors, album, slug, including transliterated fields)
+    # 5. Wildcard matches (name, authors, album, slug, including transliterated fields)
 
-    # phrase matches (highest priority)
+    # Phrase matches (high priority for exact phrases in each field)
     phrase_queries = [
         ES_Q("match_phrase", name={"query": query, "boost": 10}),
         ES_Q(
             "nested",
             path="authors",
-            query=ES_Q("match_phrase", authors__name={"query": query, "boost": 9}),
+            query=ES_Q(
+                "match_phrase", **{"authors__name": {"query": query, "boost": 9}}
+            ),
         ),
         ES_Q(
             "nested",
             path="album",
-            query=ES_Q("match_phrase", album__name={"query": query, "boost": 9}),
+            query=ES_Q("match_phrase", **{"album__name": {"query": query, "boost": 9}}),
+        ),
+        # Include transliterated name and names for phrase matching
+        ES_Q("match_phrase", name_transliterated={"query": query, "boost": 10}),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q(
+                "match_phrase",
+                **{"authors__name_transliterated": {"query": query, "boost": 8}},
+            ),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q(
+                "match_phrase",
+                **{"album__name_transliterated": {"query": query, "boost": 8}},
+            ),
         ),
     ]
 
-    # exact keyword matches (non-case sensitive due to normalizers)
+    # Exact keyword matches (case-insensitive exact matches)
     exact_queries = [
-        ES_Q("term", **{"name.exact": {"value": query.lower(), "boost": 8}})
+        ES_Q("term", **{"name.exact": {"value": query.lower(), "boost": 8}}),
+        ES_Q(
+            "term", **{"slug.exact": {"value": query.lower(), "boost": 15}}
+        ),  # exact slug match (highest boost)
     ]
 
-    # fuzzy matches
+    # Fuzzy matches (to catch typos or variations)
     fuzzy_queries = [
         ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 5}),
         ES_Q(
             "nested",
             path="authors",
             query=ES_Q(
-                "match", authors__name={"query": query, "fuzziness": "AUTO", "boost": 4}
+                "match",
+                **{"authors__name": {"query": query, "fuzziness": "AUTO", "boost": 4}},
             ),
         ),
         ES_Q(
             "nested",
             path="album",
             query=ES_Q(
-                "match", album__name={"query": query, "fuzziness": "AUTO", "boost": 4}
+                "match",
+                **{"album__name": {"query": query, "fuzziness": "AUTO", "boost": 4}},
+            ),
+        ),
+        ES_Q(
+            "match", slug={"query": query, "fuzziness": "AUTO", "boost": 5}
+        ),  # fuzzy on slug
+        # Fuzzy on transliterated fields
+        ES_Q(
+            "match",
+            name_transliterated={"query": query, "fuzziness": "AUTO", "boost": 4},
+        ),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q(
+                "match",
+                **{
+                    "authors__name_transliterated": {
+                        "query": query,
+                        "fuzziness": "AUTO",
+                        "boost": 3,
+                    }
+                },
+            ),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q(
+                "match",
+                **{
+                    "album__name_transliterated": {
+                        "query": query,
+                        "fuzziness": "AUTO",
+                        "boost": 3,
+                    }
+                },
             ),
         ),
     ]
 
-    # wildcard matches
+    # Wildcard matches (partial substrings)
     wildcard_queries = [
         ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
         ES_Q(
             "nested",
             path="authors",
             query=ES_Q(
-                "wildcard", authors__name={"value": f"*{query.lower()}*", "boost": 2}
+                "wildcard",
+                **{"authors__name": {"value": f"*{query.lower()}*", "boost": 2}},
             ),
         ),
         ES_Q(
             "nested",
             path="album",
             query=ES_Q(
-                "wildcard", album__name={"value": f"*{query.lower()}*", "boost": 2}
+                "wildcard",
+                **{"album__name": {"value": f"*{query.lower()}*", "boost": 2}},
+            ),
+        ),
+        ES_Q("wildcard", slug={"value": f"*{query.lower()}*", "boost": 2}),
+        # Wildcard on transliterated fields
+        ES_Q(
+            "wildcard", name_transliterated={"value": f"*{query.lower()}*", "boost": 2}
+        ),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q(
+                "wildcard",
+                **{
+                    "authors__name_transliterated": {
+                        "value": f"*{query.lower()}*",
+                        "boost": 1,
+                    }
+                },
+            ),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q(
+                "wildcard",
+                **{
+                    "album__name_transliterated": {
+                        "value": f"*{query.lower()}*",
+                        "boost": 1,
+                    }
+                },
             ),
         ),
     ]
 
-    # Combine queries
-    # We'll use a should query to incorporate all of these, relying on boosting
-    search_query = ES_Q(
-        "bool",
-        should=phrase_queries + exact_queries + fuzzy_queries + wildcard_queries,
-        minimum_should_match=1,
-    )
+    # Combined field matches (song name + author/album terms) for multi-term queries
+    combined_queries = []
+    if len(terms) >= 2:
+        # If query has multiple words, require all terms across name and author fields (song title + author)
+        combined_queries.append(
+            ES_Q(
+                "multi_match",
+                query=query,
+                fields=["name", "authors.name"],
+                type="cross_fields",
+                operator="and",
+                boost=12,
+            )
+        )
+        # Song title + album combination
+        combined_queries.append(
+            ES_Q(
+                "multi_match",
+                query=query,
+                fields=["name", "album.name"],
+                type="cross_fields",
+                operator="and",
+                boost=11,
+            )
+        )
+    if len(terms) >= 3:
+        # If query has three or more terms, consider title+author+album all present
+        combined_queries.append(
+            ES_Q(
+                "multi_match",
+                query=query,
+                fields=["name", "authors.name", "album.name"],
+                type="cross_fields",
+                operator="and",
+                boost=13,
+            )
+        )
 
-    # Execute search with size limit
-    search = search.query(search_query).extra(size=20)
-    response = search.execute()
+    # Combine all queries using SHOULD (OR), so any can match, with boosts determining relevance
+    should_queries = (
+        phrase_queries
+        + exact_queries
+        + fuzzy_queries
+        + wildcard_queries
+        + combined_queries
+    )
+    search_query = ES_Q("bool", should=should_queries, minimum_should_match=1)
+
+    # Execute search with a reasonable limit
+    response = search.query(search_query).extra(size=20).execute()
 
     if response.hits:
+        # Preserve the search result ordering
         hit_ids = [hit.meta.id for hit in response.hits]
         songs = Song.objects.filter(id__in=hit_ids).order_by(
             Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
         )
         return songs
-
     return Song.objects.none()
 
 
