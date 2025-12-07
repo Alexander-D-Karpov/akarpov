@@ -1,3 +1,5 @@
+import re
+
 from django.core.cache import cache
 from django.db.models import Case, When
 from django_elasticsearch_dsl.registries import registry
@@ -5,6 +7,64 @@ from elasticsearch_dsl import Q as ES_Q
 
 from akarpov.music.documents import AlbumDocument, AuthorDocument, SongDocument
 from akarpov.music.models import Album, Author, Song
+
+
+def _normalize(text: str) -> str:
+    """
+    Lowercase and strip punctuation for simple string matching.
+    """
+    return re.sub(r"\W+", " ", (text or "").lower()).strip()
+
+
+def _rerank_songs_by_title_and_authors(songs, query, hit_ids):
+    norm_query = _normalize(query)
+    words = [w for w in norm_query.split() if w]
+
+    split = query.split()
+    first_word = re.sub(r"\W+", "", (split[0].lower() if split else ""))
+
+    base_pos = {int(id_): pos for pos, id_ in enumerate(hit_ids)}
+
+    scores = {}
+
+    for song in songs:
+        sid = int(song.id)
+        name_norm = _normalize(song.name)
+        slug_norm = _normalize(getattr(song, "slug", "") or "")
+        author_norms = [_normalize(a.name) for a in song.authors.all()]
+
+        score = 0
+
+        if first_word and slug_norm == first_word:
+            score += 200
+        elif first_word and slug_norm.startswith(first_word):
+            score += 150
+
+        name_tokens = name_norm.split()
+        if first_word and name_tokens and name_tokens[0] == first_word:
+            score += 120
+        if first_word and first_word in name_tokens:
+            score += 80
+
+        matched_author_words = 0
+        for w in words:
+            if w in name_tokens:
+                score += 10
+            for an in author_norms:
+                if w in an.split():
+                    score += 8
+                    matched_author_words += 1
+
+        if matched_author_words >= 2:
+            score += 30
+
+        scores[sid] = score
+
+    ordered_ids = sorted(
+        [int(i) for i in hit_ids],
+        key=lambda sid: (-scores.get(sid, 0), base_pos[sid]),
+    )
+    return ordered_ids
 
 
 def search_song(query):
@@ -255,10 +315,19 @@ def search_song(query):
     response = search.query(search_query).extra(size=20).execute()
 
     if response.hits:
-        hit_ids = [hit.meta.id for hit in response.hits]
-        return Song.objects.filter(id__in=hit_ids).order_by(
-            Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
-        )
+        hit_ids = [int(hit.meta.id) for hit in response.hits]
+
+        song_qs = Song.objects.filter(id__in=hit_ids).prefetch_related("authors")
+        songs = list(song_qs)
+
+        if not songs:
+            return Song.objects.none()
+
+        ordered_ids = _rerank_songs_by_title_and_authors(songs, query, hit_ids)
+
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_ids)])
+        return Song.objects.filter(id__in=ordered_ids).order_by(preserved)
+
     return Song.objects.none()
 
 
