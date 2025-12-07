@@ -8,61 +8,96 @@ from elasticsearch_dsl import Q as ES_Q
 from akarpov.music.documents import AlbumDocument, AuthorDocument, SongDocument
 from akarpov.music.models import Album, Author, Song
 
+_WORD_RE = re.compile(r"\w+", re.U)
+
 
 def _normalize(text: str) -> str:
+    if not text:
+        return ""
+    return text.lower().strip()
+
+
+def _tokenize(text: str):
+    if not text:
+        return []
+    return _WORD_RE.findall(_normalize(text))
+
+
+def _score_song_for_query(song, query_tokens, first_token):
     """
-    Lowercase and strip punctuation for simple string matching.
+    Heuristic score for a song given the query tokens.
+    Higher = better.
     """
-    return re.sub(r"\W+", " ", (text or "").lower()).strip()
+    score = 0
+
+    # Title / slug
+    title = song.name or ""
+    slug = (song.slug or "").lower()
+
+    title_tokens = _tokenize(title)
+
+    # Authors
+    author_tokens = []
+    for a in song.authors.all():
+        author_tokens.extend(_tokenize(a.name or ""))
+
+    # Album
+    album_name_tokens = []
+    if song.album:
+        album_name_tokens = _tokenize(song.album.name or "")
+
+    # 1. Strong boost if first token matches start of slug or title
+    if first_token:
+        if title_tokens and title_tokens[0] == first_token:
+            score += 120  # title starts with first word
+        if slug.startswith(first_token):
+            score += 150  # slug starts with first word
+
+    # 2. Per-word matches
+    matched_author_words = 0
+    for w in query_tokens:
+        if w in title_tokens:
+            score += 12
+        if w in author_tokens:
+            score += 10
+            matched_author_words += 1
+        if w in album_name_tokens:
+            score += 6
+
+    # 3. Extra if at least two different author words match
+    if matched_author_words >= 2:
+        score += 30
+
+    return score
 
 
-def _rerank_songs_by_title_and_authors(songs, query, hit_ids):
-    norm_query = _normalize(query)
-    words = [w for w in norm_query.split() if w]
+def _rerank_songs_by_title_and_authors(hit_ids, songs, query: str):
+    query_tokens = _tokenize(query)
+    if not query_tokens:
+        return hit_ids
 
-    split = query.split()
-    first_word = re.sub(r"\W+", "", (split[0].lower() if split else ""))
-
-    base_pos = {int(id_): pos for pos, id_ in enumerate(hit_ids)}
+    first_token = query_tokens[0]
+    base_pos = {int(pk): pos for pos, pk in enumerate(hit_ids)}
+    songs_by_id = {song.id: song for song in songs}
 
     scores = {}
+    max_score = 0
+    for pk in hit_ids:
+        song = songs_by_id.get(pk)
+        if not song:
+            continue
+        s = _score_song_for_query(song, query_tokens, first_token)
+        scores[pk] = s
+        if s > max_score:
+            max_score = s
 
-    for song in songs:
-        sid = int(song.id)
-        name_norm = _normalize(song.name)
-        slug_norm = _normalize(getattr(song, "slug", "") or "")
-        author_norms = [_normalize(a.name) for a in song.authors.all()]
-
-        score = 0
-
-        if first_word and slug_norm == first_word:
-            score += 200
-        elif first_word and slug_norm.startswith(first_word):
-            score += 150
-
-        name_tokens = name_norm.split()
-        if first_word and name_tokens and name_tokens[0] == first_word:
-            score += 120
-        if first_word and first_word in name_tokens:
-            score += 80
-
-        matched_author_words = 0
-        for w in words:
-            if w in name_tokens:
-                score += 10
-            for an in author_norms:
-                if w in an.split():
-                    score += 8
-                    matched_author_words += 1
-
-        if matched_author_words >= 2:
-            score += 30
-
-        scores[sid] = score
+    # If our heuristics see nothing useful, keep pure ES order
+    if max_score <= 0:
+        return hit_ids
 
     ordered_ids = sorted(
-        [int(i) for i in hit_ids],
-        key=lambda sid: (-scores.get(sid, 0), base_pos[sid]),
+        hit_ids,
+        key=lambda pk: (-scores.get(pk, 0), base_pos.get(pk, 10**9)),
     )
     return ordered_ids
 
@@ -195,7 +230,6 @@ def search_song(query):
         ),
     ]
 
-    # Wildcard matches
     wildcard_queries = [
         ES_Q("wildcard", name={"value": f"*{query.lower()}*", "boost": 2}),
         ES_Q(
@@ -257,7 +291,6 @@ def search_song(query):
         ),
     ]
 
-    # Optional: extra combined queries if you want them
     combined_queries = []
     if len(terms) >= 2:
         combined_queries.append(
@@ -287,7 +320,6 @@ def search_song(query):
             )
         )
 
-    # Main root-level query (no nested fields here)
     main_query = ES_Q(
         "multi_match",
         query=query,
@@ -295,6 +327,10 @@ def search_song(query):
             "name^5",
             "name_transliterated^4",
             "slug^6",
+            "authors.name^4",
+            "authors.name_transliterated^3",
+            "album.name^3",
+            "album.name_transliterated^2",
         ],
         type="best_fields",
         operator="and",
@@ -314,21 +350,21 @@ def search_song(query):
 
     response = search.query(search_query).extra(size=20).execute()
 
-    if response.hits:
-        hit_ids = [int(hit.meta.id) for hit in response.hits]
+    if not response.hits:
+        return Song.objects.none()
 
-        song_qs = Song.objects.filter(id__in=hit_ids).prefetch_related("authors")
-        songs = list(song_qs)
+    hit_ids = [int(hit.meta.id) for hit in response.hits]
 
-        if not songs:
-            return Song.objects.none()
+    songs = list(
+        Song.objects.filter(id__in=hit_ids)
+        .select_related("album")
+        .prefetch_related("authors")
+    )
 
-        ordered_ids = _rerank_songs_by_title_and_authors(songs, query, hit_ids)
+    ordered_ids = _rerank_songs_by_title_and_authors(hit_ids, songs, query)
 
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_ids)])
-        return Song.objects.filter(id__in=ordered_ids).order_by(preserved)
-
-    return Song.objects.none()
+    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_ids)])
+    return Song.objects.filter(id__in=ordered_ids).order_by(preserved)
 
 
 def autocomplete_search(query):
