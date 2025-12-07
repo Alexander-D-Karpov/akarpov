@@ -292,64 +292,99 @@ def search_song(query):
     if len(terms) >= 2:
         combined_queries.append(
             ES_Q(
-                "multi_match",
-                query=query,
-                fields=["name", "authors.name"],
-                type="cross_fields",
-                operator="and",
+                "bool",
+                should=[
+                    ES_Q("match", name={"query": query, "boost": 6}),
+                    ES_Q(
+                        "nested",
+                        path="authors",
+                        query=ES_Q(
+                            "match", **{"authors.name": {"query": query, "boost": 5}}
+                        ),
+                    ),
+                ],
+                minimum_should_match=1,
                 boost=12,
             )
         )
         combined_queries.append(
             ES_Q(
-                "multi_match",
-                query=query,
-                fields=["name", "album.name"],
-                type="cross_fields",
-                operator="and",
+                "bool",
+                should=[
+                    ES_Q("match", name={"query": query, "boost": 6}),
+                    ES_Q(
+                        "nested",
+                        path="album",
+                        query=ES_Q(
+                            "match", **{"album.name": {"query": query, "boost": 5}}
+                        ),
+                    ),
+                ],
+                minimum_should_match=1,
                 boost=11,
             )
         )
     if len(terms) >= 3:
         combined_queries.append(
             ES_Q(
-                "multi_match",
-                query=query,
-                fields=["name", "authors.name", "album.name"],
-                type="cross_fields",
-                operator="and",
+                "bool",
+                should=[
+                    ES_Q("match", name={"query": query, "boost": 6}),
+                    ES_Q(
+                        "nested",
+                        path="authors",
+                        query=ES_Q(
+                            "match", **{"authors.name": {"query": query, "boost": 5}}
+                        ),
+                    ),
+                    ES_Q(
+                        "nested",
+                        path="album",
+                        query=ES_Q(
+                            "match", **{"album.name": {"query": query, "boost": 4}}
+                        ),
+                    ),
+                ],
+                minimum_should_match=1,
                 boost=13,
             )
         )
 
-    main_query = ES_Q(
-        "multi_match",
-        query=query,
-        fields=[
-            "name^5",
-            "name_transliterated^4",
-            "slug^6",
-            "authors.name^4",
-            "authors.name_transliterated^3",
-            "album.name^3",
-            "album.name_transliterated^2",
-        ],
-        type="best_fields",
-        operator="and",
-        fuzziness="AUTO",
-    )
+    main_queries = [
+        ES_Q("match", name={"query": query, "boost": 5, "operator": "or"}),
+        ES_Q(
+            "match", name_transliterated={"query": query, "boost": 4, "operator": "or"}
+        ),
+        ES_Q("match", slug={"query": query, "boost": 6, "operator": "or"}),
+        ES_Q(
+            "nested",
+            path="authors",
+            query=ES_Q(
+                "match",
+                **{"authors.name": {"query": query, "boost": 4, "operator": "or"}},
+            ),
+        ),
+        ES_Q(
+            "nested",
+            path="album",
+            query=ES_Q(
+                "match",
+                **{"album.name": {"query": query, "boost": 3, "operator": "or"}},
+            ),
+        ),
+    ]
 
     search_query = ES_Q(
         "bool",
-        must=[main_query],
         should=(
-            phrase_queries
+            main_queries
+            + phrase_queries
             + exact_queries
             + fuzzy_queries
             + wildcard_queries
             + combined_queries
         ),
-        minimum_should_match=0,
+        minimum_should_match=1,
     )
 
     response = search.query(search_query).extra(size=20).execute()
@@ -358,7 +393,9 @@ def search_song(query):
         return Song.objects.none()
 
     hit_ids = [hit.meta.id for hit in response.hits]
-    # Preserve ES ordering
+    hit_ids = _rerank_songs_by_title_and_authors(
+        hit_ids, Song.objects.filter(id__in=hit_ids).prefetch_related("authors"), query
+    )
     songs = Song.objects.filter(id__in=hit_ids).order_by(
         Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
     )
