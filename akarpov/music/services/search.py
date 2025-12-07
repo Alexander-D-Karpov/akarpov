@@ -110,7 +110,6 @@ def search_song(query):
     query = query.strip()
     terms = query.split()
 
-    # Phrase matches
     phrase_queries = [
         ES_Q("match_phrase", name={"query": query, "boost": 10}),
         ES_Q(
@@ -158,13 +157,11 @@ def search_song(query):
         ),
     ]
 
-    # Exact keyword matches
     exact_queries = [
         ES_Q("term", **{"name.exact": {"value": query.lower(), "boost": 8}}),
         ES_Q("term", **{"slug.exact": {"value": query.lower(), "boost": 15}}),
     ]
 
-    # Fuzzy matches
     fuzzy_queries = [
         ES_Q("match", name={"query": query, "fuzziness": "AUTO", "boost": 5}),
         ES_Q(
@@ -295,28 +292,33 @@ def search_song(query):
     if len(terms) >= 2:
         combined_queries.append(
             ES_Q(
-                "nested",
-                path="authors",
-                query=ES_Q(
-                    "multi_match",
-                    query=query,
-                    fields=["authors.name", "authors.name_transliterated"],
-                    type="cross_fields",
-                    operator="and",
-                ),
+                "multi_match",
+                query=query,
+                fields=["name", "authors.name"],
+                type="cross_fields",
+                operator="and",
+                boost=12,
             )
         )
         combined_queries.append(
             ES_Q(
-                "nested",
-                path="album",
-                query=ES_Q(
-                    "multi_match",
-                    query=query,
-                    fields=["album.name", "album.name_transliterated"],
-                    type="cross_fields",
-                    operator="and",
-                ),
+                "multi_match",
+                query=query,
+                fields=["name", "album.name"],
+                type="cross_fields",
+                operator="and",
+                boost=11,
+            )
+        )
+    if len(terms) >= 3:
+        combined_queries.append(
+            ES_Q(
+                "multi_match",
+                query=query,
+                fields=["name", "authors.name", "album.name"],
+                type="cross_fields",
+                operator="and",
+                boost=13,
             )
         )
 
@@ -337,34 +339,30 @@ def search_song(query):
         fuzziness="AUTO",
     )
 
-    should_queries = (
-        [main_query]
-        + phrase_queries
-        + exact_queries
-        + fuzzy_queries
-        + wildcard_queries
-        + combined_queries
+    search_query = ES_Q(
+        "bool",
+        must=[main_query],
+        should=(
+            phrase_queries
+            + exact_queries
+            + fuzzy_queries
+            + wildcard_queries
+            + combined_queries
+        ),
+        minimum_should_match=0,
     )
-
-    search_query = ES_Q("bool", should=should_queries, minimum_should_match=1)
 
     response = search.query(search_query).extra(size=20).execute()
 
     if not response.hits:
         return Song.objects.none()
 
-    hit_ids = [int(hit.meta.id) for hit in response.hits]
-
-    songs = list(
-        Song.objects.filter(id__in=hit_ids)
-        .select_related("album")
-        .prefetch_related("authors")
+    hit_ids = [hit.meta.id for hit in response.hits]
+    # Preserve ES ordering
+    songs = Song.objects.filter(id__in=hit_ids).order_by(
+        Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(hit_ids)])
     )
-
-    ordered_ids = _rerank_songs_by_title_and_authors(hit_ids, songs, query)
-
-    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_ids)])
-    return Song.objects.filter(id__in=ordered_ids).order_by(preserved)
+    return songs
 
 
 def autocomplete_search(query):
