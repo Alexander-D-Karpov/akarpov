@@ -17,136 +17,149 @@ from .models import (
 )
 
 
-class JSONFieldAdmin(admin.ModelAdmin):
-    def render_meta_field(self, obj):
-        meta = obj.meta
-        if not meta:
-            return "No data"
-        html_content = (
-            "<div style='max-height: 200px; overflow-y: scroll;'><pre>{}</pre></div>"
-        )
-        return format_html(html_content, mark_safe(meta))
-
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "id")
+    search_fields = ["name", "slug"]
+    list_per_page = 50
+    show_full_result_count = False
     readonly_fields = ("render_meta_field",)
 
-
-class PlaylistSongInline(admin.TabularInline):
-    model = PlaylistSong
-    extra = 1
-
-
-class SongUserRatingInline(admin.TabularInline):
-    model = SongUserRating
-    extra = 1
+    def render_meta_field(self, obj):
+        if not obj.meta:
+            return "No data"
+        return format_html(
+            "<div style='max-height: 200px; overflow-y: scroll;'><pre>{}</pre></div>",
+            mark_safe(str(obj.meta)),
+        )
 
 
-class UserListenHistoryInline(admin.TabularInline):
-    model = UserListenHistory
-    extra = 1
+@admin.register(Album)
+class AlbumAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "id", "author_count")
+    search_fields = ["name", "slug"]
+    list_per_page = 50
+    show_full_result_count = False
+    readonly_fields = ("render_meta_field",)
+    raw_id_fields = ("authors",)
+    filter_horizontal = ()
 
+    def author_count(self, obj):
+        return obj.authors.count()
 
-class SongInQueInline(admin.TabularInline):
-    model = SongInQue
-    extra = 1
-
-
-class SongInline(admin.TabularInline):
-    model = Song
-    extra = 1
-
-
-class AuthorAdmin(JSONFieldAdmin):
-    list_display = ("name", "slug")
-    search_fields = ["name"]
+    author_count.short_description = "Authors"
 
     def render_meta_field(self, obj):
-        meta = super().render_meta_field(obj)
-        return meta
+        if not obj.meta:
+            return "No data"
+        return format_html(
+            "<div style='max-height: 200px; overflow-y: scroll;'><pre>{}</pre></div>",
+            mark_safe(str(obj.meta)),
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("authors")
 
 
-admin.site.register(Author, AuthorAdmin)
+@admin.register(Song)
+class SongAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "length", "played", "likes", "created")
+    search_fields = ["name", "slug"]
+    list_filter = ("created",)
+    list_per_page = 50
+    show_full_result_count = False
+    readonly_fields = ("render_meta_field", "played", "likes", "length", "volume")
+    raw_id_fields = ("authors", "album", "creator")
+    date_hierarchy = "created"
 
-
-class AlbumAdmin(JSONFieldAdmin):
-    list_display = ("name", "link")
-    search_fields = ["name"]
-    inlines = [SongInline]
+    fieldsets = (
+        (None, {"fields": ("name", "slug", "file", "image", "link")}),
+        ("Relations", {"fields": ("authors", "album", "creator")}),
+        ("Stats", {"fields": ("length", "played", "likes", "volume")}),
+        ("Meta", {"fields": ("meta", "render_meta_field")}),
+    )
 
     def render_meta_field(self, obj):
-        meta = super().render_meta_field(obj)
-        return meta
+        if not obj.meta:
+            return "No data"
+        return format_html(
+            "<div style='max-height: 200px; overflow-y: scroll;'><pre>{}</pre></div>",
+            mark_safe(str(obj.meta)),
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("album", "creator")
 
 
-admin.site.register(Album, AlbumAdmin)
-
-
-class SongAdmin(JSONFieldAdmin):
-    list_display = ("name", "link", "length", "played")
-    search_fields = ["name", "authors__name", "album__name"]
-    inlines = [PlaylistSongInline, SongUserRatingInline, UserListenHistoryInline]
-
-    def render_meta_field(self, obj):
-        meta = super().render_meta_field(obj)
-        return meta
-
-
-admin.site.register(Song, SongAdmin)
-
-
+@admin.register(Playlist)
 class PlaylistAdmin(admin.ModelAdmin):
     list_display = ("name", "private", "creator", "length")
     search_fields = ["name", "creator__username"]
-    inlines = [PlaylistSongInline]
+    list_per_page = 50
+    show_full_result_count = False
+    raw_id_fields = ("creator",)
+    list_select_related = ("creator",)
 
 
-admin.site.register(Playlist, PlaylistAdmin)
-
-
+@admin.register(PlaylistSong)
 class PlaylistSongAdmin(admin.ModelAdmin):
     list_display = ("playlist", "song", "order")
     search_fields = ["playlist__name", "song__name"]
+    list_per_page = 50
+    show_full_result_count = False
+    raw_id_fields = ("playlist", "song")
+    list_select_related = ("playlist", "song")
 
 
-admin.site.register(PlaylistSong, PlaylistSongAdmin)
-
-
+@admin.register(SongInQue)
 class SongInQueAdmin(admin.ModelAdmin):
     list_display = ("name", "status", "error")
     search_fields = ["name"]
+    list_per_page = 50
+    list_filter = ("error",)
 
 
-admin.site.register(SongInQue, SongInQueAdmin)
-
-
+@admin.register(TempFileUpload)
 class TempFileUploadAdmin(admin.ModelAdmin):
-    list_display = ("file",)
-    search_fields = ["file"]
+    list_display = ("file", "id")
+    list_per_page = 50
 
 
-admin.site.register(TempFileUpload, TempFileUploadAdmin)
-
-
+@admin.register(RadioSong)
 class RadioSongAdmin(admin.ModelAdmin):
     list_display = ("start", "slug", "song")
     search_fields = ["song__name", "slug"]
+    list_per_page = 50
+    raw_id_fields = ("song",)
+    list_select_related = ("song",)
 
 
-admin.site.register(RadioSong, RadioSongAdmin)
-
-
+@admin.register(SongUserRating)
 class SongUserRatingAdmin(admin.ModelAdmin):
     list_display = ("song", "user", "like", "created")
     search_fields = ["song__name", "user__username"]
+    list_per_page = 50
+    show_full_result_count = False
+    raw_id_fields = ("song", "user")
+    list_select_related = ("song", "user")
+    list_filter = ("like", "created")
 
 
-admin.site.register(SongUserRating, SongUserRatingAdmin)
-
-
+@admin.register(UserListenHistory)
 class UserListenHistoryAdmin(admin.ModelAdmin):
     list_display = ("user", "song", "created")
     search_fields = ["user__username", "song__name"]
+    list_per_page = 50
+    show_full_result_count = False
+    raw_id_fields = ("user", "song")
+    list_select_related = ("user", "song")
+    date_hierarchy = "created"
 
 
-admin.site.register(UserListenHistory, UserListenHistoryAdmin)
-
-admin.site.register(UserMusicProfile)
+@admin.register(UserMusicProfile)
+class UserMusicProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "lastfm_username")
+    search_fields = ["user__username", "lastfm_username"]
+    list_per_page = 50
+    raw_id_fields = ("user",)
+    list_select_related = ("user",)
