@@ -16,6 +16,16 @@ from akarpov.users.api.serializers import UserPublicInfoSerializer
 
 
 class ListAuthorSerializer(serializers.ModelSerializer):
+    image_cropped = serializers.SerializerMethodField()
+
+    def get_image_cropped(self, obj):
+        if obj.image_cropped:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image_cropped.url)
+            return obj.image_cropped.url
+        return None
+
     class Meta:
         model = Author
         fields = ["name", "slug", "image_cropped"]
@@ -23,11 +33,22 @@ class ListAuthorSerializer(serializers.ModelSerializer):
 
 class ListAlbumSerializer(serializers.ModelSerializer):
     authors = serializers.SerializerMethodField(method_name="get_authors")
+    image_cropped = serializers.SerializerMethodField()
+
+    def get_image_cropped(self, obj):
+        if obj.image_cropped:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image_cropped.url)
+            return obj.image_cropped.url
+        return None
 
     @extend_schema_field(ListAuthorSerializer(many=True))
     def get_authors(self, obj):
         return ListAuthorSerializer(
-            Author.objects.cache().filter(albums__id=obj.id), many=True
+            Author.objects.cache().filter(albums__id=obj.id),
+            many=True,
+            context=self.context,
         ).data
 
     class Meta:

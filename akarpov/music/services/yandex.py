@@ -3,7 +3,7 @@ from random import randint
 from time import sleep
 
 from django.conf import settings
-from yandex_music import Client, Track
+from yandex_music import Client
 from yandex_music.exceptions import NetworkError, NotFoundError
 
 from akarpov.music import tasks
@@ -20,7 +20,7 @@ def login() -> Client:
 def load_file_meta(track: int, user_id: int) -> str:
     que = SongInQue.objects.create()
     client = login()
-    track = client.tracks(track)[0]  # type: Track
+    track = client.tracks(track)[0]
     que.name = track.title
     que.save()
 

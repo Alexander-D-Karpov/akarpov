@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils.text import slugify
 from PIL import Image
 from pydub import AudioSegment
-from pytube import Search, YouTube
+from pytube import Search
 from spotdl.providers.audio import YouTubeMusic
 
 from akarpov.music.models import Song
@@ -203,5 +203,5 @@ def download_from_youtube_link(link: str, user_id: int) -> Song:
 
 def search_channel(name):
     s = Search(name)
-    vid = s.results[0]  # type: YouTube
+    vid = s.results[0]
     return vid.channel_url
