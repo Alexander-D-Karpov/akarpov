@@ -248,7 +248,6 @@ def get_spotify_info(name: str, session) -> dict:
                 "meta": {
                     "duration_ms": track.get("duration_ms"),
                     "explicit": track.get("explicit"),
-                    "popularity": track.get("popularity"),
                     "preview_url": track.get("preview_url"),
                     "track_number": track.get("track_number"),
                     "type": track.get("type"),
@@ -397,15 +396,12 @@ def get_spotify_artist_info(artist_name: str, session) -> dict:
             "name": artist.get("name", ""),
             "link": artist.get("external_urls", {}).get("spotify", ""),
             "meta": {
-                "followers": artist.get("followers", {}).get("total", 0),
-                "popularity": artist.get("popularity", 0),
                 "type": artist.get("type", ""),
             },
             "image_url": next(
                 (img["url"] for img in artist.get("images", []) if img.get("url")), ""
             ),
             "genres": artist.get("genres", []),
-            "popularity": artist.get("popularity", 0),
             "images": artist.get("images", []),
             "external_urls": artist.get("external_urls", {}),
             "full_data": clean_spotify_response(artist),

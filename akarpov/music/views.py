@@ -19,7 +19,6 @@ from akarpov.music.forms import (
 from akarpov.music.models import (
     Album,
     Author,
-    DownloadConfig,
     DownloadJob,
     Playlist,
     Song,
@@ -131,39 +130,50 @@ class DownloadsView(SuperUserRequiredMixin, generic.TemplateView):
         ctx["jobs"] = DownloadJob.objects.prefetch_related("tracks").order_by(
             "-created"
         )[:50]
-        ctx["form"] = DownloadURLForm()
+        ctx["url_form"] = DownloadURLForm()
+        ctx["file_form"] = FileUploadForm()
         ctx["rate_limited"] = is_spotify_rate_limited()
         ctx["cookies_ok"] = CookieManager.cookies_exist()
-        ctx["configs"] = DownloadConfig.objects.all()
         return ctx
 
     def post(self, request, *args, **kwargs):
-        form = DownloadURLForm(request.POST)
-        if form.is_valid():
-            url = form.cleaned_data["url"]
-            config = form.cleaned_data.get("config")
-            source = detect_source(url)
-            if source == DownloadJob.Source.SPOTIFY and is_spotify_rate_limited():
-                messages.warning(
-                    request, "Spotify is rate limited. Job queued for retry."
-                )
-                DownloadJob.objects.create(
-                    url=url,
-                    source=source,
-                    creator=request.user,
-                    config=config,
-                    status=DownloadJob.Status.RATE_LIMITED,
-                    error="Queued — Spotify rate limited",
-                )
-            else:
-                job = DownloadJob.objects.create(
-                    url=url,
-                    source=source,
-                    creator=request.user,
-                    config=config,
-                )
-                process_download_job.apply_async(kwargs={"job_id": job.id})
-            return redirect("music:downloads")
+        if "file" in request.FILES:
+            file_form = FileUploadForm(request.POST, request.FILES)
+            if file_form.is_valid():
+                for file in file_form.cleaned_data["file"]:
+                    t = TempFileUpload.objects.create(file=file)
+                    process_file_upload.apply_async(
+                        kwargs={"path": t.file.path, "user_id": request.user.id}
+                    )
+                messages.success(request, "Files queued for processing.")
+                return redirect("music:downloads")
+        else:
+            url_form = DownloadURLForm(request.POST)
+            if url_form.is_valid():
+                url = url_form.cleaned_data["url"]
+                config = url_form.cleaned_data.get("config")
+                source = detect_source(url)
+                if source == DownloadJob.Source.SPOTIFY and is_spotify_rate_limited():
+                    messages.warning(
+                        request, "Spotify is rate limited. Job queued for retry."
+                    )
+                    DownloadJob.objects.create(
+                        url=url,
+                        source=source,
+                        creator=request.user,
+                        config=config,
+                        status=DownloadJob.Status.RATE_LIMITED,
+                        error="Queued -- Spotify rate limited",
+                    )
+                else:
+                    job = DownloadJob.objects.create(
+                        url=url,
+                        source=source,
+                        creator=request.user,
+                        config=config,
+                    )
+                    process_download_job.apply_async(kwargs={"job_id": job.id})
+                return redirect("music:downloads")
         return self.get(request, *args, **kwargs)
 
 

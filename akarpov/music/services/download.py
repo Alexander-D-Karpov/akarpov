@@ -208,7 +208,15 @@ def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveRes
             "image": album["images"][0]["url"] if album["images"] else "",
             "release": album.get("release_date", ""),
         }
-        for t in album["tracks"]["items"]:
+        album_tracks = safe_spotify_call(sp.album_tracks, album["id"])
+        all_tracks = album_tracks.get("items", [])
+        while album_tracks.get("next"):
+            album_tracks = safe_spotify_call(sp.next, album_tracks)
+            if album_tracks:
+                all_tracks.extend(album_tracks.get("items", []))
+            else:
+                break
+        for t in all_tracks:
             meta = _spotify_track_to_meta(t)
             meta.album = album_info["name"]
             meta.album_image_url = album_info["image"]
@@ -216,28 +224,84 @@ def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveRes
             result.tracks.append(meta)
 
     elif "/playlist/" in url:
-        playlist_data = safe_spotify_call(
-            sp.playlist, url, fields="name,tracks.items(track),tracks.next"
-        )
-        result.playlist_name = playlist_data.get("name", "")
+        playlist_meta = safe_spotify_call(sp.playlist, url)
+        result.playlist_name = playlist_meta.get("name", "")
         result.is_playlist = True
-        tracks_page = playlist_data.get("tracks", {})
-        while tracks_page:
-            for item in tracks_page.get("items", []):
-                if item and item.get("track"):
-                    result.tracks.append(_spotify_track_to_meta(item["track"]))
-            if tracks_page.get("next"):
-                tracks_page = safe_spotify_call(sp.next, tracks_page)
+
+        items_data = playlist_meta.get("items") or playlist_meta.get("tracks")
+        if items_data is None:
+            try:
+                items_data = safe_spotify_call(
+                    sp.playlist_items, url.split("/")[-1].split("?")[0]
+                )
+            except Exception:
+                items_data = safe_spotify_call(
+                    sp.playlist_tracks, url.split("/")[-1].split("?")[0]
+                )
+
+        while items_data:
+            for item in items_data.get("items", []):
+                track = item.get("item") or item.get("track")
+                if track:
+                    result.tracks.append(_spotify_track_to_meta(track))
+            if items_data.get("next"):
+                items_data = safe_spotify_call(sp.next, items_data)
             else:
                 break
 
     elif "/artist/" in url:
-        artist = safe_spotify_call(sp.artist, url)
-        result.playlist_name = f"{artist['name']} — Top Tracks"
+        artist_id = url.split("/artist/")[1].split("?")[0]
+        artist = safe_spotify_call(sp.artist, artist_id)
+        result.playlist_name = f"{artist['name']} — Discography"
         result.is_playlist = True
-        top = safe_spotify_call(sp.artist_top_tracks, url)
-        for t in top.get("tracks", []):
-            result.tracks.append(_spotify_track_to_meta(t))
+
+        albums = safe_spotify_call(
+            sp.artist_albums, artist_id, album_type="album,single", limit=50
+        )
+        all_albums = albums.get("items", []) if albums else []
+        while albums and albums.get("next"):
+            albums = safe_spotify_call(sp.next, albums)
+            if albums and albums.get("items"):
+                all_albums.extend(albums["items"])
+            else:
+                break
+
+        for album_brief in all_albums:
+            try:
+                full_album = safe_spotify_call(sp.album, album_brief["id"])
+                if not full_album:
+                    continue
+                album_img = (
+                    full_album["images"][0]["url"] if full_album.get("images") else ""
+                )
+                album_release = (
+                    full_album.get("release_date", "").split("-")[0]
+                    if full_album.get("release_date")
+                    else ""
+                )
+
+                album_tracks = safe_spotify_call(sp.album_tracks, album_brief["id"])
+                track_items = album_tracks.get("items", []) if album_tracks else []
+                while album_tracks and album_tracks.get("next"):
+                    album_tracks = safe_spotify_call(sp.next, album_tracks)
+                    if album_tracks and album_tracks.get("items"):
+                        track_items.extend(album_tracks["items"])
+                    else:
+                        break
+
+                for t in track_items:
+                    meta = _spotify_track_to_meta(t)
+                    meta.album = full_album.get("name", "")
+                    meta.album_image_url = album_img
+                    meta.release = album_release
+                    result.tracks.append(meta)
+            except Exception as e:
+                logger.warning(
+                    "Failed to fetch album",
+                    album_id=album_brief.get("id"),
+                    error=str(e),
+                )
+                continue
 
     return result
 

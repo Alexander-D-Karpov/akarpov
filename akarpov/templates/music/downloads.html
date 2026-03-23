@@ -1,162 +1,316 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Downloads — Music{% endblock %}
+{% block title %}Music Downloads{% endblock %}
 
 {% block css %}
 <style>
-.job-card { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-.job-card.rate_limited { border-color: #ffc107; background: #fff8e1; }
-.job-card.failed { border-color: #dc3545; background: #fff5f5; }
-.job-card.completed { border-color: #28a745; background: #f0fff4; }
-.job-card.processing, .job-card.resolving { border-color: #007bff; background: #f0f7ff; }
-.track-row { padding: 6px 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-.track-row:last-child { border-bottom: none; }
-.status-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; color: #fff; display: inline-block; }
-.status-pending { background: #6c757d; }
-.status-resolving, .status-searching { background: #17a2b8; }
-.status-processing, .status-downloading { background: #007bff; }
-.status-completed { background: #28a745; }
-.status-failed { background: #dc3545; }
-.status-rate_limited { background: #ffc107; color: #333; }
-.status-skipped { background: #6c757d; }
-.alert-rate-limit { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+  .dl-card {
+    border: 1px solid var(--bs-border-color, #333);
+    border-radius: .5rem;
+    transition: border-color .15s;
+  }
+  .dl-card:hover { border-color: var(--bs-primary, #0d6efd); }
+  .dl-card .card-body { padding: 1rem 1.25rem; }
+
+  .source-badge {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .25em .6em;
+    border-radius: .25rem;
+    font-weight: 600;
+  }
+  .source-spotify  { background: #1db954; color: #000; }
+  .source-youtube  { background: #ff0000; color: #fff; }
+  .source-yandex   { background: #ffcc00; color: #000; }
+  .source-soundcloud { background: #ff5500; color: #fff; }
+  .source-unknown  { background: #6c757d; color: #fff; }
+
+  .status-badge {
+    font-size: .7rem;
+    padding: .25em .6em;
+    border-radius: .25rem;
+    font-weight: 600;
+  }
+  .status-pending     { background: #6c757d; color: #fff; }
+  .status-resolving   { background: #0dcaf0; color: #000; }
+  .status-processing  { background: #ffc107; color: #000; }
+  .status-completed   { background: #198754; color: #fff; }
+  .status-failed      { background: #dc3545; color: #fff; }
+  .status-rate_limited { background: #fd7e14; color: #000; }
+
+  .track-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: .4rem;
+  }
+  .dot-pending     { background: #6c757d; }
+  .dot-searching   { background: #0dcaf0; }
+  .dot-downloading { background: #0dcaf0; animation: pulse 1s infinite; }
+  .dot-processing  { background: #ffc107; animation: pulse 1s infinite; }
+  .dot-completed   { background: #198754; }
+  .dot-failed      { background: #dc3545; }
+  .dot-skipped     { background: #adb5bd; }
+  .dot-rate_limited { background: #fd7e14; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+
+  .progress-bar-striped.active {
+    animation: progress-bar-stripes 1s linear infinite;
+  }
+
+  .track-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+  }
+  .track-list.open {
+    max-height: 2000px;
+    overflow-y: auto;
+  }
+
+  .job-toggle {
+    cursor: pointer;
+    user-select: none;
+  }
+  .job-toggle .chevron {
+    transition: transform .2s;
+    display: inline-block;
+  }
+  .job-toggle.open .chevron {
+    transform: rotate(90deg);
+  }
+
+  .tab-section {
+    border: 1px solid var(--bs-border-color, #333);
+    border-top: 0;
+    border-radius: 0 0 .5rem .5rem;
+    padding: 1.5rem;
+  }
+
+  .form-section {
+    max-width: 700px;
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #6c757d;
+  }
+
+  .track-row {
+    padding: .35rem 0;
+    font-size: .85rem;
+    border-bottom: 1px solid rgba(128,128,128,.15);
+  }
+  .track-row:last-child { border-bottom: 0; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Music Downloads</h2>
-    <div>
-      <a href="{% url 'music:cookies' %}" class="btn btn-sm btn-outline-secondary">
-        🍪 Cookies {% if cookies_ok %}✓{% else %}✗{% endif %}
-      </a>
-      <a href="{% url 'music:upload' %}" class="btn btn-sm btn-outline-secondary">Upload URL (legacy)</a>
-      <a href="{% url 'music:upload_file' %}" class="btn btn-sm btn-outline-secondary">Upload File</a>
-    </div>
-  </div>
-
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <h4 class="mb-0">Music Downloads</h4>
   {% if rate_limited %}
-  <div class="alert-rate-limit">
-    ⚠️ Spotify is rate limited. New Spotify jobs will be queued and retried automatically in ~25h.
-  </div>
+    <span class="badge bg-warning text-dark">Spotify rate limited -- jobs will retry automatically</span>
   {% endif %}
+</div>
 
-  {% if not cookies_ok %}
-  <div class="alert alert-warning">
-    ⚠️ YouTube cookies not configured. Downloads may fail. <a href="{% url 'music:cookies' %}">Set up cookies →</a>
+<!-- Input tabs -->
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-pane" type="button" role="tab">URL</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-pane" type="button" role="tab">File Upload</button>
+  </li>
+  <li class="nav-item ms-auto" role="presentation">
+    <a class="nav-link" href="{% url 'music:cookies' %}">
+      <i class="bi bi-gear"></i> Cookies
+      {% if cookies_ok %}<span class="text-success ms-1" title="Cookies configured">&#x25cf;</span>{% endif %}
+    </a>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <!-- URL download pane -->
+  <div class="tab-pane fade show active tab-section" id="url-pane" role="tabpanel">
+    <form method="post" class="form-section">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_url" class="form-label text-muted" style="font-size:.85rem;">Spotify / YouTube / SoundCloud / Yandex Music URL</label>
+        <input type="text" name="url" id="id_url" class="form-control" placeholder="https://open.spotify.com/album/..." required maxlength="500">
+      </div>
+      <div class="mb-3">
+        <label for="id_config" class="form-label text-muted" style="font-size:.85rem;">Download Config</label>
+        <select name="config" id="id_config" class="form-select">
+          <option value="">Default (from server settings)</option>
+          {% for cfg in url_form.fields.config.queryset %}
+            <option value="{{ cfg.pk }}">{{ cfg }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-download me-1"></i>Download
+      </button>
+    </form>
   </div>
-  {% endif %}
 
-  <form method="post" class="mb-4">
-    {% csrf_token %}
-    <div class="input-group">
-      {{ form.url }}
-      <button type="submit" class="btn btn-primary">Download</button>
-    </div>
-    <small class="text-muted">Paste a Spotify track/album/playlist/artist URL or YouTube Music URL</small>
-  </form>
-
-  <div id="jobs-container">
-    {% for job in jobs %}
-    <div class="job-card {{ job.status }}" id="job-{{ job.id }}">
-      <div class="d-flex justify-content-between">
-        <div>
-          <span class="status-badge status-{{ job.status }}">{{ job.get_status_display }}</span>
-          <strong class="ms-2">{{ job.get_source_display|upper }}</strong>
-        </div>
-        <small class="text-muted">{{ job.created|timesince }} ago</small>
+  <!-- File upload pane -->
+  <div class="tab-pane fade tab-section" id="file-pane" role="tabpanel">
+    <form method="post" enctype="multipart/form-data" class="form-section">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_file" class="form-label text-muted" style="font-size:.85rem;">MP3 Files</label>
+        <input type="file" name="file" id="id_file" class="form-control" accept=".mp3,audio/mpeg" multiple required>
       </div>
-      <div class="mt-1">
-        <code style="font-size:0.85rem; word-break:break-all;">{{ job.url }}</code>
-      </div>
-      {% if job.error %}
-      <div class="text-danger mt-1" style="font-size:0.85rem;">{{ job.error }}</div>
-      {% endif %}
-      <div class="mt-1 text-muted" style="font-size:0.85rem;">
-        Tracks: <span class="job-progress">{{ job.processed_tracks }}</span> / <span class="job-total">{{ job.total_tracks }}</span>
-      </div>
-      <div class="mt-2" id="tracks-{{ job.id }}">
-        {% for track in job.tracks.all %}
-        <div class="track-row" id="track-{{ track.id }}">
-          <span class="status-badge status-{{ track.status }}">{{ track.get_status_display }}</span>
-          <span>{{ track.artist_name }}{% if track.artist_name and track.name %} — {% endif %}{{ track.name }}</span>
-          {% if track.error %}<small class="text-danger ms-2">{{ track.error|truncatechars:80 }}</small>{% endif %}
-          {% if track.youtube_url %}<a href="{{ track.youtube_url }}" target="_blank" class="ms-1" style="font-size:0.75rem;">🔗</a>{% endif %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% empty %}
-    <p class="text-muted">No download jobs yet.</p>
-    {% endfor %}
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-upload me-1"></i>Upload
+      </button>
+    </form>
   </div>
 </div>
 
+<!-- Jobs list -->
+<h5 class="mt-4 mb-3">Jobs</h5>
+<div id="jobs-container">
+  {% for job in jobs %}
+    {% include "music/_job_card.html" with job=job %}
+  {% empty %}
+    <div class="empty-state">No download jobs yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block inline_javascript %}
 <script>
 (function() {
-  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const ws = new WebSocket(proto + '//' + window.location.host + '/ws/downloads/');
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.host}/ws/music/downloads/`;
+  let socket = null;
 
-  ws.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+  function connect() {
+    socket = new WebSocket(wsUrl);
+    socket.onmessage = function(e) {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'job_update') handleJobUpdate(msg);
+      else if (msg.type === 'track_update') handleTrackUpdate(msg);
+    };
+    socket.onclose = function() {
+      setTimeout(connect, 3000);
+    };
+  }
 
-    if (data.type === 'job_update') {
-      let card = document.getElementById('job-' + data.job_id);
-      if (!card) {
-        location.reload();
-        return;
-      }
-      card.className = 'job-card ' + data.status;
-      const badge = card.querySelector('.status-badge');
-      if (badge) {
-        badge.className = 'status-badge status-' + data.status;
-        badge.textContent = data.status;
-      }
-      const prog = card.querySelector('.job-progress');
-      const tot = card.querySelector('.job-total');
-      if (prog) prog.textContent = data.processed_tracks;
-      if (tot) tot.textContent = data.total_tracks;
-      if (data.error) {
-        let errDiv = card.querySelector('.text-danger');
-        if (!errDiv) {
-          errDiv = document.createElement('div');
-          errDiv.className = 'text-danger mt-1';
-          errDiv.style.fontSize = '0.85rem';
-          card.appendChild(errDiv);
-        }
-        errDiv.textContent = data.error;
+  function handleJobUpdate(data) {
+    const card = document.getElementById('job-' + data.job_id);
+    if (!card) {
+      // New job -- reload to get full card (rare, usually we just submitted)
+      location.reload();
+      return;
+    }
+
+    // Update status badge
+    const statusEl = card.querySelector('.job-status');
+    if (statusEl) {
+      statusEl.className = 'status-badge job-status status-' + data.status;
+      statusEl.textContent = data.status;
+    }
+
+    // Update progress
+    const progText = card.querySelector('.job-progress-text');
+    if (progText) {
+      progText.textContent = data.processed_tracks + ' / ' + data.total_tracks;
+    }
+
+    const progBar = card.querySelector('.progress-bar');
+    if (progBar && data.total_tracks > 0) {
+      const pct = Math.round((data.processed_tracks / data.total_tracks) * 100);
+      progBar.style.width = pct + '%';
+      progBar.setAttribute('aria-valuenow', pct);
+      if (data.status === 'completed') {
+        progBar.classList.remove('progress-bar-striped', 'active');
+        progBar.classList.add('bg-success');
+      } else if (data.status === 'failed') {
+        progBar.classList.remove('progress-bar-striped', 'active');
+        progBar.classList.add('bg-danger');
       }
     }
 
-    if (data.type === 'track_update') {
-      let container = document.getElementById('tracks-' + data.job_id);
-      if (!container) return;
-
-      let row = document.getElementById('track-' + data.track_id);
-      if (!row) {
-        row = document.createElement('div');
-        row.className = 'track-row';
-        row.id = 'track-' + data.track_id;
-        container.appendChild(row);
-      }
-
-      let html = '<span class="status-badge status-' + data.status + '">' + data.status + '</span> ';
-      html += '<span>' + (data.artist_name || '') + (data.artist_name && data.name ? ' — ' : '') + (data.name || '') + '</span>';
+    // Update error
+    const errEl = card.querySelector('.job-error');
+    if (errEl) {
       if (data.error) {
-        html += ' <small class="text-danger ms-2">' + data.error.substring(0, 80) + '</small>';
+        errEl.textContent = data.error;
+        errEl.style.display = '';
+      } else {
+        errEl.style.display = 'none';
       }
-      if (data.youtube_url) {
-        html += ' <a href="' + data.youtube_url + '" target="_blank" class="ms-1" style="font-size:0.75rem;">🔗</a>';
-      }
-      row.innerHTML = html;
     }
-  };
 
-  ws.onclose = function() {
-    console.log('WS closed, reconnecting in 5s...');
-    setTimeout(function() { location.reload(); }, 5000);
-  };
+    // Update playlist name
+    if (data.playlist_name) {
+      const plEl = card.querySelector('.job-playlist-name');
+      if (plEl) {
+        plEl.textContent = data.playlist_name;
+        plEl.style.display = '';
+      }
+    }
+  }
+
+  function handleTrackUpdate(data) {
+    const container = document.getElementById('tracks-' + data.job_id);
+    if (!container) return;
+
+    let row = document.getElementById('track-' + data.track_id);
+    if (!row) {
+      row = document.createElement('div');
+      row.id = 'track-' + data.track_id;
+      row.className = 'track-row d-flex align-items-center justify-content-between';
+      container.appendChild(row);
+    }
+
+    const name = data.artist_name
+      ? data.artist_name + ' -- ' + data.name
+      : data.name || 'Unknown';
+
+    row.innerHTML =
+      '<div class="d-flex align-items-center text-truncate me-2">' +
+        '<span class="track-status-dot dot-' + data.status + '"></span>' +
+        '<span class="text-truncate">' + escapeHtml(name) + '</span>' +
+      '</div>' +
+      '<span class="text-muted" style="font-size:.75rem;white-space:nowrap;">' + data.status + '</span>';
+
+    if (data.error && data.status === 'failed') {
+      const errLine = document.createElement('div');
+      errLine.className = 'text-danger ps-3' ;
+      errLine.style.fontSize = '.75rem';
+      errLine.textContent = data.error.substring(0, 120);
+      row.appendChild(errLine);
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  connect();
+
+  // Toggle track list
+  document.addEventListener('click', function(e) {
+    const toggle = e.target.closest('.job-toggle');
+    if (!toggle) return;
+    toggle.classList.toggle('open');
+    const jobId = toggle.dataset.jobId;
+    const list = document.getElementById('tracks-' + jobId);
+    if (list) list.classList.toggle('open');
+  });
 })();
 </script>
 {% endblock %}

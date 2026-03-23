@@ -1,0 +1,79 @@
+<div class="dl-card card mb-2" id="job-{{ job.id }}">
+  <div class="card-body">
+    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="source-badge source-{{ job.source }}">{{ job.source }}</span>
+        <span class="status-badge job-status status-{{ job.status }}">{{ job.status }}</span>
+        {% if job.playlist_name %}
+          <span class="job-playlist-name badge bg-secondary bg-opacity-50" style="font-size:.7rem;">{{ job.playlist_name }}</span>
+        {% else %}
+          <span class="job-playlist-name badge bg-secondary bg-opacity-50" style="font-size:.7rem;display:none;"></span>
+        {% endif %}
+      </div>
+      <small class="text-muted text-nowrap" title="{{ job.created }}">{{ job.created|timesince }} ago</small>
+    </div>
+
+    <div class="text-truncate mb-2" style="font-size:.85rem;" title="{{ job.url }}">
+      <a href="{{ job.url }}" target="_blank" rel="noopener" class="text-decoration-none">{{ job.url }}</a>
+    </div>
+
+    {% if job.error %}
+      <div class="job-error text-danger mb-2" style="font-size:.8rem;">{{ job.error }}</div>
+    {% else %}
+      <div class="job-error text-danger mb-2" style="font-size:.8rem;display:none;"></div>
+    {% endif %}
+
+    <div class="d-flex align-items-center gap-3">
+      {% if job.total_tracks > 0 %}
+        <div class="progress flex-grow-1" style="height: 6px;">
+          {% widthratio job.processed_tracks job.total_tracks 100 as pct %}
+          <div class="progress-bar {% if job.status == 'processing' or job.status == 'resolving' %}progress-bar-striped active{% elif job.status == 'completed' %}bg-success{% elif job.status == 'failed' %}bg-danger{% endif %}"
+               role="progressbar"
+               style="width: {% widthratio job.processed_tracks job.total_tracks 100 %}%"
+               aria-valuenow="{% widthratio job.processed_tracks job.total_tracks 100 %}"
+               aria-valuemin="0" aria-valuemax="100">
+          </div>
+        </div>
+      {% else %}
+        <div class="progress flex-grow-1" style="height: 6px;">
+          <div class="progress-bar {% if job.status == 'resolving' %}progress-bar-striped active{% endif %}" role="progressbar" style="width: {% if job.status == 'resolving' %}100{% else %}0{% endif %}%"></div>
+        </div>
+      {% endif %}
+
+      <span class="text-muted job-progress-text" style="font-size:.8rem;white-space:nowrap;">
+        {{ job.processed_tracks }} / {{ job.total_tracks }}
+      </span>
+
+      {% if job.tracks.count > 0 %}
+        <span class="job-toggle" data-job-id="{{ job.id }}" title="Show tracks">
+          <i class="bi bi-chevron-right chevron"></i>
+        </span>
+      {% endif %}
+    </div>
+
+    <div id="tracks-{{ job.id }}" class="track-list mt-2 ps-2">
+      {% for track in job.tracks.all %}
+        <div id="track-{{ track.id }}" class="track-row d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center text-truncate me-2">
+            <span class="track-status-dot dot-{{ track.status }}"></span>
+            <span class="text-truncate">
+              {% if track.artist_name %}{{ track.artist_name }} -- {% endif %}{{ track.name|default:"..." }}
+            </span>
+          </div>
+          <span class="text-muted" style="font-size:.75rem;white-space:nowrap;">{{ track.status }}</span>
+        </div>
+        {% if track.error and track.status == "failed" %}
+          <div class="text-danger ps-3" style="font-size:.75rem;">{{ track.error|truncatechars:120 }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if job.created_playlist %}
+      <div class="mt-2">
+        <a href="{% url 'music:playlist' job.created_playlist.slug %}" class="text-decoration-none" style="font-size:.8rem;">
+          <i class="bi bi-music-note-list me-1"></i>View playlist: {{ job.created_playlist.name }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

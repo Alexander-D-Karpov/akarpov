@@ -6,9 +6,9 @@ app_name = "music"
 
 urlpatterns = [
     path("", views.music_landing, name="landing"),
-    path("upload", views.load_track_view, name="upload"),
-    path("upload_file", views.load_track_file_view, name="upload_file"),
     path("downloads/", views.downloads_view, name="downloads"),
+    path("upload", views.downloads_view, name="upload"),
+    path("upload_file", views.downloads_view, name="upload_file"),
     path("cookies/", views.cookies_view, name="cookies"),
     path("<str:slug>", views.song_view, name="song"),
     path("album/<str:slug>", views.album_view, name="album"),

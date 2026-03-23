@@ -79,5 +79,8 @@ class DownloadProgressConsumer(BaseConsumer):
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
+    async def receive(self, text_data=None, bytes_data=None, **kwargs):
+        pass
+
     async def download_update(self, event):
         await self.send_json(event["data"])
