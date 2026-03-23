@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Downloads — Music{% endblock %}
+
+{% block css %}
+<style>
+.job-card { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.job-card.rate_limited { border-color: #ffc107; background: #fff8e1; }
+.job-card.failed { border-color: #dc3545; background: #fff5f5; }
+.job-card.completed { border-color: #28a745; background: #f0fff4; }
+.job-card.processing, .job-card.resolving { border-color: #007bff; background: #f0f7ff; }
+.track-row { padding: 6px 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.track-row:last-child { border-bottom: none; }
+.status-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; color: #fff; display: inline-block; }
+.status-pending { background: #6c757d; }
+.status-resolving, .status-searching { background: #17a2b8; }
+.status-processing, .status-downloading { background: #007bff; }
+.status-completed { background: #28a745; }
+.status-failed { background: #dc3545; }
+.status-rate_limited { background: #ffc107; color: #333; }
+.status-skipped { background: #6c757d; }
+.alert-rate-limit { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Music Downloads</h2>
+    <div>
+      <a href="{% url 'music:cookies' %}" class="btn btn-sm btn-outline-secondary">
+        🍪 Cookies {% if cookies_ok %}✓{% else %}✗{% endif %}
+      </a>
+      <a href="{% url 'music:upload' %}" class="btn btn-sm btn-outline-secondary">Upload URL (legacy)</a>
+      <a href="{% url 'music:upload_file' %}" class="btn btn-sm btn-outline-secondary">Upload File</a>
+    </div>
+  </div>
+
+  {% if rate_limited %}
+  <div class="alert-rate-limit">
+    ⚠️ Spotify is rate limited. New Spotify jobs will be queued and retried automatically in ~25h.
+  </div>
+  {% endif %}
+
+  {% if not cookies_ok %}
+  <div class="alert alert-warning">
+    ⚠️ YouTube cookies not configured. Downloads may fail. <a href="{% url 'music:cookies' %}">Set up cookies →</a>
+  </div>
+  {% endif %}
+
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="input-group">
+      {{ form.url }}
+      <button type="submit" class="btn btn-primary">Download</button>
+    </div>
+    <small class="text-muted">Paste a Spotify track/album/playlist/artist URL or YouTube Music URL</small>
+  </form>
+
+  <div id="jobs-container">
+    {% for job in jobs %}
+    <div class="job-card {{ job.status }}" id="job-{{ job.id }}">
+      <div class="d-flex justify-content-between">
+        <div>
+          <span class="status-badge status-{{ job.status }}">{{ job.get_status_display }}</span>
+          <strong class="ms-2">{{ job.get_source_display|upper }}</strong>
+        </div>
+        <small class="text-muted">{{ job.created|timesince }} ago</small>
+      </div>
+      <div class="mt-1">
+        <code style="font-size:0.85rem; word-break:break-all;">{{ job.url }}</code>
+      </div>
+      {% if job.error %}
+      <div class="text-danger mt-1" style="font-size:0.85rem;">{{ job.error }}</div>
+      {% endif %}
+      <div class="mt-1 text-muted" style="font-size:0.85rem;">
+        Tracks: <span class="job-progress">{{ job.processed_tracks }}</span> / <span class="job-total">{{ job.total_tracks }}</span>
+      </div>
+      <div class="mt-2" id="tracks-{{ job.id }}">
+        {% for track in job.tracks.all %}
+        <div class="track-row" id="track-{{ track.id }}">
+          <span class="status-badge status-{{ track.status }}">{{ track.get_status_display }}</span>
+          <span>{{ track.artist_name }}{% if track.artist_name and track.name %} — {% endif %}{{ track.name }}</span>
+          {% if track.error %}<small class="text-danger ms-2">{{ track.error|truncatechars:80 }}</small>{% endif %}
+          {% if track.youtube_url %}<a href="{{ track.youtube_url }}" target="_blank" class="ms-1" style="font-size:0.75rem;">🔗</a>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No download jobs yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+(function() {
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(proto + '//' + window.location.host + '/ws/downloads/');
+
+  ws.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'job_update') {
+      let card = document.getElementById('job-' + data.job_id);
+      if (!card) {
+        location.reload();
+        return;
+      }
+      card.className = 'job-card ' + data.status;
+      const badge = card.querySelector('.status-badge');
+      if (badge) {
+        badge.className = 'status-badge status-' + data.status;
+        badge.textContent = data.status;
+      }
+      const prog = card.querySelector('.job-progress');
+      const tot = card.querySelector('.job-total');
+      if (prog) prog.textContent = data.processed_tracks;
+      if (tot) tot.textContent = data.total_tracks;
+      if (data.error) {
+        let errDiv = card.querySelector('.text-danger');
+        if (!errDiv) {
+          errDiv = document.createElement('div');
+          errDiv.className = 'text-danger mt-1';
+          errDiv.style.fontSize = '0.85rem';
+          card.appendChild(errDiv);
+        }
+        errDiv.textContent = data.error;
+      }
+    }
+
+    if (data.type === 'track_update') {
+      let container = document.getElementById('tracks-' + data.job_id);
+      if (!container) return;
+
+      let row = document.getElementById('track-' + data.track_id);
+      if (!row) {
+        row = document.createElement('div');
+        row.className = 'track-row';
+        row.id = 'track-' + data.track_id;
+        container.appendChild(row);
+      }
+
+      let html = '<span class="status-badge status-' + data.status + '">' + data.status + '</span> ';
+      html += '<span>' + (data.artist_name || '') + (data.artist_name && data.name ? ' — ' : '') + (data.name || '') + '</span>';
+      if (data.error) {
+        html += ' <small class="text-danger ms-2">' + data.error.substring(0, 80) + '</small>';
+      }
+      if (data.youtube_url) {
+        html += ' <a href="' + data.youtube_url + '" target="_blank" class="ms-1" style="font-size:0.75rem;">🔗</a>';
+      }
+      row.innerHTML = html;
+    }
+  };
+
+  ws.onclose = function() {
+    console.log('WS closed, reconnecting in 5s...');
+    setTimeout(function() { location.reload(); }, 5000);
+  };
+})();
+</script>
+{% endblock %}

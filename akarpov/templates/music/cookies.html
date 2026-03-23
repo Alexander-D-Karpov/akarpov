@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}YouTube Cookies — Music{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 800px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>YouTube Cookie Management</h2>
+    <a href="{% url 'music:downloads' %}" class="btn btn-sm btn-outline-secondary">← Downloads</a>
+  </div>
+
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+  {% endif %}
+
+  {% if cookies_exist %}
+  <div class="alert alert-success">
+    ✓ Cookies are configured.
+    {% if cookie_modified %}Last updated: {{ cookie_modified }}{% endif %}
+  </div>
+  {% else %}
+  <div class="alert alert-warning">
+    ✗ No cookies configured. YouTube downloads will likely fail.
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-body">
+      <h5>Update Cookies</h5>
+      <p class="text-muted" style="font-size:0.9rem;">
+        Export cookies from an incognito browser session logged into YouTube using the
+        "Get cookies.txt LOCALLY" Chrome extension. Navigate to youtube.com/robots.txt first,
+        then export. Close the incognito window immediately after export.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Netscape Cookie File Content</label>
+          {{ form.cookies }}
+        </div>
+        <button type="submit" class="btn btn-primary">Save Cookies</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

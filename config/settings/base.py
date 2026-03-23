@@ -767,3 +767,7 @@ USE_X_FORWARDED_PORT = True
 # ------------------------------------------------------------------------------
 PREVIEW_SERVICE_URL = env("PREVIEW_SERVICE_URL", default=None)
 PREVIEW_SERVICE_API_KEY = env("PREVIEW_SERVICE_API_KEY", default=None)
+
+YOUTUBE_COOKIE_PATH = env(
+    "YOUTUBE_COOKIE_PATH", default=str(APPS_DIR / "media" / "yt_cookies.txt")
+)

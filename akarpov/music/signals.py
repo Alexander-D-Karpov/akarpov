@@ -4,8 +4,6 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from akarpov.music.models import Album, Author, PlaylistSong, Song, SongUserRating
-from akarpov.music.services.file import set_song_volume
-from akarpov.music.services.info import update_album_info, update_author_info
 
 
 @receiver(post_delete, sender=Song)
@@ -18,25 +16,32 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 @receiver(post_save, sender=Song)
 def song_create(sender, instance: Song, created, **kwargs):
     if instance.volume is None and instance.file:
-        set_song_volume(instance)
+        from akarpov.music.services.file import set_song_volume
+
+        try:
+            set_song_volume(instance)
+        except Exception:
+            pass
 
 
 @receiver(post_save, sender=Author)
 def author_create(sender, instance, created, **kwargs):
     if created:
-        update_author_info(instance)
+        from akarpov.music.tasks import update_author_info_task
+
+        update_author_info_task.apply_async(
+            kwargs={"author_id": instance.id}, countdown=5
+        )
 
 
 @receiver(post_save, sender=Album)
 def album_create(sender, instance, created, **kwargs):
     if created:
-        authors = instance.authors.all()
-        update_album_info(instance, authors.first().name if authors.exists() else None)
+        from akarpov.music.tasks import update_album_info_task
 
-
-@receiver(post_save)
-def send_que_status(sender, instance, created, **kwargs):
-    ...
+        update_album_info_task.apply_async(
+            kwargs={"album_id": instance.id}, countdown=5
+        )
 
 
 @receiver(pre_save, sender=SongUserRating)

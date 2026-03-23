@@ -86,6 +86,10 @@ class Song(BaseImageModel, ShortLinkModel):
     def artists_names(self):
         return cache_model_property(self, "_authors_names")
 
+    @property
+    def safe_length(self):
+        return self.length if self.length and self.length > 0 else 300
+
     def get_first_author_name(self):
         if self.authors:
             return self.authors.first().name
@@ -128,10 +132,117 @@ class PlaylistSong(models.Model):
         ordering = ["order"]
 
 
-class SongInQue(models.Model):
-    name = models.CharField(blank=True, max_length=500)
-    status = models.CharField(null=True, blank=True, max_length=500)
-    error = models.BooleanField(default=False)
+class DownloadConfig(models.Model):
+    name = models.CharField(max_length=200)
+    spotify_client_id = models.CharField(max_length=200, blank=True)
+    spotify_client_secret = models.CharField(max_length=200, blank=True)
+    proxy_url = models.CharField(max_length=500, blank=True)
+    youtube_cookies = models.TextField(
+        blank=True, help_text="Netscape cookie file content"
+    )
+    soundcloud_client_id = models.CharField(max_length=200, blank=True)
+    is_default = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    creator = models.ForeignKey("users.User", null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        default_tag = " [default]" if self.is_default else ""
+        return f"{self.name}{default_tag}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            DownloadConfig.objects.filter(is_default=True).exclude(pk=self.pk).update(
+                is_default=False
+            )
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_default(cls):
+        return cls.objects.filter(is_default=True).first()
+
+
+class DownloadJob(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending"
+        RESOLVING = "resolving"
+        PROCESSING = "processing"
+        COMPLETED = "completed"
+        FAILED = "failed"
+        RATE_LIMITED = "rate_limited"
+
+    class Source(models.TextChoices):
+        SPOTIFY = "spotify"
+        YOUTUBE = "youtube"
+        YANDEX = "yandex"
+        SOUNDCLOUD = "soundcloud"
+        UNKNOWN = "unknown"
+
+    url = models.CharField(max_length=500)
+    source = models.CharField(
+        max_length=20, choices=Source.choices, default=Source.UNKNOWN
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    creator = models.ForeignKey(
+        "users.User", related_name="download_jobs", on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    error = models.TextField(blank=True)
+    total_tracks = models.IntegerField(default=0)
+    processed_tracks = models.IntegerField(default=0)
+    celery_task_id = models.CharField(max_length=255, blank=True)
+    config = models.ForeignKey(
+        "DownloadConfig", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    playlist_name = models.CharField(max_length=500, blank=True)
+    created_playlist = models.ForeignKey(
+        "Playlist", null=True, blank=True, on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"[{self.source}] {self.url[:60]} ({self.status})"
+
+
+class DownloadTrack(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending"
+        SEARCHING = "searching"
+        DOWNLOADING = "downloading"
+        PROCESSING = "processing"
+        COMPLETED = "completed"
+        FAILED = "failed"
+        RATE_LIMITED = "rate_limited"
+        SKIPPED = "skipped"
+
+    job = models.ForeignKey(
+        DownloadJob, related_name="tracks", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=500, blank=True)
+    artist_name = models.CharField(max_length=500, blank=True)
+    album_name = models.CharField(max_length=500, blank=True)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    error = models.TextField(blank=True)
+    song = models.ForeignKey(Song, null=True, blank=True, on_delete=models.SET_NULL)
+    spotify_url = models.URLField(blank=True, max_length=500)
+    youtube_url = models.URLField(blank=True, max_length=500)
+    duration_ms = models.IntegerField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created"]
+
+    def __str__(self):
+        return f"{self.artist_name} - {self.name} ({self.status})"
 
 
 class TempFileUpload(models.Model):

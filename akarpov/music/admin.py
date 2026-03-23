@@ -5,11 +5,13 @@ from django.utils.safestring import mark_safe
 from .models import (
     Album,
     Author,
+    DownloadConfig,
+    DownloadJob,
+    DownloadTrack,
     Playlist,
     PlaylistSong,
     RadioSong,
     Song,
-    SongInQue,
     SongUserRating,
     TempFileUpload,
     UserListenHistory,
@@ -42,7 +44,6 @@ class AlbumAdmin(admin.ModelAdmin):
     show_full_result_count = False
     readonly_fields = ("render_meta_field",)
     raw_id_fields = ("authors",)
-    filter_horizontal = ()
 
     def author_count(self, obj):
         return obj.authors.count()
@@ -104,19 +105,39 @@ class PlaylistAdmin(admin.ModelAdmin):
 @admin.register(PlaylistSong)
 class PlaylistSongAdmin(admin.ModelAdmin):
     list_display = ("playlist", "song", "order")
-    search_fields = ["playlist__name", "song__name"]
     list_per_page = 50
-    show_full_result_count = False
     raw_id_fields = ("playlist", "song")
-    list_select_related = ("playlist", "song")
 
 
-@admin.register(SongInQue)
-class SongInQueAdmin(admin.ModelAdmin):
-    list_display = ("name", "status", "error")
-    search_fields = ["name"]
+@admin.register(DownloadJob)
+class DownloadJobAdmin(admin.ModelAdmin):
+    list_display = (
+        "url_short",
+        "source",
+        "status",
+        "total_tracks",
+        "processed_tracks",
+        "playlist_name",
+        "created",
+    )
+    list_filter = ("status", "source")
+    search_fields = ["url", "playlist_name"]
     list_per_page = 50
-    list_filter = ("error",)
+    raw_id_fields = ("creator", "config", "created_playlist")
+    readonly_fields = ("celery_task_id",)
+    date_hierarchy = "created"
+
+    def url_short(self, obj):
+        return obj.url[:80]
+
+
+@admin.register(DownloadTrack)
+class DownloadTrackAdmin(admin.ModelAdmin):
+    list_display = ("name", "artist_name", "status", "job")
+    list_filter = ("status",)
+    search_fields = ["name", "artist_name"]
+    list_per_page = 50
+    raw_id_fields = ("job", "song")
 
 
 @admin.register(TempFileUpload)
@@ -128,38 +149,54 @@ class TempFileUploadAdmin(admin.ModelAdmin):
 @admin.register(RadioSong)
 class RadioSongAdmin(admin.ModelAdmin):
     list_display = ("start", "slug", "song")
-    search_fields = ["song__name", "slug"]
     list_per_page = 50
     raw_id_fields = ("song",)
-    list_select_related = ("song",)
 
 
 @admin.register(SongUserRating)
 class SongUserRatingAdmin(admin.ModelAdmin):
     list_display = ("song", "user", "like", "created")
-    search_fields = ["song__name", "user__username"]
     list_per_page = 50
-    show_full_result_count = False
     raw_id_fields = ("song", "user")
-    list_select_related = ("song", "user")
     list_filter = ("like", "created")
 
 
 @admin.register(UserListenHistory)
 class UserListenHistoryAdmin(admin.ModelAdmin):
     list_display = ("user", "song", "created")
-    search_fields = ["user__username", "song__name"]
     list_per_page = 50
-    show_full_result_count = False
     raw_id_fields = ("user", "song")
-    list_select_related = ("user", "song")
     date_hierarchy = "created"
 
 
 @admin.register(UserMusicProfile)
 class UserMusicProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "lastfm_username")
-    search_fields = ["user__username", "lastfm_username"]
     list_per_page = 50
     raw_id_fields = ("user",)
-    list_select_related = ("user",)
+
+
+@admin.register(DownloadConfig)
+class DownloadConfigAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "is_default",
+        "spotify_client_id_short",
+        "proxy_url_short",
+        "creator",
+        "created",
+    )
+    list_filter = ("is_default",)
+    list_per_page = 50
+
+    def spotify_client_id_short(self, obj):
+        if obj.spotify_client_id:
+            return obj.spotify_client_id[:12] + "..."
+        return "-"
+
+    spotify_client_id_short.short_description = "Spotify ID"
+
+    def proxy_url_short(self, obj):
+        return obj.proxy_url[:40] if obj.proxy_url else "-"
+
+    proxy_url_short.short_description = "Proxy"

@@ -24,7 +24,7 @@ class ListAuthorSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.image_cropped.url)
             return obj.image_cropped.url
-        return None
+        return ""
 
     class Meta:
         model = Author
@@ -41,7 +41,7 @@ class ListAlbumSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.image_cropped.url)
             return obj.image_cropped.url
-        return None
+        return ""
 
     @extend_schema_field(ListAuthorSerializer(many=True))
     def get_authors(self, obj):
@@ -60,6 +60,15 @@ class SongSerializer(serializers.ModelSerializer):
     authors = ListAuthorSerializer(many=True)
     album = ListAlbumSerializer()
     liked = serializers.SerializerMethodField(method_name="get_liked")
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return ""
 
     @extend_schema_field(serializers.BooleanField)
     def get_liked(self, obj):
@@ -68,7 +77,7 @@ class SongSerializer(serializers.ModelSerializer):
                 return SongUserRating.objects.filter(
                     song=obj, user=self.context["request"].user, like=True
                 ).exists()
-        return None
+        return False
 
     class Meta:
         model = Song
@@ -84,13 +93,29 @@ class SongSerializer(serializers.ModelSerializer):
             "liked",
             "meta",
             "volume",
+            "slug",
         ]
         extra_kwargs = {
             "slug": {"read_only": True},
-            "creator": {"read_only": True},
             "length": {"read_only": True},
             "played": {"read_only": True},
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.setdefault("authors", [])
+        data.setdefault("album", None)
+        data.setdefault("image", "")
+        data.setdefault("file", "")
+        data.setdefault("link", "")
+        data.setdefault("meta", {})
+        data.setdefault("volume", [])
+        data.setdefault("liked", False)
+        if data["length"] is None:
+            data["length"] = 0
+        if data["played"] is None:
+            data["played"] = 0
+        return data
 
 
 class ListSongSerializer(SetUserModelSerializer):
@@ -105,25 +130,25 @@ class ListSongSerializer(SetUserModelSerializer):
             return self.context["likes"]
         if "likes_ids" in self.context:
             return obj.id in self.context["likes_ids"]
-        return None
+        return False
 
     @extend_schema_field(ListAlbumSerializer)
     def get_album(self, obj):
         if obj.album_id:
             try:
                 album = Album.objects.cache().get(id=obj.album_id)
-                return ListAlbumSerializer(album).data
+                return ListAlbumSerializer(album, context=self.context).data
             except Album.DoesNotExist:
-                return None
+                pass
         return None
 
     @extend_schema_field(ListAuthorSerializer(many=True))
     def get_authors(self, obj):
-        if obj.authors:
-            return ListAuthorSerializer(
-                Author.objects.cache().filter(songs__id=obj.id), many=True
-            ).data
-        return None
+        return ListAuthorSerializer(
+            Author.objects.cache().filter(songs__id=obj.id),
+            many=True,
+            context=self.context,
+        ).data
 
     @extend_schema_field(serializers.ImageField)
     def get_image(self, obj):
@@ -142,8 +167,11 @@ class ListSongSerializer(SetUserModelSerializer):
             if authors.exists():
                 img = authors.first().image_cropped
         if img:
-            return self.context["request"].build_absolute_uri(img.url)
-        return None
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(img.url)
+            return img.url
+        return ""
 
     class Meta:
         model = Song
@@ -163,6 +191,17 @@ class ListSongSerializer(SetUserModelSerializer):
             "length": {"read_only": True},
             "album": {"read_only": True},
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.setdefault("authors", [])
+        data.setdefault("image_cropped", "")
+        data.setdefault("file", "")
+        if data["length"] is None:
+            data["length"] = 0
+        if data.get("liked") is None:
+            data["liked"] = False
+        return data
 
 
 class PlaylistSerializer(SetUserModelSerializer):
