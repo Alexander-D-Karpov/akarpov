@@ -115,6 +115,18 @@ def generate_readable_slug(name: str, model: Model) -> str:
     return slug.lower()
 
 
+def _get_default_proxy():
+    from akarpov.music.models import DownloadConfig
+
+    config = DownloadConfig.get_default()
+    if config and config.proxy_url:
+        return {"http": config.proxy_url, "https": config.proxy_url}
+    proxy = os.environ.get("MUSIC_PROXY_URL", "")
+    if proxy:
+        return {"http": proxy, "https": proxy}
+    return None
+
+
 def _create_spotify_session_safe():
     try:
         import spotipy
@@ -124,13 +136,16 @@ def _create_spotify_session_safe():
         secret = getattr(settings, "MUSIC_SPOTIFY_SECRET", "")
         if not cid or not secret:
             return None
+        proxies = _get_default_proxy()
         return spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
                 client_id=cid,
                 client_secret=secret,
+                proxies=proxies,
             ),
             retries=0,
-            requests_timeout=10,
+            requests_timeout=30,
+            proxies=proxies,
         )
     except Exception as e:
         logger.warning("Failed to create Spotify session", error=str(e))
@@ -143,11 +158,14 @@ def create_spotify_session():
 
     if not settings.MUSIC_SPOTIFY_ID or not settings.MUSIC_SPOTIFY_SECRET:
         raise ConnectionError("No spotify credentials provided")
+    proxies = _get_default_proxy()
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
             client_id=settings.MUSIC_SPOTIFY_ID,
             client_secret=settings.MUSIC_SPOTIFY_SECRET,
-        )
+            proxies=proxies,
+        ),
+        proxies=proxies,
     )
 
 

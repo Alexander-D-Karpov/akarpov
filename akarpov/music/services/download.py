@@ -146,13 +146,20 @@ def create_spotify_session(provider: ConfigProvider = None):
     provider = provider or ConfigProvider()
     if not provider.spotify_client_id or not provider.spotify_client_secret:
         raise ConnectionError("No Spotify credentials")
+
+    proxies = None
+    if provider.proxy_url:
+        proxies = {"http": provider.proxy_url, "https": provider.proxy_url}
+
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
             client_id=provider.spotify_client_id,
             client_secret=provider.spotify_client_secret,
+            proxies=proxies,
         ),
         retries=0,
-        requests_timeout=10,
+        requests_timeout=30,
+        proxies=proxies,
     )
 
 
