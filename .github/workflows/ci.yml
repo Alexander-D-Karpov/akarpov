@@ -24,7 +24,11 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
+        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -54,11 +58,10 @@ jobs:
               | xargs -r cp --parents --target-directory ~/packages/
           fi
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Make Poetry use the Python from setup-python
+        run: poetry env use "${{ steps.setup-python.outputs.python-path }}"
 
       - run: poetry install
-
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
