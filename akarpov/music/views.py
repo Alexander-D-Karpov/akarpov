@@ -220,12 +220,8 @@ class MainRadioView(generic.TemplateView):
 radio_main_view = MainRadioView.as_view()
 
 
-class MusicPlayerView(generic.ListView):
+class MusicPlayerView(generic.TemplateView):
     template_name = "music/player.html"
-    model = Song
-
-    def get_queryset(self):
-        return Song.objects.all()
 
 
 music_player_view = MusicPlayerView.as_view()

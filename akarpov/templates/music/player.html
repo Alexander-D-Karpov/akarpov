@@ -1,19 +1,298 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
-    {% block css %}
-    <link rel="stylesheet" href="{% static 'css/music-player.css' %}">
-    {% endblock %}
-  {% block content %}
-    <div class="d-flex align-items-center justify-content-center">
-        <div class="simple-audio-player flex-column" id="simp" data-config='{"shide_top":false,"shide_btm":false,"auto_load":true}'>
-          <div class="simp-playlist">
-            <ul>
-              {% for song in song_list %}
-            <li><span class="simp-source" {% if song.image %}data-cover="{{ song.image.url }}"{% endif %} data-artists="{{ song.artists_names }}" data-albumn="{{ song.album_name }}" data-src="{{ song.file.url }}">{{ song.name }}</span><span class="simp-desc">{{ song.full_props }}</span></li>
-              {% endfor %}
-            </ul>
-          </div>
-      </div>
-    </div>
-    <script src="{% static 'js/music-player.js' %}"></script>
-{% endblock content %}
+
+{% block title %}Music Player{% endblock %}
+
+{% block css %}
+<style>
+  .player-wrap { max-width: 900px; margin: 0 auto; }
+  .song-row {
+    padding: .6rem .8rem;
+    border-bottom: 1px solid rgba(128,128,128,.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    transition: background .1s;
+  }
+  .song-row:hover { background: rgba(255,255,255,.04); }
+  .song-row.active { background: rgba(13,110,253,.12); }
+  .song-thumb {
+    width: 40px; height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: #222;
+    flex-shrink: 0;
+  }
+  .song-info { min-width: 0; flex: 1; }
+  .song-title { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .song-artist { font-size: .75rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .song-len { font-size: .75rem; color: #666; flex-shrink: 0; }
+
+  .now-playing {
+    position: sticky;
+    bottom: 0;
+    background: var(--bs-dark, #1a1a1a);
+    border-top: 1px solid rgba(128,128,128,.2);
+    padding: .75rem 1rem;
+    display: none;
+  }
+  .now-playing.visible { display: flex; align-items: center; gap: 1rem; }
+  .np-thumb { width: 48px; height: 48px; border-radius: 4px; object-fit: cover; }
+  .np-info { min-width: 0; flex: 1; }
+  .np-title { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .np-artist { font-size: .75rem; color: #888; }
+  .np-controls { display: flex; align-items: center; gap: .5rem; }
+  .np-controls button { background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: .25rem; }
+  .np-controls button:hover { color: #fff; }
+  .np-time { font-size: .7rem; color: #666; min-width: 80px; text-align: center; }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--bs-primary, #0d6efd);
+    border-radius: 2px;
+    width: 0;
+    transition: width .2s linear;
+  }
+
+  #search-box {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(128,128,128,.2);
+    color: inherit;
+  }
+  #search-box:focus {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(128,128,128,.4);
+    box-shadow: none;
+  }
+  .load-more-row {
+    padding: 1rem;
+    text-align: center;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="player-wrap">
+  <div class="d-flex align-items-center justify-content-between mb-3 gap-2">
+    <h5 class="mb-0">Player</h5>
+    <input type="text" id="search-box" class="form-control form-control-sm" style="max-width:300px;" placeholder="Search...">
+  </div>
+  <div id="song-list"></div>
+  <div id="load-trigger" class="load-more-row">
+    <span id="load-status" class="text-muted" style="font-size:.85rem;">Loading...</span>
+  </div>
+</div>
+
+<div class="now-playing" id="now-playing">
+  <img class="np-thumb" id="np-thumb" src="" alt="">
+  <div class="np-info">
+    <div class="np-title" id="np-title"></div>
+    <div class="np-artist" id="np-artist"></div>
+  </div>
+  <div class="np-time" id="np-time">0:00 / 0:00</div>
+  <div class="progress-track" id="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="np-controls">
+    <button id="btn-prev" title="Previous"><i class="bi bi-skip-start-fill"></i></button>
+    <button id="btn-play" title="Play/Pause"><i class="bi bi-play-fill"></i></button>
+    <button id="btn-next" title="Next"><i class="bi bi-skip-end-fill"></i></button>
+  </div>
+  <audio id="audio-el" preload="none"></audio>
+</div>
+{% endblock %}
+
+{% block inline_javascript %}
+<script>
+(function() {
+  const API = '/api/v1/music/song/';
+  const PAGE_SIZE = 50;
+  let page = 1;
+  let loading = false;
+  let hasMore = true;
+  let searchQuery = '';
+  let searchTimer = null;
+  let songs = [];
+  let currentIndex = -1;
+
+  const listEl = document.getElementById('song-list');
+  const statusEl = document.getElementById('load-status');
+  const audio = document.getElementById('audio-el');
+  const npEl = document.getElementById('now-playing');
+  const npThumb = document.getElementById('np-thumb');
+  const npTitle = document.getElementById('np-title');
+  const npArtist = document.getElementById('np-artist');
+  const npTime = document.getElementById('np-time');
+  const progressTrack = document.getElementById('progress-track');
+  const progressFill = document.getElementById('progress-fill');
+  const btnPlay = document.getElementById('btn-play');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const searchBox = document.getElementById('search-box');
+
+  function formatTime(s) {
+    if (!s || isNaN(s)) return '0:00';
+    s = Math.floor(s);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str || ''));
+    return d.innerHTML;
+  }
+
+  async function fetchPage() {
+    if (loading || !hasMore) return;
+    loading = true;
+    statusEl.textContent = 'Loading...';
+
+    let url = API + '?page=' + page + '&page_size=' + PAGE_SIZE;
+    if (searchQuery) url += '&search=' + encodeURIComponent(searchQuery);
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(resp.status);
+      const data = await resp.json();
+      const results = data.results || [];
+
+      results.forEach(function(song, i) {
+        const idx = songs.length;
+        songs.push(song);
+        const row = document.createElement('div');
+        row.className = 'song-row';
+        row.dataset.idx = idx;
+
+        const img = song.image_cropped || '';
+        const authors = (song.authors || []).map(function(a) { return a.name; }).join(', ');
+        const len = formatTime(song.length);
+
+        row.innerHTML =
+          (img ? '<img class="song-thumb" src="' + escapeHtml(img) + '" alt="" loading="lazy">' : '<div class="song-thumb"></div>') +
+          '<div class="song-info">' +
+            '<div class="song-title">' + escapeHtml(song.name) + '</div>' +
+            '<div class="song-artist">' + escapeHtml(authors) + '</div>' +
+          '</div>' +
+          '<span class="song-len">' + len + '</span>';
+
+        row.addEventListener('click', function() { playSong(idx); });
+        listEl.appendChild(row);
+      });
+
+      if (!data.next) {
+        hasMore = false;
+        statusEl.textContent = songs.length ? '' : 'No songs found.';
+      } else {
+        page++;
+        statusEl.textContent = '';
+      }
+    } catch (e) {
+      statusEl.textContent = 'Failed to load.';
+    }
+    loading = false;
+  }
+
+  function playSong(idx) {
+    if (idx < 0 || idx >= songs.length) return;
+    currentIndex = idx;
+    const song = songs[idx];
+    if (!song.file) return;
+
+    audio.src = song.file;
+    audio.play();
+
+    npEl.classList.add('visible');
+    npTitle.textContent = song.name || '';
+    npArtist.textContent = (song.authors || []).map(function(a) { return a.name; }).join(', ');
+    npThumb.src = song.image_cropped || '';
+    btnPlay.innerHTML = '<i class="bi bi-pause-fill"></i>';
+
+    listEl.querySelectorAll('.song-row').forEach(function(r) { r.classList.remove('active'); });
+    const activeRow = listEl.querySelector('[data-idx="' + idx + '"]');
+    if (activeRow) activeRow.classList.add('active');
+
+    fetch('/api/v1/music/song/listen/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+      body: JSON.stringify({song: song.slug})
+    }).catch(function() {});
+  }
+
+  btnPlay.addEventListener('click', function() {
+    if (audio.paused) {
+      audio.play();
+      btnPlay.innerHTML = '<i class="bi bi-pause-fill"></i>';
+    } else {
+      audio.pause();
+      btnPlay.innerHTML = '<i class="bi bi-play-fill"></i>';
+    }
+  });
+
+  btnNext.addEventListener('click', function() {
+    if (currentIndex < songs.length - 1) playSong(currentIndex + 1);
+  });
+
+  btnPrev.addEventListener('click', function() {
+    if (currentIndex > 0) playSong(currentIndex - 1);
+  });
+
+  audio.addEventListener('ended', function() {
+    if (currentIndex < songs.length - 1) playSong(currentIndex + 1);
+    else {
+      btnPlay.innerHTML = '<i class="bi bi-play-fill"></i>';
+      npEl.classList.remove('visible');
+    }
+  });
+
+  audio.addEventListener('timeupdate', function() {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+    npTime.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+  });
+
+  progressTrack.addEventListener('click', function(e) {
+    if (!audio.duration) return;
+    const rect = progressTrack.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = pct * audio.duration;
+  });
+
+  searchBox.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() {
+      searchQuery = searchBox.value.trim();
+      page = 1;
+      hasMore = true;
+      songs = [];
+      currentIndex = -1;
+      listEl.innerHTML = '';
+      fetchPage();
+    }, 400);
+  });
+
+  const observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) fetchPage();
+  }, {rootMargin: '200px'});
+  observer.observe(document.getElementById('load-trigger'));
+
+  fetchPage();
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+})();
+</script>
+{% endblock %}

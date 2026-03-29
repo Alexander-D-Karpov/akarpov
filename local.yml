@@ -27,6 +27,11 @@ services:
     ports:
       - "8000:8000"
     command: /start
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
 
   redirect:
     build:
@@ -47,6 +52,11 @@ services:
     ports:
       - "3025:3000"
     command: /start-redirect
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   postgres:
     build:
@@ -59,17 +69,20 @@ services:
       - akarpov_local_postgres_data_backups:/backups:z
     env_file:
       - ./.envs/.local/.postgres
+    restart: unless-stopped
 
   mailhog:
     image: mailhog/mailhog:v1.0.0
     container_name: akarpov_local_mailhog
     ports:
       - "8025:8025"
+    restart: unless-stopped
 
   redis:
     image: redis:6
     container_name: akarpov_local_redis
     command: redis-server --maxmemory 4gb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -85,6 +98,11 @@ services:
       - mailhog
     ports: []
     command: /start-celeryworker
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
 
   celerybeat:
     <<: *django
@@ -96,6 +114,11 @@ services:
       - mailhog
     ports: []
     command: /start-celerybeat
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   flower:
     <<: *django
@@ -104,6 +127,11 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   elasticsearch:
     build:
@@ -121,3 +149,4 @@ services:
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     volumes:
       - akarpov_local_elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
