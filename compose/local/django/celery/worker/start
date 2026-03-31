@@ -3,4 +3,4 @@
 set -o errexit
 set -o nounset
 
-celery -A config.celery_app  worker --autoscale 20 -l INFO
+celery -A config.celery_app worker --autoscale=8,2 -l INFO -Q celery,downloads

@@ -137,6 +137,12 @@ def _create_spotify_session_safe():
         if not cid or not secret:
             return None
         proxies = _get_default_proxy()
+
+        session = requests.Session()
+        if proxies:
+            session.proxies = proxies
+        session.timeout = 30
+
         return spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
                 client_id=cid,
@@ -146,6 +152,7 @@ def _create_spotify_session_safe():
             retries=0,
             requests_timeout=30,
             proxies=proxies,
+            requests_session=session,
         )
     except Exception as e:
         logger.warning("Failed to create Spotify session", error=str(e))
@@ -159,6 +166,12 @@ def create_spotify_session():
     if not settings.MUSIC_SPOTIFY_ID or not settings.MUSIC_SPOTIFY_SECRET:
         raise ConnectionError("No spotify credentials provided")
     proxies = _get_default_proxy()
+
+    session = requests.Session()
+    if proxies:
+        session.proxies = proxies
+    session.timeout = 30
+
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
             client_id=settings.MUSIC_SPOTIFY_ID,
@@ -166,6 +179,7 @@ def create_spotify_session():
             proxies=proxies,
         ),
         proxies=proxies,
+        requests_session=session,
     )
 
 

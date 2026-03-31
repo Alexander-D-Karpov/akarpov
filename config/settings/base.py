@@ -465,6 +465,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="0"),
     },
 }
+CELERY_TASK_ROUTES = {
+    "akarpov.music.tasks.process_download_job": {"queue": "downloads"},
+    "akarpov.music.tasks.process_file_upload": {"queue": "downloads"},
+    "akarpov.music.tasks.process_dir_upload": {"queue": "downloads"},
+}
 
 
 # django-allauth

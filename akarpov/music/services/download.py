@@ -1,3 +1,4 @@
+import json as json_module
 import os
 import re
 import shutil
@@ -151,15 +152,23 @@ def create_spotify_session(provider: ConfigProvider = None):
     if provider.proxy_url:
         proxies = {"http": provider.proxy_url, "https": provider.proxy_url}
 
+    session = requests.Session()
+    if proxies:
+        session.proxies = proxies
+    session.timeout = 30
+
+    auth_manager = SpotifyClientCredentials(
+        client_id=provider.spotify_client_id,
+        client_secret=provider.spotify_client_secret,
+        proxies=proxies,
+    )
+
     return spotipy.Spotify(
-        auth_manager=SpotifyClientCredentials(
-            client_id=provider.spotify_client_id,
-            client_secret=provider.spotify_client_secret,
-            proxies=proxies,
-        ),
+        auth_manager=auth_manager,
         retries=0,
         requests_timeout=30,
         proxies=proxies,
+        requests_session=session,
     )
 
 
@@ -191,7 +200,9 @@ def _spotify_track_to_meta(track: dict) -> TrackMeta:
     )
 
 
-def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveResult:
+def _resolve_spotify_via_api(
+    url: str, provider: ConfigProvider = None
+) -> ResolveResult:
     sp = create_spotify_session(provider)
     result = ResolveResult()
 
@@ -252,7 +263,7 @@ def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveRes
     elif "/artist/" in url:
         artist_id = url.split("/artist/")[1].split("?")[0]
         artist = safe_spotify_call(sp.artist, artist_id)
-        result.playlist_name = f"{artist['name']} — Discography"
+        result.playlist_name = f"{artist['name']} -- Discography"
         result.is_playlist = True
 
         albums = safe_spotify_call(
@@ -304,6 +315,415 @@ def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveRes
                 continue
 
     return result
+
+
+def _resolve_spotify_via_embed(
+    url: str, provider: ConfigProvider = None
+) -> ResolveResult:
+    provider = provider or ConfigProvider()
+    result = ResolveResult()
+
+    proxies = None
+    if provider.proxy_url:
+        proxies = {"http": provider.proxy_url, "https": provider.proxy_url}
+
+    spotify_id = url.rstrip("/").split("/")[-1].split("?")[0]
+
+    if "/track/" in url:
+        meta = _scrape_embed_track(spotify_id, proxies)
+        if meta:
+            result.tracks.append(meta)
+
+    elif "/album/" in url:
+        tracks, album_name = _scrape_embed_album(spotify_id, proxies)
+        result.tracks = tracks
+        result.playlist_name = album_name
+        result.is_playlist = True
+
+    elif "/playlist/" in url:
+        tracks, playlist_name = _scrape_embed_playlist(spotify_id, proxies)
+        result.tracks = tracks
+        result.playlist_name = playlist_name
+        result.is_playlist = True
+
+    elif "/artist/" in url:
+        tracks, artist_name = _scrape_artist_discography(spotify_id, proxies)
+        result.tracks = tracks
+        result.playlist_name = f"{artist_name} -- Discography"
+        result.is_playlist = True
+
+    return result
+
+
+_EMBED_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+}
+
+
+def _fetch_embed_json(embed_url: str, proxies=None) -> dict | None:
+    try:
+        resp = requests.get(
+            embed_url, headers=_EMBED_HEADERS, proxies=proxies, timeout=15
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "Embed fetch non-200", url=embed_url, status=resp.status_code
+            )
+            return None
+
+        match = re.search(
+            r'<script\s+id="__NEXT_DATA__"\s+type="application/json">\s*({.*?})\s*</script>',
+            resp.text,
+            re.DOTALL,
+        )
+        if match:
+            return json_module.loads(match.group(1))
+
+        match = re.search(
+            r"Spotify\.Entity\s*=\s*({.*?});",
+            resp.text,
+            re.DOTALL,
+        )
+        if match:
+            return json_module.loads(match.group(1))
+
+        logger.warning("No JSON data found in embed page", url=embed_url)
+    except Exception as e:
+        logger.warning("Embed fetch failed", url=embed_url, error=str(e))
+    return None
+
+
+def _dig(data: dict, *keys, default=None):
+    current = data
+    for key in keys:
+        if isinstance(current, dict):
+            current = current.get(key)
+        else:
+            return default
+        if current is None:
+            return default
+    return current
+
+
+def _scrape_embed_track(track_id: str, proxies=None) -> TrackMeta | None:
+    data = _fetch_embed_json(
+        f"https://open.spotify.com/embed/track/{track_id}", proxies
+    )
+    if not data:
+        return None
+
+    try:
+        state = _dig(data, "props", "pageProps", "state", "data", "entity") or {}
+        if not state:
+            state = _dig(data, "props", "pageProps") or data
+
+        name = state.get("name", "") or state.get("title", "")
+        if not name:
+            return None
+
+        artists = []
+        for a in state.get("artists", []):
+            n = a.get("name", "") if isinstance(a, dict) else str(a)
+            if n:
+                artists.append(n)
+
+        album_data = state.get("album", {}) or {}
+        album_name = album_data.get("name", "") if isinstance(album_data, dict) else ""
+        duration = state.get("duration_ms", 0) or state.get("duration", 0)
+
+        images = []
+        if isinstance(album_data, dict):
+            images = album_data.get("images", [])
+        if not images:
+            cover_art = state.get("coverArt", {}) or {}
+            images = cover_art.get("sources", [])
+        image_url = images[0].get("url", "") if images else ""
+
+        return TrackMeta(
+            name=name,
+            artists=artists if artists else ["Unknown"],
+            album=album_name,
+            duration_ms=int(duration) if duration else 0,
+            spotify_url=f"https://open.spotify.com/track/{track_id}",
+            album_image_url=image_url,
+        )
+    except Exception as e:
+        logger.warning("Failed to parse embed track", error=str(e))
+        return None
+
+
+def _scrape_embed_album(album_id: str, proxies=None) -> tuple[list[TrackMeta], str]:
+    data = _fetch_embed_json(
+        f"https://open.spotify.com/embed/album/{album_id}", proxies
+    )
+    if not data:
+        return [], ""
+
+    tracks = []
+    album_name = ""
+    try:
+        state = _dig(data, "props", "pageProps", "state", "data", "entity") or {}
+        if not state:
+            state = _dig(data, "props", "pageProps") or data
+
+        album_name = state.get("name", "") or state.get("title", "")
+        album_artists = [
+            a.get("name", "") for a in state.get("artists", []) if isinstance(a, dict)
+        ]
+
+        images = state.get("images", [])
+        if not images:
+            cover_art = state.get("coverArt", {}) or {}
+            images = cover_art.get("sources", [])
+        image_url = images[0].get("url", "") if images else ""
+
+        track_list = state.get("trackList", [])
+        if not track_list:
+            tracks_obj = state.get("tracks", {})
+            if isinstance(tracks_obj, dict):
+                track_list = tracks_obj.get("items", [])
+            elif isinstance(tracks_obj, list):
+                track_list = tracks_obj
+
+        for t in track_list:
+            t_name = (
+                t.get("name", "")
+                or t.get("title", "")
+                or t.get("track", {}).get("name", "")
+            )
+            if not t_name:
+                continue
+
+            t_artists = []
+            for a in t.get("artists", []):
+                n = a.get("name", "") if isinstance(a, dict) else str(a)
+                if n:
+                    t_artists.append(n)
+            if not t_artists:
+                t_artists = album_artists
+
+            t_id = (
+                t.get("uid", "") or t.get("id", "") or t.get("uri", "").split(":")[-1]
+            )
+
+            meta = TrackMeta(
+                name=t_name,
+                artists=t_artists if t_artists else ["Unknown"],
+                album=album_name,
+                duration_ms=int(t.get("duration_ms", 0) or t.get("duration", 0) or 0),
+                spotify_url=f"https://open.spotify.com/track/{t_id}" if t_id else "",
+                album_image_url=image_url,
+            )
+            tracks.append(meta)
+    except Exception as e:
+        logger.warning("Failed to parse embed album", error=str(e))
+
+    return tracks, album_name
+
+
+def _scrape_embed_playlist(
+    playlist_id: str, proxies=None
+) -> tuple[list[TrackMeta], str]:
+    data = _fetch_embed_json(
+        f"https://open.spotify.com/embed/playlist/{playlist_id}", proxies
+    )
+    if not data:
+        return [], ""
+
+    tracks = []
+    playlist_name = ""
+    try:
+        state = _dig(data, "props", "pageProps", "state", "data", "entity") or {}
+        if not state:
+            state = _dig(data, "props", "pageProps") or data
+
+        playlist_name = state.get("name", "") or state.get("title", "")
+
+        track_list = state.get("trackList", [])
+        if not track_list:
+            tracks_obj = state.get("tracks", {})
+            if isinstance(tracks_obj, dict):
+                track_list = tracks_obj.get("items", [])
+            elif isinstance(tracks_obj, list):
+                track_list = tracks_obj
+
+        for t in track_list:
+            track_data = t
+            if "track" in t and isinstance(t["track"], dict):
+                track_data = t["track"]
+            if "item" in t and isinstance(t["item"], dict):
+                track_data = t["item"]
+
+            t_name = track_data.get("name", "") or track_data.get("title", "")
+            if not t_name:
+                continue
+
+            t_artists = []
+            for a in track_data.get("artists", []):
+                n = a.get("name", "") if isinstance(a, dict) else str(a)
+                if n:
+                    t_artists.append(n)
+
+            t_album = ""
+            album_obj = track_data.get("album")
+            if isinstance(album_obj, dict):
+                t_album = album_obj.get("name", "")
+
+            t_id = (
+                track_data.get("uid", "")
+                or track_data.get("id", "")
+                or track_data.get("uri", "").split(":")[-1]
+            )
+            t_images = []
+            if isinstance(album_obj, dict):
+                t_images = album_obj.get("images", [])
+            if not t_images:
+                cover = track_data.get("coverArt", {}) or {}
+                t_images = cover.get("sources", [])
+            t_image = t_images[0].get("url", "") if t_images else ""
+
+            meta = TrackMeta(
+                name=t_name,
+                artists=t_artists if t_artists else ["Unknown"],
+                album=t_album,
+                duration_ms=int(
+                    track_data.get("duration_ms", 0)
+                    or track_data.get("duration", 0)
+                    or 0
+                ),
+                spotify_url=f"https://open.spotify.com/track/{t_id}" if t_id else "",
+                album_image_url=t_image,
+            )
+            tracks.append(meta)
+    except Exception as e:
+        logger.warning("Failed to parse embed playlist", error=str(e))
+
+    return tracks, playlist_name
+
+
+def _scrape_artist_discography(
+    artist_id: str, proxies=None
+) -> tuple[list[TrackMeta], str]:
+    artist_name = ""
+    all_tracks = []
+
+    try:
+        resp = requests.get(
+            f"https://open.spotify.com/artist/{artist_id}",
+            headers=_EMBED_HEADERS,
+            proxies=proxies,
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return [], ""
+
+        match = re.search(
+            r'<script\s+id="__NEXT_DATA__"\s+type="application/json">\s*({.*?})\s*</script>',
+            resp.text,
+            re.DOTALL,
+        )
+
+        if not match:
+            title_match = re.search(r"<title>(.*?)(?:\s*[-|].*)?</title>", resp.text)
+            artist_name = title_match.group(1).strip() if title_match else ""
+
+            embed_resp = requests.get(
+                f"https://open.spotify.com/embed/artist/{artist_id}",
+                headers=_EMBED_HEADERS,
+                proxies=proxies,
+                timeout=15,
+            )
+            match = re.search(
+                r'<script\s+id="__NEXT_DATA__"\s+type="application/json">\s*({.*?})\s*</script>',
+                embed_resp.text,
+                re.DOTALL,
+            )
+            if not match:
+                return all_tracks, artist_name
+
+        data = json_module.loads(match.group(1))
+
+        state = _dig(data, "props", "pageProps", "state", "data", "entity") or {}
+        if not state:
+            state = _dig(data, "props", "pageProps") or data
+
+        profile = state.get("profile", {})
+        if isinstance(profile, dict):
+            artist_name = profile.get("name", "") or state.get("name", "")
+        else:
+            artist_name = state.get("name", "")
+
+        discography = state.get("discography", {})
+        if isinstance(discography, dict):
+            for section_key in ["albums", "singles", "compilations", "all"]:
+                section = discography.get(section_key, {})
+                if not isinstance(section, dict):
+                    continue
+                items = section.get("items", [])
+                for item in items:
+                    releases = _dig(item, "releases", "items") or [item]
+                    for release in releases:
+                        release_id = release.get("id", "")
+                        if release_id:
+                            album_tracks, _ = _scrape_embed_album(release_id, proxies)
+                            all_tracks.extend(album_tracks)
+
+        if not all_tracks:
+            top_tracks = state.get("topTracks", {})
+            if isinstance(top_tracks, dict):
+                for t in top_tracks.get("items", []):
+                    track_data = t.get("track", t) if isinstance(t, dict) else t
+                    if not isinstance(track_data, dict):
+                        continue
+                    t_name = track_data.get("name", "")
+                    if not t_name:
+                        continue
+                    t_artists = [
+                        a.get("name", "")
+                        for a in track_data.get("artists", [])
+                        if isinstance(a, dict)
+                    ]
+                    t_id = (
+                        track_data.get("id", "")
+                        or track_data.get("uri", "").split(":")[-1]
+                    )
+                    album_obj = track_data.get("album", {}) or {}
+                    meta = TrackMeta(
+                        name=t_name,
+                        artists=t_artists
+                        if t_artists
+                        else [artist_name]
+                        if artist_name
+                        else ["Unknown"],
+                        album=album_obj.get("name", "")
+                        if isinstance(album_obj, dict)
+                        else "",
+                        duration_ms=int(track_data.get("duration_ms", 0) or 0),
+                        spotify_url=f"https://open.spotify.com/track/{t_id}"
+                        if t_id
+                        else "",
+                    )
+                    all_tracks.append(meta)
+
+    except Exception as e:
+        logger.warning("Failed to scrape artist page", error=str(e))
+
+    return all_tracks, artist_name
+
+
+def resolve_spotify_url(url: str, provider: ConfigProvider = None) -> ResolveResult:
+    provider = provider or ConfigProvider()
+    try:
+        return _resolve_spotify_via_api(url, provider)
+    except SpotifyRateLimitError:
+        raise
+    except Exception as e:
+        logger.warning(
+            "Spotify API failed, falling back to embed scraping", error=str(e)
+        )
+        return _resolve_spotify_via_embed(url, provider)
 
 
 def resolve_youtube_url(url: str) -> ResolveResult:
