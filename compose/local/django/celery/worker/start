@@ -1,6 +1,9 @@
 #!/bin/bash
-
 set -o errexit
 set -o nounset
-
-celery -A config.celery_app worker --autoscale=8,2 -l INFO -Q celery,downloads
+celery -A config.celery_app worker \
+    --loglevel=INFO \
+    --autoscale=4,2 \
+    --prefetch-multiplier=1 \
+    --max-tasks-per-child=10 \
+    -Q celery,downloads
